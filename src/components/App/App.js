@@ -4,40 +4,27 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import AuthenticatedRoute from "../AuthenticatedRoute/AuthenticatedRoute";
 import LoginPage from "../LoginPage/LoginPage";
-import SideNav from "../SideNav/SideNav";
+import SideBar from "../SideBar/SideBar";
 import DocumentTitle from "../DocumentTitle/DocumentTitle";
-
-const Home = () => (
-  <div>
-    <h2>Home</h2>
-  </div>
-);
-
-const About = () => (
-  <>
-    <DocumentTitle title="About" />
-    <div>
-      <h2>About</h2>
-    </div>
-  </>
-);
+import HomePage from "../HomePage/HomePage";
+import NotFoundPage from "../NotFoundPage/NotFoundPage";
 
 const App = () => (
   <Router>
     <DocumentTitle title="Timesheets" />
     <div className="uk-flex App">
-      <SideNav />
+      <SideBar />
 
       <div className="uk-flex-1 uk-padding-small">
         <Switch>
           <AuthenticatedRoute exact path="/">
-            <Home />
+            <HomePage />
           </AuthenticatedRoute>
-          <Route path="/about">
-            <About />
-          </Route>
           <Route path="/login">
             <LoginPage />
+          </Route>
+          <Route path="*">
+            <NotFoundPage />
           </Route>
         </Switch>
       </div>

@@ -6,6 +6,14 @@ import { signOut, signOutClearError } from "../../actions/signOut";
 import { useHistory, useLocation } from "react-router-dom";
 import "./LoginPage.scss";
 import DocumentTitle from "../DocumentTitle/DocumentTitle";
+import i18n from "../../i18n";
+import { useTranslation } from "react-i18next";
+import en from "./LoginPage.en";
+import ru from "./LoginPage.ru";
+
+const ns = "LoginPage";
+i18n.addResourceBundle("en", ns, en);
+i18n.addResourceBundle("ru", ns, ru);
 
 const LoginPage = ({
   isAuthenticated,
@@ -20,6 +28,7 @@ const LoginPage = ({
   signOutClearError
 }) => {
   useEffect(fetchState, []);
+  const { t } = useTranslation(ns);
 
   let history = useHistory();
   let location = useLocation();
@@ -40,10 +49,17 @@ const LoginPage = ({
       return (
         <div className="uk-text-center">
           <div className="uk-padding-small">
-            <img className="uk-border-circle" alt="" src={currentUser.image} />
+            <img
+              className="uk-border-circle user-image"
+              data-src={currentUser.image}
+              width="96"
+              height="96"
+              alt=""
+              uk-img={currentUser.image}
+            />
           </div>
           <div className="uk-padding-small uk-padding-remove-top">
-            You signed in as {currentUser.name}
+            {t("authenticatedIntro", { name: currentUser.name })}
           </div>
           {signOutError ? (
             <div className="uk-padding-small uk-padding-remove-top">
@@ -62,7 +78,7 @@ const LoginPage = ({
               className="uk-button uk-button-primary"
               onClick={signOutButtonClick}
             >
-              Sign out
+              {t("signOutButton")}
             </button>
           </div>
         </div>
@@ -72,8 +88,7 @@ const LoginPage = ({
     return (
       <>
         <div className="uk-text-center uk-padding-small">
-          Timesheets utilizes Google Spreadsheets and Google Drive API. In order
-          to use Timesheets, you need to sign in using your Google account
+          {t("unauthenticatedIntro")}
         </div>
         {signInError ? (
           <div className="uk-padding-small uk-padding-remove-top">
@@ -89,7 +104,7 @@ const LoginPage = ({
         ) : null}
         <div className="uk-text-center uk-padding-small uk-padding-remove-top">
           <button className="uk-button uk-button-primary" onClick={signIn}>
-            Sign in
+            {t("signInButton")}
           </button>
         </div>
       </>

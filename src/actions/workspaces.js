@@ -1,6 +1,4 @@
 import loadGAPI from "../utils/googleapi";
-import { fetchAuthStatus } from "./auth";
-import objectPath from "object-path";
 
 const workspaceKey = `__timesheets_workspace`;
 

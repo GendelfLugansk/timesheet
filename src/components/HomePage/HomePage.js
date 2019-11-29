@@ -1,23 +1,12 @@
 import React, { useEffect } from "react";
-import i18n from "../../i18n";
-import { useTranslation } from "react-i18next";
-import en from "./HomePage.en";
-import ru from "./HomePage.ru";
 import { connect } from "react-redux";
-import { fetchWorkspaces, selectWorkspace } from "../../actions/workspaces";
-import { fetchAuthStatus } from "../../actions/auth";
+import { fetchWorkspaces } from "../../actions/workspaces";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
 import CreateFirstWorkspace from "./CreateFirstWorkspace/CreateFirstWorkspace";
 import SelectWorkspace from "./SelectWorkspace/SelectWorkspace";
 
-const ns = "HomePage";
-i18n.addResourceBundle("en", ns, en);
-i18n.addResourceBundle("ru", ns, ru);
-
 const HomePage = ({ isLoading, workspaces, currentWorkspace, fetchState }) => {
   useEffect(fetchState, []);
-
-  const { t } = useTranslation(ns);
 
   if (isLoading) {
     return <LoaderFullPage />;

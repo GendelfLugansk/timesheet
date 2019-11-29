@@ -7,7 +7,7 @@ import "./CreateFirstWorkspace.scss";
 import Joi from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import { connect } from "react-redux";
-import { createWorkspace, fetchWorkspaces } from "../../../actions/workspaces";
+import { createWorkspace } from "../../../actions/workspaces";
 import stringifyError from "../../../utils/stringifyError";
 import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
 import useTask from "../../../utils/useTask";

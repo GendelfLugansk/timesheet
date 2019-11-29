@@ -7,7 +7,6 @@ import "./SelectWorkspace.scss";
 import Joi from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../../actions/auth";
 import { fetchWorkspaces } from "../../../actions/workspaces";
 import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
 import { selectWorkspace } from "../../../actions/workspaces";

@@ -1,5 +1,5 @@
 import React from "react";
-import { supportedLocales, getLocaleInfo } from "../../../i18n";
+import { supportedLocales, getLocaleInfo } from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import "flag-icon-css/css/flag-icon.css";
 

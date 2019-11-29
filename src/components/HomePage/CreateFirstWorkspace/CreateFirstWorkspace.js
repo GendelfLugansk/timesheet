@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import i18n from "../../../i18n";
+import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./CreateFirstWorkspace.en";
 import ru from "./CreateFirstWorkspace.ru";
@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import { createWorkspace } from "../../../actions/workspaces";
 import stringifyError from "../../../utils/stringifyError";
 import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
-import useTask from "../../../utils/useTask";
+import useTask from "../../../hooks/useTask";
 
 const ns = "CreateFirstWorkspace";
 i18n.addResourceBundle("en", ns, en);

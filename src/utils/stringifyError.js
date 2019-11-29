@@ -1,3 +1,5 @@
+import objectPath from "object-path";
+
 const stringifyError = e => {
   console.log(e);
 
@@ -5,24 +7,24 @@ const stringifyError = e => {
     return e;
   }
 
-  if (typeof e.details === "string") {
-    return e.details;
+  if (typeof objectPath.get(e, "details") === "string") {
+    return objectPath.get(e, "details");
   }
 
-  if (typeof e.error === "string") {
-    return e.error;
+  if (typeof objectPath.get(e, "error") === "string") {
+    return objectPath.get(e, "error");
   }
 
-  if (typeof e.message === "string") {
-    return e.message;
+  if (typeof objectPath.get(e, "message") === "string") {
+    return objectPath.get(e, "message");
   }
 
-  if (
-    typeof e.error === "object" &&
-    e.error !== null &&
-    typeof e.error.message === "string"
-  ) {
-    return e.error.message;
+  if (typeof objectPath.get(e, "error.message") === "string") {
+    return objectPath.get(e, "error.message");
+  }
+
+  if (typeof objectPath.get(e, "result.error.message") === "string") {
+    return objectPath.get(e, "result.error.message");
   }
 
   return String(e);

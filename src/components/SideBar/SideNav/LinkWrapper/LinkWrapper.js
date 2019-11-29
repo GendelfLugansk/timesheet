@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Route } from "react-router-dom";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../../actions/auth";
+import { fetchAuthStatus } from "../../../../actions/auth";
 
 const LinkWrapper = ({
   to,

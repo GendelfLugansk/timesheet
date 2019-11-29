@@ -7,6 +7,7 @@ import i18n from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import en from "./CurrentUser.en";
 import ru from "./CurrentUser.ru";
+import stringifyError from "../../../utils/stringifyError";
 
 const ns = "CurrentUser";
 i18n.addResourceBundle("en", ns, en);
@@ -40,10 +41,7 @@ const CurrentUser = ({
           <div className="right-column">
             <div className="user-name">{currentUser.name}</div>
             <div>
-              <button
-                className="uk-button uk-button-link button-link"
-                onClick={signOutButtonClick}
-              >
+              <button className="button-link" onClick={signOutButtonClick}>
                 {t("signOutButton")}
               </button>
             </div>
@@ -57,7 +55,7 @@ const CurrentUser = ({
                 uk-close="true"
                 onClick={signOutClearError}
               />
-              {signOutError}
+              {stringifyError(signOutError)}
             </div>
           </div>
         ) : null}

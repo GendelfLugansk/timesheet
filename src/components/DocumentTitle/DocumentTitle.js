@@ -8,14 +8,14 @@ const push = (titleIndex, title, formatter) => {
 };
 
 const remove = titleIndex => {
-  if (titles.length > titleIndex) {
+  if (titles.length > titleIndex && titleIndex >= 0) {
     titles.splice(titleIndex);
     formatters.splice(titleIndex);
   }
 };
 
 const setTitle = titleIndex => {
-  if (titles.length > titleIndex) {
+  if (titles.length > titleIndex && titleIndex >= 0) {
     window.document.title = formatters[titleIndex](titles[titleIndex], titles);
   }
 };

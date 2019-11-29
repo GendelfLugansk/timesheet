@@ -1,6 +1,5 @@
 import loadGAPI from "../utils/googleapi";
 import { fetchAuthSuccess, authStatusFromGAPI } from "./auth";
-import stringifyError from "../utils/stringifyError";
 
 const SIGN_OUT_BEGIN = "SIGN_OUT_BEGIN";
 const SIGN_OUT_SUCCESS = "SIGN_OUT_SUCCESS";
@@ -34,7 +33,7 @@ const signOut = (allowConcurrency = false) => async (dispatch, getState) => {
     dispatch(signOutSuccess());
     dispatch(fetchAuthSuccess(authStatusFromGAPI(gapi)));
   } catch (e) {
-    dispatch(signOutFailure(stringifyError(e)));
+    dispatch(signOutFailure(e));
   }
 };
 

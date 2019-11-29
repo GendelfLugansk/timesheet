@@ -1,14 +1,13 @@
 import React from "react";
 import { supportedLocales, getLocaleInfo } from "../../../i18n";
 import { useTranslation } from "react-i18next";
-import "./LocaleChanger.scss";
 import "flag-icon-css/css/flag-icon.css";
 
 const LocaleChanger = () => {
   const { i18n } = useTranslation();
 
   return (
-    <div className="uk-text-center LocaleChanger">
+    <div className="uk-text-center">
       <div className="uk-inline uk-width-1-1">
         <button
           className="uk-button uk-button-link uk-button-small uk-width-1-1"

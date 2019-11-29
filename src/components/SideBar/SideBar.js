@@ -4,6 +4,8 @@ import "./SideBar.scss";
 import LocaleChanger from "./LocaleChanger/LocaleChanger";
 import SideNav from "./SideNav/SideNav";
 import Logo from "./Logo/Logo";
+import WorkspaceSelector from "./WorkspaceSelector/WorkspaceSelector";
+import AuthenticatedContainer from "../AuthenticatedContainer/AuthenticatedContainer";
 
 const SideBar = () => {
   return (
@@ -11,7 +13,12 @@ const SideBar = () => {
       <Logo />
       <CurrentUser />
       <SideNav />
-      <LocaleChanger />
+      <div className="_bottom">
+        <AuthenticatedContainer>
+          <WorkspaceSelector />
+        </AuthenticatedContainer>
+        <LocaleChanger />
+      </div>
     </div>
   );
 };

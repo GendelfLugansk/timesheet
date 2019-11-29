@@ -10,6 +10,8 @@ import i18n from "../../i18n";
 import { useTranslation } from "react-i18next";
 import en from "./LoginPage.en";
 import ru from "./LoginPage.ru";
+import Loader from "../Loader/Loader";
+import stringifyError from "../../utils/stringifyError";
 
 const ns = "LoginPage";
 i18n.addResourceBundle("en", ns, en);
@@ -28,6 +30,7 @@ const LoginPage = ({
   signOutClearError
 }) => {
   useEffect(fetchState, []);
+
   const { t } = useTranslation(ns);
 
   let history = useHistory();
@@ -42,7 +45,7 @@ const LoginPage = ({
 
   const Content = () => {
     if (isLoading) {
-      return <div uk-spinner="ratio: 3" />;
+      return <Loader />;
     }
 
     if (isAuthenticated) {
@@ -69,7 +72,7 @@ const LoginPage = ({
                   uk-close="true"
                   onClick={signOutClearError}
                 />
-                {signOutError}
+                {stringifyError(signOutError)}
               </div>
             </div>
           ) : null}
@@ -98,7 +101,7 @@ const LoginPage = ({
                 uk-close="true"
                 onClick={signInClearError}
               />
-              {signInError}
+              {stringifyError(signInError)}
             </div>
           </div>
         ) : null}

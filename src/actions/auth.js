@@ -1,10 +1,14 @@
 import loadGAPI from "../utils/googleapi";
-import stringifyError from "../utils/stringifyError";
 
 const authStatusFromGAPI = gapi => {
   const isAuthenticated = gapi.auth2.getAuthInstance().isSignedIn.get();
   const currentUser = isAuthenticated
     ? {
+        email: gapi.auth2
+          .getAuthInstance()
+          .currentUser.get()
+          .getBasicProfile()
+          .getEmail(),
         name: gapi.auth2
           .getAuthInstance()
           .currentUser.get()
@@ -75,7 +79,7 @@ const subscribeToAuthChanges = (allowConcurrency = false) => async (
     });
     dispatch(authSubscriptionSuccess());
   } catch (e) {
-    dispatch(authSubscriptionFailure(stringifyError(e)));
+    dispatch(authSubscriptionFailure(e));
   }
 };
 
@@ -97,7 +101,7 @@ const fetchAuthStatus = (allowConcurrency = false) => async (
     dispatch(fetchAuthSuccess(authStatusFromGAPI(gapi)));
     await dispatch(subscribeToAuthChanges());
   } catch (e) {
-    dispatch(fetchAuthFailure(stringifyError(e)));
+    dispatch(fetchAuthFailure(e));
   }
 };
 

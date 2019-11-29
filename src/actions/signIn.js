@@ -1,6 +1,5 @@
 import loadGAPI from "../utils/googleapi";
 import { fetchAuthSuccess, authStatusFromGAPI } from "./auth";
-import stringifyError from "../utils/stringifyError";
 
 const SIGN_IN_BEGIN = "SIGN_IN_BEGIN";
 const SIGN_IN_SUCCESS = "SIGN_IN_SUCCESS";
@@ -31,7 +30,7 @@ const signIn = (allowConcurrency = false) => async (dispatch, getState) => {
     dispatch(signInSuccess());
     dispatch(fetchAuthSuccess(authStatusFromGAPI(gapi)));
   } catch (e) {
-    dispatch(signInFailure(stringifyError(e)));
+    dispatch(signInFailure(e));
   }
 };
 

@@ -1,6 +1,5 @@
 import "uikit/dist/css/uikit.css";
-import "uikit/dist/js/uikit";
-import "./index.scss";
+import "./styles/index.scss";
 
 import React from "react";
 import ReactDOM from "react-dom";

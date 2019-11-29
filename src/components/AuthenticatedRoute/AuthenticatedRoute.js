@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { fetchAuthStatus } from "../../actions/auth";
 import { Route, Redirect } from "react-router-dom";
-import "./AuthenticatedRoute.scss";
+import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
+import stringifyError from "../../utils/stringifyError";
 
 const AuthenticatedRoute = ({
   isAuthenticated,
@@ -23,20 +24,14 @@ const AuthenticatedRoute = ({
     return (
       <div className="uk-flex uk-flex-center uk-flex-middle AuthenticatedRouteSpinnerContainer">
         <div className="uk-alert-danger" uk-alert="true">
-          {authFetchError}
+          {stringifyError(authFetchError)}
         </div>
       </div>
     );
   }
 
   if (isLoading === true || isAuthenticated === undefined) {
-    return (
-      <div className="uk-flex uk-flex-center uk-flex-middle AuthenticatedRouteSpinnerContainer">
-        <div>
-          <div uk-spinner="ratio: 3" />
-        </div>
-      </div>
-    );
+    return <LoaderFullPage />;
   }
 
   return (

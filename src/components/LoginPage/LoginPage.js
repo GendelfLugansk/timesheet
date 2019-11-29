@@ -117,7 +117,7 @@ const LoginPage = ({
   return (
     <>
       <DocumentTitle title="Sign In" />
-      <div className="uk-flex uk-flex-center uk-flex-middle LoginPage">
+      <div className="uk-flex uk-flex-center uk-flex-middle min-height-100 LoginPage">
         <div>
           <Content />
         </div>

@@ -13,7 +13,7 @@ const SideBar = () => {
       <Logo />
       <CurrentUser />
       <SideNav />
-      <div className="_bottom">
+      <div className="bottom">
         <AuthenticatedContainer>
           <WorkspaceSelector />
         </AuthenticatedContainer>

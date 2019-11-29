@@ -3,7 +3,6 @@ import i18n from "../../../i18n";
 import { useTranslation } from "react-i18next";
 import en from "./SelectWorkspace.en";
 import ru from "./SelectWorkspace.ru";
-import "./SelectWorkspace.scss";
 import Joi from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import { connect } from "react-redux";
@@ -98,7 +97,7 @@ const SelectWorkspace = ({
   }
 
   return (
-    <div className="uk-flex uk-flex-center uk-flex-middle SelectWorkspace">
+    <div className="uk-flex uk-flex-center uk-flex-middle min-height-100">
       <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
         <form
           onSubmit={e => {

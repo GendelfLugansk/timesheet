@@ -10,6 +10,7 @@ import { fetchWorkspaces } from "../../../actions/workspaces";
 import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
 import { selectWorkspace } from "../../../actions/workspaces";
 import objectPath from "object-path";
+import stringifyError from "../../../utils/stringifyError";
 
 const ns = "SelectWorkspace";
 i18n.addResourceBundle("en", ns, en);
@@ -17,6 +18,7 @@ i18n.addResourceBundle("ru", ns, ru);
 
 const SelectWorkspace = ({
   isLoading,
+  error,
   workspaces,
   fetchState,
   selectWorkspace
@@ -36,7 +38,7 @@ const SelectWorkspace = ({
   });
   const [validationErrors, setValidationErrors] = useState({});
 
-  const validate = data => {
+  const validate = formData => {
     const rules = Joi.object({
       workspaceId: Joi.string().required()
     });
@@ -53,17 +55,16 @@ const SelectWorkspace = ({
     throw groupJoiErrors(validationResult.error);
   };
 
-  const maybeValidate = () => {
+  const needReValidation =
+    Math.max(
+      0,
+      ...Object.values(validationErrors)
+        .filter(a => Array.isArray(a))
+        .map(a => a.length)
+    ) > 0;
+  useEffect(() => {
     try {
-      //Re-validate if there are validation errors, don't touch otherwise
-      if (
-        Math.max(
-          0,
-          ...Object.values(validationErrors)
-            .filter(a => Array.isArray(a))
-            .map(a => a.length)
-        ) > 0
-      ) {
+      if (needReValidation) {
         validate(formData);
         setValidationErrors({});
       }
@@ -72,9 +73,7 @@ const SelectWorkspace = ({
         setValidationErrors(e.groupedDetails);
       }
     }
-  };
-
-  useEffect(maybeValidate, [formData]);
+  }, [formData, needReValidation]);
 
   const submit = () => {
     let cleanData;
@@ -96,6 +95,18 @@ const SelectWorkspace = ({
     return <LoaderFullPage />;
   }
 
+  if (error) {
+    return (
+      <div className="uk-flex uk-flex-center uk-flex-middle min-height-100">
+        <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
+          <div className="uk-alert-danger" uk-alert="true">
+            {stringifyError(error)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="uk-flex uk-flex-center uk-flex-middle min-height-100">
       <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
@@ -109,7 +120,7 @@ const SelectWorkspace = ({
 
           <div className="uk-margin">
             <label className="uk-form-label">
-              {t("form.workspaceIdLabel")}
+              {t("form.workspaceIdLabel")} *
             </label>
             <div className="uk-form-controls">
               <div uk-form-custom="target: > * > span:first-child">
@@ -128,7 +139,12 @@ const SelectWorkspace = ({
                   ))}
                 </select>
                 <button
-                  className="uk-button uk-button-default"
+                  className={`uk-button uk-button-default ${
+                    Array.isArray(validationErrors.workspaceId) &&
+                    validationErrors.workspaceId.length > 0
+                      ? "uk-form-danger"
+                      : ""
+                  }`}
                   type="button"
                   tabIndex="-1"
                 >
@@ -169,14 +185,13 @@ export { SelectWorkspace };
 
 export default connect(
   state => ({
-    isLoading: state.auth.isLoading || state.workspaces.isLoading,
+    isLoading: state.workspaces.isLoading,
+    error: state.workspaces.error,
     workspaces: state.workspaces.list
   }),
   dispatch => ({
     fetchState: () => {
-      (async () => {
-        await dispatch(fetchWorkspaces());
-      })();
+      dispatch(fetchWorkspaces());
     },
     selectWorkspace: workspace => {
       dispatch(selectWorkspace(workspace));

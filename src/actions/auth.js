@@ -4,6 +4,11 @@ const authStatusFromGAPI = gapi => {
   const isAuthenticated = gapi.auth2.getAuthInstance().isSignedIn.get();
   const currentUser = isAuthenticated
     ? {
+        id: gapi.auth2
+          .getAuthInstance()
+          .currentUser.get()
+          .getBasicProfile()
+          .getId(),
         email: gapi.auth2
           .getAuthInstance()
           .currentUser.get()

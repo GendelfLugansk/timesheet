@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./CreateFirstWorkspace.en";
@@ -26,11 +26,9 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
   const [validationErrors, setValidationErrors] = useState({});
   const create = useTask(createWorkspace);
 
-  const validate = data => {
+  const validate = formData => {
     const rules = Joi.object({
-      name: Joi.string()
-        .min(1)
-        .required(),
+      name: Joi.string().required(),
       sortOrder: Joi.number()
         .integer()
         .required()
@@ -48,17 +46,16 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
     throw groupJoiErrors(validationResult.error);
   };
 
-  const maybeValidate = () => {
+  const needReValidation =
+    Math.max(
+      0,
+      ...Object.values(validationErrors)
+        .filter(a => Array.isArray(a))
+        .map(a => a.length)
+    ) > 0;
+  useEffect(() => {
     try {
-      //Re-validate if there are validation errors, don't touch otherwise
-      if (
-        Math.max(
-          0,
-          ...Object.values(validationErrors)
-            .filter(a => Array.isArray(a))
-            .map(a => a.length)
-        ) > 0
-      ) {
+      if (needReValidation) {
         validate(formData);
         setValidationErrors({});
       }
@@ -67,9 +64,7 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
         setValidationErrors(e.groupedDetails);
       }
     }
-  };
-
-  useEffect(maybeValidate, [formData]);
+  }, [formData, needReValidation]);
 
   const submit = () => {
     let cleanData;
@@ -100,10 +95,15 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
           <div className="uk-legend">{t("intro")}</div>
 
           <div className="uk-margin">
-            <label className="uk-form-label">{t("form.nameLabel")}</label>
+            <label className="uk-form-label">{t("form.nameLabel")} *</label>
             <div className="uk-form-controls">
               <input
-                className="uk-input"
+                className={`uk-input ${
+                  Array.isArray(validationErrors.name) &&
+                  validationErrors.name.length > 0
+                    ? "uk-form-danger"
+                    : ""
+                }`}
                 type="text"
                 value={formData.name}
                 onChange={({ target: { value } }) => {

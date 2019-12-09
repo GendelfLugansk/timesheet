@@ -159,12 +159,12 @@ const useTask = (
   );
 
   useEffect(() => {
+    const taskRef = task.current;
+
     return () => {
       isMounted.current = false;
-      //eslint-disable-next-line react-hooks/exhaustive-deps
-      task.current && task.current.cancelAll();
+      taskRef && taskRef.cancelAll();
     };
-    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return task.current;

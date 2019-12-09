@@ -22,9 +22,11 @@ const AuthenticatedRoute = ({
 
   if (!isAuthenticated && authFetchError) {
     return (
-      <div className="uk-flex uk-flex-center uk-flex-middle AuthenticatedRouteSpinnerContainer">
-        <div className="uk-alert-danger" uk-alert="true">
-          {stringifyError(authFetchError)}
+      <div className="uk-flex uk-flex-center uk-flex-middle min-height-100">
+        <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
+          <div className="uk-alert-danger" uk-alert="true">
+            {stringifyError(authFetchError)}
+          </div>
         </div>
       </div>
     );

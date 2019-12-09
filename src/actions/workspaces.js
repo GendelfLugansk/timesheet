@@ -91,9 +91,10 @@ const createWorkspace = ({ name, sortOrder }) => async dispatch => {
           .join("__")
       },
       sheets: [
-        { properties: { title: "Times" } },
-        { properties: { title: "Projects" } },
-        { properties: { title: "Tags" } }
+        { properties: { title: "Log", gridProperties: { rowCount: 1 } } },
+        { properties: { title: "Progress", gridProperties: { rowCount: 1 } } },
+        { properties: { title: "Projects", gridProperties: { rowCount: 1 } } },
+        { properties: { title: "Tags", gridProperties: { rowCount: 1 } } }
       ]
     });
     await dispatch(fetchWorkspaces(true));

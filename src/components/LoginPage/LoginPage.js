@@ -78,7 +78,7 @@ const LoginPage = ({
           ) : null}
           <div className="uk-padding-small uk-padding-remove-top">
             <button
-              className="uk-button uk-button-primary"
+              className="uk-button uk-button-primary uk-button-large"
               onClick={signOutButtonClick}
             >
               {t("signOutButton")}
@@ -106,7 +106,10 @@ const LoginPage = ({
           </div>
         ) : null}
         <div className="uk-text-center uk-padding-small uk-padding-remove-top">
-          <button className="uk-button uk-button-primary" onClick={signIn}>
+          <button
+            className="uk-button uk-button-primary uk-button-large"
+            onClick={signIn}
+          >
             {t("signInButton")}
           </button>
         </div>

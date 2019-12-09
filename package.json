@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "flag-icon-css": "^3.4.5",
+    "flag-icon-css": "3.4.5",
     "husky": "3.1.0",
     "i18next": "19.0.1",
-    "i18next-browser-languagedetector": "^4.0.1",
-    "joi": "^14.3.1",
+    "i18next-browser-languagedetector": "4.0.1",
+    "joi": "14.3.1",
     "lint-staged": "9.4.3",
+    "luxon": "^1.21.3",
     "node-sass": "4.13.0",
-    "object-path": "^0.11.4",
+    "object-path": "0.11.4",
     "prettier": "1.19.1",
     "react": "16.12.0",
     "react-dom": "16.12.0",
@@ -20,7 +21,8 @@
     "react-scripts": "3.2.0",
     "redux": "4.0.4",
     "redux-thunk": "2.3.0",
-    "uikit": "3.2.3"
+    "uikit": "3.2.3",
+    "uuid": "3.3.3"
   },
   "scripts": {
     "start": "react-scripts start",

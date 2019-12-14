@@ -309,10 +309,6 @@ const sync = (workspaceId, table, allowConcurrency = false) => async (
       );
     }
     if (valuesToAppend.length > 0) {
-      console.log(
-        `${table}!${firstColumnAlpha}${lastRowInSpreadsheet +
-          1}:${lastColumnAlpha}`
-      );
       await gapi.client.sheets.spreadsheets.values.append(
         {
           spreadsheetId: workspaceId,

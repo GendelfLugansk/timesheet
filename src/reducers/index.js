@@ -3,12 +3,12 @@ import auth from "./auth";
 import signIn from "./signIn";
 import signOut from "./signOut";
 import workspaces from "./workspaces";
-import workspacesData from "./workspacesData";
+import syncableStorage from "./syncableStorage";
 
 export default combineReducers({
   auth,
   signIn,
   signOut,
   workspaces,
-  workspacesData
+  syncableStorage
 });

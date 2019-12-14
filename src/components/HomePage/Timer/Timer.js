@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
 import objectPath from "object-path";
 import {
-  fetchWorkspaceData,
-  updateWorkspaceDataTimerInProgress
-} from "../../../actions/workspacesData";
+  sync,
+  upsertLocal,
+  deleteLocal
+} from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import stringifyError from "../../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
@@ -20,14 +21,15 @@ i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
 const Timer = ({
-  isLoading,
-  error,
+  isSyncing,
+  syncError,
   timerInProgress,
-  currentUser,
   fetchState,
   updateTimer,
   startTimer,
-  stopTimer
+  stopTimer,
+  syncAll,
+  syncProgress
 }) => {
   const { t } = useTranslation(ns);
 
@@ -40,7 +42,6 @@ const Timer = ({
   useEffect(() => {
     updateDisplayedTime.current = setInterval(() => {
       if (
-        timerInProgress.started &&
         !Joi.validate(
           timerInProgress,
           Joi.object({
@@ -76,6 +77,9 @@ const Timer = ({
         } else {
           setSpentSum(null);
         }
+      } else {
+        setSpentTime("00:00:00");
+        setSpentSum(null);
       }
     }, 500);
 
@@ -84,33 +88,23 @@ const Timer = ({
     };
   });
 
+  const inputsBlur = () => {
+    if (timerInProgress.startTimeString && timerInProgress.uuid) {
+      syncProgress();
+    }
+  };
+
   const start = () => {
-    startTimer();
+    startTimer(timerInProgress);
   };
 
   const stop = () => {
-    stopTimer();
+    stopTimer(timerInProgress);
   };
 
-  if (isLoading) {
-    return (
-      <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
-        <Loader />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
-        <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
-          <div className="uk-alert-danger" uk-alert="true">
-            {stringifyError(error)}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const syncRetry = () => {
+    syncAll();
+  };
 
   return (
     <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
@@ -120,47 +114,56 @@ const Timer = ({
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.taskDescription}
+              value={timerInProgress.taskDescription || ""}
               placeholder={t("taskDescriptionPlaceholder")}
+              disabled={isSyncing}
               onChange={({ target: { value } }) => {
                 updateTimer({ ...timerInProgress, taskDescription: value });
               }}
+              onBlur={inputsBlur}
             />
           </div>
           <div className="uk-width-1-3">
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.project}
+              value={timerInProgress.project || ""}
               placeholder={t("projectPlaceholder")}
+              disabled={isSyncing}
               onChange={({ target: { value } }) => {
                 updateTimer({ ...timerInProgress, project: value });
               }}
+              onBlur={inputsBlur}
             />
           </div>
           <div className="uk-width-1-3">
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.tags}
+              value={timerInProgress.tags || ""}
               placeholder={t("tagsPlaceholder")}
+              disabled={isSyncing}
               onChange={({ target: { value } }) => {
                 updateTimer({ ...timerInProgress, tags: value });
               }}
+              onBlur={inputsBlur}
             />
           </div>
           <div className="uk-width-1-3">
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.hourlyRate}
+              value={timerInProgress.hourlyRate || ""}
               placeholder={t("hourlyRatePlaceholder")}
+              disabled={isSyncing}
               onChange={({ target: { value } }) => {
+                const valueNumber = Number(value);
                 updateTimer({
                   ...timerInProgress,
-                  hourlyRate: value
+                  hourlyRate: !isNaN(valueNumber) ? valueNumber : value
                 });
               }}
+              onBlur={inputsBlur}
             />
           </div>
           <div className="uk-width-1-1 uk-text-center">
@@ -169,22 +172,38 @@ const Timer = ({
               <span className="uk-heading-small">{" / $" + spentSum}</span>
             ) : null}
           </div>
+          {syncError ? (
+            <div className="uk-width-1-1">
+              <div className="uk-alert-danger" uk-alert="true">
+                {t("syncError", { error: stringifyError(syncError) })}{" "}
+                <button
+                  onClick={syncRetry}
+                  type="button"
+                  className="uk-button uk-button-link"
+                >
+                  {t("syncRetryButton")}
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div className="uk-width-1-1 uk-text-center">
-            {!timerInProgress.started ? (
-              <button
-                className="uk-button uk-button-large uk-button-primary"
-                type="button"
-                onClick={start}
-              >
-                {t("startButton")}
-              </button>
-            ) : (
+            {timerInProgress.startTimeString && timerInProgress.uuid ? (
               <button
                 className="uk-button uk-button-large uk-button-danger"
                 type="button"
+                disabled={isSyncing}
                 onClick={stop}
               >
-                {t("stopButton")}
+                {isSyncing ? <Loader ratio={1} /> : t("stopButton")}
+              </button>
+            ) : (
+              <button
+                className="uk-button uk-button-large uk-button-primary"
+                type="button"
+                disabled={isSyncing}
+                onClick={start}
+              >
+                {isSyncing ? <Loader ratio={1} /> : t("startButton")}
               </button>
             )}
           </div>
@@ -198,41 +217,75 @@ export { Timer };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isLoading: objectPath.get(
-      state.workspacesData,
-      `${workspaceId}.isLoading`,
+    isSyncing: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Progress.isSyncing`,
       false
     ),
-    error: objectPath.get(state.workspacesData, `${workspaceId}.error`, null),
-    timerInProgress: objectPath.get(
-      state.workspacesData,
-      `${workspaceId}.timerInProgress`,
-      {}
+    syncError: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Progress.error`,
+      null
     ),
-    currentUser: state.auth.currentUser
+    timerInProgress: {
+      uuid: uuidv4(),
+      ...(objectPath
+        .get(state.syncableStorage, `${workspaceId}.Progress.data`, [])
+        .filter(({ _deleted }) => !_deleted)
+        .filter(row => row.userId === state.auth.currentUser.id)[0] || {}),
+      userId: state.auth.currentUser.id,
+      userDisplayName: state.auth.currentUser.name
+    }
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(fetchWorkspaceData(workspaceId));
+      dispatch(sync(workspaceId, "Progress"));
     },
     updateTimer: timerInProgress => {
-      dispatch(
-        updateWorkspaceDataTimerInProgress(workspaceId, timerInProgress)
-      );
+      dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
     },
-    startTimer: () => {
+    startTimer: timerInProgress => {
       dispatch(
-        updateWorkspaceDataTimerInProgress(workspaceId, {
-          started: true,
-          uuid: uuidv4(),
+        upsertLocal(workspaceId, "Progress", {
+          ...timerInProgress,
           startTimeString: DateTime.local().toISO()
         })
       );
+      dispatch(sync(workspaceId, "Progress"));
     },
-    stopTimer: () => {
-      dispatch(
-        updateWorkspaceDataTimerInProgress(workspaceId, { started: false })
-      );
+    stopTimer: timerInProgress => {
+      const endTimeString = DateTime.local().toISO();
+      const durationHours = DateTime.fromISO(endTimeString)
+        .diff(DateTime.fromISO(timerInProgress.startTimeString))
+        .as("hours");
+      const logEntry = {
+        ...timerInProgress,
+        endTimeString: endTimeString,
+        durationHours: durationHours,
+        sum:
+          typeof durationHours === "number" &&
+          typeof timerInProgress.hourlyRate === "number" &&
+          durationHours > 0 &&
+          timerInProgress.hourlyRate > 0
+            ? durationHours * timerInProgress.hourlyRate
+            : undefined
+      };
+      dispatch(upsertLocal(workspaceId, "Log", logEntry));
+      dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
+
+      (async () => {
+        await dispatch(sync(workspaceId, "Log"));
+        await dispatch(sync(workspaceId, "Progress"));
+      })();
+    },
+    syncAll: () => {
+      (async () => {
+        await dispatch(sync(workspaceId, "Log"));
+        await dispatch(sync(workspaceId, "Progress"));
+      })();
+    },
+    syncProgress: () => {
+      dispatch(sync(workspaceId, "Progress"));
     }
   })
 )(Timer);

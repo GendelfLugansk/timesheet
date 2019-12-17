@@ -32,11 +32,15 @@ const Timer = ({
   syncProgress
 }) => {
   const { t } = useTranslation(ns);
+  const { t: tj } = useTranslation("joi");
 
   useEffect(fetchState, []);
 
   const [spentTime, setSpentTime] = useState("00:00:00");
   const [spentSum, setSpentSum] = useState(null);
+  const [hourlyRateValidationErrors, setHourlyRateValidationErrors] = useState(
+    null
+  );
 
   const updateDisplayedTime = useRef();
   useEffect(() => {
@@ -108,13 +112,17 @@ const Timer = ({
 
   return (
     <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
-      <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
+      <div className="uk-width-1-1 uk-width-1-2@l">
         <form className="uk-grid-small" uk-grid="" onSubmit={() => {}}>
           <div className="uk-width-1-1">
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.taskDescription || ""}
+              value={
+                typeof timerInProgress.taskDescription === "string"
+                  ? timerInProgress.taskDescription
+                  : ""
+              }
               placeholder={t("taskDescriptionPlaceholder")}
               disabled={isSyncing}
               onChange={({ target: { value } }) => {
@@ -127,7 +135,11 @@ const Timer = ({
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.project || ""}
+              value={
+                typeof timerInProgress.project === "string"
+                  ? timerInProgress.project
+                  : ""
+              }
               placeholder={t("projectPlaceholder")}
               disabled={isSyncing}
               onChange={({ target: { value } }) => {
@@ -140,7 +152,11 @@ const Timer = ({
             <input
               className="uk-input"
               type="text"
-              value={timerInProgress.tags || ""}
+              value={
+                typeof timerInProgress.tags === "string"
+                  ? timerInProgress.tags
+                  : ""
+              }
               placeholder={t("tagsPlaceholder")}
               disabled={isSyncing}
               onChange={({ target: { value } }) => {
@@ -151,21 +167,63 @@ const Timer = ({
           </div>
           <div className="uk-width-1-3">
             <input
-              className="uk-input"
+              className={`uk-input ${
+                Array.isArray(hourlyRateValidationErrors) &&
+                hourlyRateValidationErrors.length > 0
+                  ? "uk-form-danger"
+                  : ""
+              }`}
               type="text"
-              value={timerInProgress.hourlyRate || ""}
+              value={
+                ["string", "number"].includes(typeof timerInProgress.hourlyRate)
+                  ? timerInProgress.hourlyRate
+                  : ""
+              }
               placeholder={t("hourlyRatePlaceholder")}
               disabled={isSyncing}
               onChange={({ target: { value } }) => {
-                const valueNumber = Number(value);
+                const validationResult = Joi.validate(
+                  value,
+                  Joi.number()
+                    .min(0)
+                    .allow(""),
+                  { abortEarly: false }
+                );
+                console.log(validationResult);
+                setHourlyRateValidationErrors(
+                  validationResult.error
+                    ? validationResult.error.details.map(
+                        ({ type, context }) => ({
+                          type,
+                          context
+                        })
+                      )
+                    : null
+                );
                 updateTimer({
                   ...timerInProgress,
-                  hourlyRate: !isNaN(valueNumber) ? valueNumber : value
+                  hourlyRate: !validationResult.error
+                    ? validationResult.value
+                    : value
                 });
               }}
               onBlur={inputsBlur}
             />
           </div>
+          {Array.isArray(hourlyRateValidationErrors) &&
+          hourlyRateValidationErrors.length > 0 ? (
+            <div className="uk-width-1-1">
+              <div className="uk-alert-danger" uk-alert="true">
+                <ul>
+                  {hourlyRateValidationErrors.map(({ type, context }) => (
+                    <li key={type}>
+                      {tj(type, { ...context, label: t("hourlyRateLabel") })}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ) : null}
           <div className="uk-width-1-1 uk-text-center">
             <span className="uk-heading-large">{spentTime}</span>
             {spentSum ? (
@@ -234,7 +292,8 @@ export default connect(
         .filter(({ _deleted }) => !_deleted)
         .filter(row => row.userId === state.auth.currentUser.id)[0] || {}),
       userId: state.auth.currentUser.id,
-      userDisplayName: state.auth.currentUser.name
+      userDisplayName: state.auth.currentUser.name,
+      userImage: state.auth.currentUser.image
     }
   }),
   (dispatch, { workspaceId }) => ({

@@ -4,6 +4,7 @@ const en = {
   projectPlaceholder: "Project",
   tagsPlaceholder: "Tags, comma-separated",
   hourlyRatePlaceholder: "Hourly rate",
+  hourlyRateLabel: "Hourly rate",
   startButton: "Start",
   stopButton: "Stop",
   syncError: "Synchronization with Google spreadsheet failed, error: {{error}}",

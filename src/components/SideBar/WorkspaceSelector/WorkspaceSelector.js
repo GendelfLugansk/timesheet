@@ -36,7 +36,7 @@ const WorkspaceSelector = ({
       <div className="uk-inline uk-width-1-1">
         <button
           type="button"
-          className="uk-button uk-button-default uk-width-1-1 text-overflow-ellipsis"
+          className="uk-button uk-button-default uk-width-1-1 uk-text-truncate"
         >
           {(() => {
             if (currentWorkspace) {

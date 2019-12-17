@@ -4,6 +4,7 @@ const ru = {
   projectPlaceholder: "Проект",
   tagsPlaceholder: "Теги, через запятую",
   hourlyRatePlaceholder: "Почасовой рейт",
+  hourlyRateLabel: "Почасовой рейт",
   startButton: "Старт",
   stopButton: "Стоп",
   syncError: "Ошибка синхронизации с Google документом: {{error}}",

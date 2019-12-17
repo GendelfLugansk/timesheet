@@ -5,5 +5,9 @@ export default {
   },
   string: {
     min: '"{{label}}" не может быть короче чем {{limit}} символов'
+  },
+  number: {
+    base: '"{{label}}" должно быть числом',
+    min: '"{{label}}" должно быть не меньше чем {{limit}}'
   }
 };

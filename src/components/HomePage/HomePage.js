@@ -6,6 +6,7 @@ import CreateFirstWorkspace from "./CreateFirstWorkspace/CreateFirstWorkspace";
 import SelectWorkspace from "./SelectWorkspace/SelectWorkspace";
 import Timer from "./Timer/Timer";
 import stringifyError from "../../utils/stringifyError";
+import Log from "./Log/Log";
 
 const HomePage = ({
   isLoading,
@@ -40,7 +41,12 @@ const HomePage = ({
     return <SelectWorkspace />;
   }
 
-  return <Timer workspaceId={currentWorkspace.id} />;
+  return (
+    <>
+      <Timer workspaceId={currentWorkspace.id} />
+      <Log workspaceId={currentWorkspace.id} />
+    </>
+  );
 };
 
 export { HomePage };

@@ -52,6 +52,10 @@ const tablesConfig = {
     updatedAt: {
       index: 11,
       alpha: "L"
+    },
+    userImage: {
+      index: 12,
+      alpha: "M"
     }
   },
 
@@ -91,6 +95,10 @@ const tablesConfig = {
     updatedAt: {
       index: 8,
       alpha: "I"
+    },
+    userImage: {
+      index: 9,
+      alpha: "J"
     }
   },
 

@@ -92,15 +92,17 @@ const Log = ({
               className="uk-card uk-card-default uk-card-small uk-margin"
               key={uuid}
             >
-              <div className="uk-card-header uk-flex">
-                <div className="uk-width-1-2 uk-width-2-3@l uk-padding-small uk-padding-remove-vertical uk-padding-remove-left">
-                  {taskDescription}
-                </div>
-                <div className="uk-width-1-2 uk-width-1-3@l uk-padding-small uk-padding-remove-vertical uk-padding-remove-left uk-text-right">
-                  {DateTime.fromISO(endTimeString)
-                    .diff(DateTime.fromISO(startTimeString))
-                    .toFormat("hh:mm:ss")}
-                  {typeof sum === "number" ? " / $" + sum.toFixed(2) : null}
+              <div className="uk-card-header">
+                <div className="uk-grid-small" uk-grid="true">
+                  <div className="uk-width-1-2 uk-width-2-3@l">
+                    {taskDescription}
+                  </div>
+                  <div className="uk-width-1-2 uk-width-1-3@l uk-text-right">
+                    {DateTime.fromISO(endTimeString)
+                      .diff(DateTime.fromISO(startTimeString))
+                      .toFormat("hh:mm:ss")}
+                    {typeof sum === "number" ? " / $" + sum.toFixed(2) : null}
+                  </div>
                 </div>
               </div>
               <div className="uk-card-body uk-text-meta">

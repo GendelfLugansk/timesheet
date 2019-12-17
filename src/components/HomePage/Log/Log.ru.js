@@ -7,7 +7,9 @@ const ru = {
   hourlyRate: "Почасовой рейт",
   sum: "Сумма",
   syncError: "Ошибка синхронизации с Google документом: {{error}}",
-  syncRetryButton: "Попробовать ещё раз"
+  syncRetryButton: "Попробовать ещё раз",
+  previousPage: "Пред.",
+  nextPage: "След."
 };
 
 export default ru;

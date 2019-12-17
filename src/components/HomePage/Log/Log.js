@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import objectPath from "object-path";
 import { sync } from "../../../actions/syncableStorage";
@@ -28,6 +28,16 @@ const Log = ({
   const { t } = useTranslation(ns);
 
   useEffect(fetchState, []);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.max(1, Math.ceil(logItems.length / itemsPerPage));
+  const [page, setPage] = useState(1);
+
+  const realCurrentPage = Math.min(totalPages, Math.max(1, page));
+  const filteredItems = logItems.slice(
+    itemsPerPage * (realCurrentPage - 1),
+    itemsPerPage * (realCurrentPage - 1) + itemsPerPage
+  );
 
   const syncRetry = () => {
     syncLog();
@@ -65,7 +75,7 @@ const Log = ({
   return (
     <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle Log">
       <div className="uk-width-1-1">
-        {logItems.map(
+        {filteredItems.map(
           ({
             uuid,
             userDisplayName,
@@ -206,6 +216,77 @@ const Log = ({
             </div>
           )
         )}
+
+        <ul
+          className="uk-pagination uk-flex-center uk-margin-medium-top"
+          uk-margin="true"
+        >
+          {realCurrentPage > 1 ? (
+            <li>
+              <button
+                type="button"
+                className="button-link"
+                onClick={() => {
+                  setPage(realCurrentPage - 1);
+                }}
+              >
+                <span uk-pagination-previous="true" /> {t("previousPage")}
+              </button>
+            </li>
+          ) : null}
+          {realCurrentPage > 2 ? (
+            <>
+              <li>
+                <button
+                  type="button"
+                  className="button-link"
+                  onClick={() => {
+                    setPage(1);
+                  }}
+                >
+                  1
+                </button>
+              </li>
+              <li className="uk-disabled">
+                <span>...</span>
+              </li>
+            </>
+          ) : null}
+          <li className="uk-active">
+            <span>{realCurrentPage}</span>
+          </li>
+          {realCurrentPage < totalPages - 1 ? (
+            <>
+              <li className="uk-disabled">
+                <span>...</span>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="button-link"
+                  onClick={() => {
+                    setPage(totalPages);
+                  }}
+                >
+                  {totalPages}
+                </button>
+              </li>
+            </>
+          ) : null}
+          {realCurrentPage < totalPages ? (
+            <li>
+              <button
+                type="button"
+                className="button-link"
+                onClick={() => {
+                  setPage(realCurrentPage + 1);
+                }}
+              >
+                {t("nextPage")} <span uk-pagination-next="true" />
+              </button>
+            </li>
+          ) : null}
+        </ul>
       </div>
     </div>
   );

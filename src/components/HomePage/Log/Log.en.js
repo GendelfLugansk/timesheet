@@ -7,7 +7,9 @@ const en = {
   hourlyRate: "Hourly rate",
   sum: "Sum",
   syncError: "Synchronization with Google spreadsheet failed, error: {{error}}",
-  syncRetryButton: "Retry"
+  syncRetryButton: "Retry",
+  previousPage: "Previous",
+  nextPage: "Next"
 };
 
 export default en;

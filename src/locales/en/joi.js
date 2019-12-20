@@ -9,5 +9,9 @@ export default {
   number: {
     base: '"{{label}}" must be a number',
     min: '"{{label}}" must be larger than or equal to {{limit}}'
+  },
+  date: {
+    min: '"{{label}}" must be larger than or equal to {{limit}}',
+    isoDate: '"{{label}}" must be a valid ISO 8601 date'
   }
 };

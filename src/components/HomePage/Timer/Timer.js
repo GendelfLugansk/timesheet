@@ -24,12 +24,16 @@ const Timer = ({
   isSyncing,
   syncError,
   timerInProgress,
+  isTagsSyncing,
+  tagItems,
   fetchState,
   updateTimer,
+  updateTags,
   startTimer,
   stopTimer,
   syncAll,
-  syncProgress
+  syncProgress,
+  syncTags
 }) => {
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
@@ -92,14 +96,38 @@ const Timer = ({
     };
   });
 
+  const getTagsToAdd = tagsStr => {
+    let tagsToAdd = [];
+
+    if (!isTagsSyncing) {
+      const existingTagNames = Object.values(tagItems).map(({ name }) => name);
+      tagsToAdd = tagsStr
+        .split(",")
+        .map(tag => tag.trim())
+        .filter(tag => tag !== "")
+        .filter(tag => !existingTagNames.includes(tag))
+        .map(name => ({ name, uuid: uuidv4() }));
+    }
+
+    return tagsToAdd;
+  };
+
   const inputsBlur = () => {
     if (timerInProgress.startTimeString && timerInProgress.uuid) {
       syncProgress();
     }
   };
 
+  const tagsInputBlur = () => {
+    if (timerInProgress.startTimeString && timerInProgress.uuid) {
+      updateTags(getTagsToAdd(timerInProgress.tags));
+      syncProgress();
+      syncTags();
+    }
+  };
+
   const start = () => {
-    startTimer(timerInProgress);
+    startTimer(timerInProgress, getTagsToAdd(timerInProgress.tags));
   };
 
   const stop = () => {
@@ -162,7 +190,7 @@ const Timer = ({
               onChange={({ target: { value } }) => {
                 updateTimer({ ...timerInProgress, tags: value });
               }}
-              onBlur={inputsBlur}
+              onBlur={tagsInputBlur}
             />
           </div>
           <div className="uk-width-1-3">
@@ -189,7 +217,6 @@ const Timer = ({
                     .allow(""),
                   { abortEarly: false }
                 );
-                console.log(validationResult);
                 setHourlyRateValidationErrors(
                   validationResult.error
                     ? validationResult.error.details.map(
@@ -294,23 +321,41 @@ export default connect(
       userId: state.auth.currentUser.id,
       userDisplayName: state.auth.currentUser.name,
       userImage: state.auth.currentUser.image
-    }
+    },
+    isTagsSyncing: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Tags.isSyncing`,
+      false
+    ),
+    tagItems: objectPath
+      .get(state.syncableStorage, `${workspaceId}.Tags.data`, [])
+      .filter(({ _deleted }) => !_deleted)
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Progress"));
+      (async () => {
+        await dispatch(sync(workspaceId, "Progress"));
+        await dispatch(sync(workspaceId, "Tags"));
+      })();
     },
     updateTimer: timerInProgress => {
       dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
     },
-    startTimer: timerInProgress => {
+    updateTags: tags => {
+      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+    },
+    startTimer: (timerInProgress, tags = []) => {
       dispatch(
         upsertLocal(workspaceId, "Progress", {
           ...timerInProgress,
           startTimeString: DateTime.local().toISO()
         })
       );
-      dispatch(sync(workspaceId, "Progress"));
+      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+      (async () => {
+        dispatch(sync(workspaceId, "Progress"));
+        dispatch(sync(workspaceId, "Tags"));
+      })();
     },
     stopTimer: timerInProgress => {
       const endTimeString = DateTime.local().toISO();
@@ -341,10 +386,14 @@ export default connect(
       (async () => {
         await dispatch(sync(workspaceId, "Log"));
         await dispatch(sync(workspaceId, "Progress"));
+        await dispatch(sync(workspaceId, "Tags"));
       })();
     },
     syncProgress: () => {
       dispatch(sync(workspaceId, "Progress"));
+    },
+    syncTags: () => {
+      dispatch(sync(workspaceId, "Tags"));
     }
   })
 )(Timer);

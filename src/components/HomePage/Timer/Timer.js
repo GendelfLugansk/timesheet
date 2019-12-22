@@ -26,14 +26,18 @@ const Timer = ({
   timerInProgress,
   isTagsSyncing,
   tagItems,
+  isProjectsSyncing,
+  projectItems,
   fetchState,
   updateTimer,
   updateTags,
+  updateProject,
   startTimer,
   stopTimer,
   syncAll,
   syncProgress,
-  syncTags
+  syncTags,
+  syncProjects
 }) => {
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
@@ -96,7 +100,7 @@ const Timer = ({
     };
   });
 
-  const getTagsToAdd = tagsStr => {
+  const getTagsToAdd = (tagsStr = "") => {
     let tagsToAdd = [];
 
     if (!isTagsSyncing) {
@@ -112,6 +116,22 @@ const Timer = ({
     return tagsToAdd;
   };
 
+  const getProjectToAdd = (projectStr = "") => {
+    let projectToAdd;
+
+    if (!isProjectsSyncing) {
+      const existingProjectNames = Object.values(projectItems).map(
+        ({ name }) => name
+      );
+      const project = projectStr.trim();
+      if (project !== "" && !existingProjectNames.includes(project)) {
+        projectToAdd = { name: project, uuid: uuidv4() };
+      }
+    }
+
+    return projectToAdd;
+  };
+
   const inputsBlur = () => {
     if (timerInProgress.startTimeString && timerInProgress.uuid) {
       syncProgress();
@@ -125,9 +145,20 @@ const Timer = ({
       syncTags();
     }
   };
+  const projectInputBlur = () => {
+    if (timerInProgress.startTimeString && timerInProgress.uuid) {
+      updateProject(getProjectToAdd(timerInProgress.project));
+      syncProgress();
+      syncProjects();
+    }
+  };
 
   const start = () => {
-    startTimer(timerInProgress, getTagsToAdd(timerInProgress.tags));
+    startTimer(
+      timerInProgress,
+      getTagsToAdd(timerInProgress.tags),
+      getProjectToAdd(timerInProgress.project)
+    );
   };
 
   const stop = () => {
@@ -173,7 +204,7 @@ const Timer = ({
               onChange={({ target: { value } }) => {
                 updateTimer({ ...timerInProgress, project: value });
               }}
-              onBlur={inputsBlur}
+              onBlur={projectInputBlur}
             />
           </div>
           <div className="uk-width-1-3">
@@ -329,6 +360,14 @@ export default connect(
     ),
     tagItems: objectPath
       .get(state.syncableStorage, `${workspaceId}.Tags.data`, [])
+      .filter(({ _deleted }) => !_deleted),
+    isProjectsSyncing: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Projects.isSyncing`,
+      false
+    ),
+    projectItems: objectPath
+      .get(state.syncableStorage, `${workspaceId}.Projects.data`, [])
       .filter(({ _deleted }) => !_deleted)
   }),
   (dispatch, { workspaceId }) => ({
@@ -336,6 +375,7 @@ export default connect(
       (async () => {
         await dispatch(sync(workspaceId, "Progress"));
         await dispatch(sync(workspaceId, "Tags"));
+        await dispatch(sync(workspaceId, "Projects"));
       })();
     },
     updateTimer: timerInProgress => {
@@ -344,7 +384,12 @@ export default connect(
     updateTags: tags => {
       tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
     },
-    startTimer: (timerInProgress, tags = []) => {
+    updateProject: project => {
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
+    },
+    startTimer: (timerInProgress, tags = [], project) => {
       dispatch(
         upsertLocal(workspaceId, "Progress", {
           ...timerInProgress,
@@ -352,9 +397,13 @@ export default connect(
         })
       );
       tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
       (async () => {
         dispatch(sync(workspaceId, "Progress"));
         dispatch(sync(workspaceId, "Tags"));
+        dispatch(sync(workspaceId, "Projects"));
       })();
     },
     stopTimer: timerInProgress => {
@@ -387,6 +436,7 @@ export default connect(
         await dispatch(sync(workspaceId, "Log"));
         await dispatch(sync(workspaceId, "Progress"));
         await dispatch(sync(workspaceId, "Tags"));
+        await dispatch(sync(workspaceId, "Projects"));
       })();
     },
     syncProgress: () => {
@@ -394,6 +444,9 @@ export default connect(
     },
     syncTags: () => {
       dispatch(sync(workspaceId, "Tags"));
+    },
+    syncProjects: () => {
+      dispatch(sync(workspaceId, "Projects"));
     }
   })
 )(Timer);

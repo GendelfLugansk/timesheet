@@ -32,6 +32,8 @@ const Log = ({
   logItems,
   isTagsSyncing,
   tagItems,
+  isProjectsSyncing,
+  projectItems,
   fetchState,
   syncAll,
   deleteItem,
@@ -59,12 +61,15 @@ const Log = ({
     const rules = Joi.object({
       taskDescription: Joi.string()
         .allow("")
+        .trim()
         .optional(),
       project: Joi.string()
         .allow("")
+        .trim()
         .optional(),
       tags: Joi.string()
         .allow("")
+        .trim()
         .optional(),
       startTimeString: Joi.date()
         .iso()
@@ -173,9 +178,9 @@ const Log = ({
                       <div>
                         {!_synced ? (
                           <span
-                            className="uk-text-warning"
+                            className={!isSyncing ? "uk-text-warning" : ""}
                             uk-tooltip={`title: ${t("notSyncedWarning")};`}
-                            uk-icon="warning"
+                            uk-icon={isSyncing ? "refresh" : "warning"}
                           />
                         ) : (
                           <span
@@ -492,6 +497,23 @@ const Log = ({
                                 .filter(tag => !existingTagNames.includes(tag))
                                 .map(name => ({ name, uuid: uuidv4() }));
                             }
+                            let projectToAdd;
+                            if (!isProjectsSyncing) {
+                              const existingProjectNames = Object.values(
+                                projectItems
+                              ).map(({ name }) => name);
+                              if (
+                                cleanData.project !== "" &&
+                                !existingProjectNames.includes(
+                                  cleanData.project
+                                )
+                              ) {
+                                projectToAdd = {
+                                  name: cleanData.project,
+                                  uuid: uuidv4()
+                                };
+                              }
+                            }
 
                             const durationHours = DateTime.fromISO(
                               cleanData.endTimeString
@@ -511,7 +533,8 @@ const Log = ({
                                     ? durationHours * cleanData.hourlyRate
                                     : undefined
                               },
-                              tagsToAdd
+                              tagsToAdd,
+                              projectToAdd
                             );
                             setEntryToEdit({});
                           }}
@@ -772,6 +795,14 @@ export default connect(
     ),
     tagItems: objectPath
       .get(state.syncableStorage, `${workspaceId}.Tags.data`, [])
+      .filter(({ _deleted }) => !_deleted),
+    isProjectsSyncing: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Projects.isSyncing`,
+      false
+    ),
+    projectItems: objectPath
+      .get(state.syncableStorage, `${workspaceId}.Projects.data`, [])
       .filter(({ _deleted }) => !_deleted)
   }),
   (dispatch, { workspaceId }) => ({
@@ -779,25 +810,31 @@ export default connect(
       (async () => {
         await dispatch(sync(workspaceId, "Log"));
         await dispatch(sync(workspaceId, "Tags"));
+        await dispatch(sync(workspaceId, "Projects"));
       })();
     },
     syncAll: () => {
       (async () => {
         await dispatch(sync(workspaceId, "Log"));
         await dispatch(sync(workspaceId, "Tags"));
+        await dispatch(sync(workspaceId, "Projects"));
       })();
     },
     deleteItem: uuid => {
       dispatch(deleteLocal(workspaceId, "Log", uuid));
       dispatch(sync(workspaceId, "Log"));
     },
-    saveItem: (data, tags) => {
+    saveItem: (data, tags = [], project) => {
       dispatch(upsertLocal(workspaceId, "Log", data));
       tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
 
       (async () => {
         await dispatch(sync(workspaceId, "Log"));
         await dispatch(sync(workspaceId, "Tags"));
+        await dispatch(sync(workspaceId, "Projects"));
       })();
     }
   })

@@ -5,6 +5,7 @@ const en = {
   tagsPlaceholder: "Tags, comma-separated",
   hourlyRatePlaceholder: "Hourly rate",
   hourlyRateLabel: "Hourly rate",
+  tagsLabel: "Tags",
   startButton: "Start",
   stopButton: "Stop",
   syncError: "Synchronization with Google spreadsheet failed, error: {{error}}",

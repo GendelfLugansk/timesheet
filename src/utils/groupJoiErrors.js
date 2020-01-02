@@ -7,8 +7,8 @@ const groupJoiErrors = joiError => {
 
   const groupedDetails = {};
   joiError.details.forEach(({ context, path, type, message }) =>
-    objectPath.set(groupedDetails, path, [
-      ...objectPath.get(groupedDetails, path, []),
+    objectPath.set(groupedDetails, path[0], [
+      ...objectPath.get(groupedDetails, path[0], []),
       { context, path, type, message }
     ])
   );

@@ -16,10 +16,15 @@ import ru from "./Log.ru";
 import Tags from "./Tags/Tags";
 import Loader from "../../Loader/Loader";
 import stringifyError from "../../../utils/stringifyError";
-import Joi from "joi";
+import JoiBase from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import uuidv4 from "uuid/v4";
+import { stringArray } from "../../../utils/joi-extensions";
+import theme from "../../../styles/autosuggestTheme";
+import Autosuggest from "react-autosuggest";
+
+const Joi = JoiBase.extend(stringArray(JoiBase));
 
 const ns = "Log";
 i18n.addResourceBundle("en", ns, en);
@@ -67,9 +72,10 @@ const Log = ({
         .allow("")
         .trim()
         .optional(),
-      tags: Joi.string()
-        .allow("")
-        .trim()
+      tags: Joi.stringArray()
+        .items(Joi.string().trim())
+        .unique()
+        .raw()
         .optional(),
       startTimeString: Joi.date()
         .iso()
@@ -99,6 +105,7 @@ const Log = ({
   };
 
   const needReValidation =
+    entryToEdit &&
     entryToEdit.uuid &&
     Math.max(
       0,
@@ -122,6 +129,91 @@ const Log = ({
   const syncRetry = () => {
     syncAll();
   };
+
+  const escapeRegexCharacters = str =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const getProjectSuggestions = value => {
+    const sortedItems = [...projectItems].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    const escapedValue = escapeRegexCharacters(value.trim());
+
+    if (escapedValue === "") {
+      return sortedItems;
+    }
+
+    const regex = new RegExp("^" + escapedValue, "i");
+
+    return sortedItems.filter(item => regex.test(item.name));
+  };
+
+  const getProjectSuggestionValue = suggestion => suggestion.name;
+
+  const renderSuggestion = suggestion => <span>{suggestion.name}</span>;
+
+  const [projectSuggestions, setProjectSuggestions] = useState([]);
+
+  const onProjectSuggestionsFetchRequested = ({ value }) => {
+    setProjectSuggestions(getProjectSuggestions(value));
+  };
+
+  const onProjectSuggestionsClearRequested = () => {
+    setProjectSuggestions([]);
+  };
+
+  const shouldRenderSuggestions = value => true;
+
+  const [projectAutosuggestId] = useState("autosuggest-" + uuidv4());
+
+  const getTagsSuggestions = value => {
+    const enteredTags = value.split(",").map(tag => tag.trim());
+    const tagsExceptLast = enteredTags.slice(0, -1);
+    const sortedItems = [...tagItems]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(({ name }) => !tagsExceptLast.includes(name));
+
+    if (enteredTags.length === 0) {
+      return sortedItems;
+    }
+
+    const escapedValue = escapeRegexCharacters(
+      enteredTags[enteredTags.length - 1]
+    );
+
+    if (escapedValue === "") {
+      return sortedItems;
+    }
+
+    const regex = new RegExp("^" + escapedValue, "i");
+
+    return sortedItems.filter(item => regex.test(item.name));
+  };
+
+  const getTagsSuggestionValue = suggestion => {
+    const enteredTags = (typeof entryToEdit.tags === "string"
+      ? entryToEdit.tags
+      : ""
+    )
+      .split(",")
+      .map(tag => tag.trim())
+      .slice(0, -1);
+    enteredTags.push(suggestion.name);
+
+    return enteredTags.join(", ");
+  };
+
+  const [tagsSuggestions, setTagsSuggestions] = useState([]);
+
+  const onTagsSuggestionsFetchRequested = ({ value }) => {
+    setTagsSuggestions(getTagsSuggestions(value));
+  };
+
+  const onTagsSuggestionsClearRequested = () => {
+    setTagsSuggestions([]);
+  };
+
+  const [tagsAutosuggestId] = useState("autosuggest-" + uuidv4());
 
   if (isSyncing && filteredItems.length === 0) {
     return (
@@ -296,26 +388,43 @@ const Log = ({
                               {t("editForm.project")}
                             </label>
                             <div className="uk-form-controls">
-                              <input
-                                className={`uk-input uk-form-small ${
-                                  Array.isArray(validationErrors.project) &&
-                                  validationErrors.project.length > 0
-                                    ? "uk-form-danger"
-                                    : ""
-                                }`}
-                                type="text"
-                                value={
-                                  typeof entryToEdit.project === "string"
-                                    ? entryToEdit.project
-                                    : ""
+                              <Autosuggest
+                                suggestions={projectSuggestions}
+                                onSuggestionsFetchRequested={
+                                  onProjectSuggestionsFetchRequested
                                 }
-                                disabled={isSyncing}
-                                onChange={({ target: { value } }) => {
-                                  setEntryToEdit({
-                                    ...entryToEdit,
-                                    project: value
-                                  });
+                                onSuggestionsClearRequested={
+                                  onProjectSuggestionsClearRequested
+                                }
+                                getSuggestionValue={getProjectSuggestionValue}
+                                renderSuggestion={renderSuggestion}
+                                shouldRenderSuggestions={
+                                  shouldRenderSuggestions
+                                }
+                                inputProps={{
+                                  disabled: isSyncing,
+                                  value:
+                                    typeof entryToEdit.project === "string"
+                                      ? entryToEdit.project
+                                      : "",
+                                  onChange: (_, { newValue: value }) => {
+                                    setEntryToEdit({
+                                      ...entryToEdit,
+                                      project: value
+                                    });
+                                  }
                                 }}
+                                theme={{
+                                  ...theme,
+                                  input:
+                                    theme.input +
+                                    " uk-form-small " +
+                                    (Array.isArray(validationErrors.project) &&
+                                    validationErrors.project.length > 0
+                                      ? " uk-form-danger"
+                                      : "")
+                                }}
+                                id={projectAutosuggestId}
                               />
                             </div>
                           </div>
@@ -324,26 +433,43 @@ const Log = ({
                               {t("editForm.tags")}
                             </label>
                             <div className="uk-form-controls">
-                              <input
-                                className={`uk-input uk-form-small ${
-                                  Array.isArray(validationErrors.tags) &&
-                                  validationErrors.tags.length > 0
-                                    ? "uk-form-danger"
-                                    : ""
-                                }`}
-                                type="text"
-                                value={
-                                  typeof entryToEdit.tags === "string"
-                                    ? entryToEdit.tags
-                                    : ""
+                              <Autosuggest
+                                suggestions={tagsSuggestions}
+                                onSuggestionsFetchRequested={
+                                  onTagsSuggestionsFetchRequested
                                 }
-                                disabled={isSyncing}
-                                onChange={({ target: { value } }) => {
-                                  setEntryToEdit({
-                                    ...entryToEdit,
-                                    tags: value
-                                  });
+                                onSuggestionsClearRequested={
+                                  onTagsSuggestionsClearRequested
+                                }
+                                getSuggestionValue={getTagsSuggestionValue}
+                                renderSuggestion={renderSuggestion}
+                                shouldRenderSuggestions={
+                                  shouldRenderSuggestions
+                                }
+                                inputProps={{
+                                  disabled: isSyncing,
+                                  value:
+                                    typeof entryToEdit.tags === "string"
+                                      ? entryToEdit.tags
+                                      : "",
+                                  onChange: (_, { newValue: value }) => {
+                                    setEntryToEdit({
+                                      ...entryToEdit,
+                                      tags: value
+                                    });
+                                  }
                                 }}
+                                theme={{
+                                  ...theme,
+                                  input:
+                                    theme.input +
+                                    " uk-form-small " +
+                                    (Array.isArray(validationErrors.tags) &&
+                                    validationErrors.tags.length > 0
+                                      ? " uk-form-danger"
+                                      : "")
+                                }}
+                                id={tagsAutosuggestId}
                               />
                             </div>
                           </div>

@@ -5,6 +5,7 @@ const ru = {
   tagsPlaceholder: "Теги, через запятую",
   hourlyRatePlaceholder: "Почасовой рейт",
   hourlyRateLabel: "Почасовой рейт",
+  tagsLabel: "Теги",
   startButton: "Старт",
   stopButton: "Стоп",
   syncError: "Ошибка синхронизации с Google документом: {{error}}",

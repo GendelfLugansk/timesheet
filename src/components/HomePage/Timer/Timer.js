@@ -14,7 +14,12 @@ import { useTranslation } from "react-i18next";
 import en from "./Timer.en";
 import ru from "./Timer.ru";
 import { DateTime } from "luxon";
-import Joi from "joi";
+import JoiBase from "joi";
+import Autosuggest from "react-autosuggest";
+import theme from "../../../styles/autosuggestTheme";
+import { stringArray } from "../../../utils/joi-extensions";
+
+const Joi = JoiBase.extend(stringArray(JoiBase));
 
 const ns = "Timer";
 i18n.addResourceBundle("en", ns, en);
@@ -49,6 +54,8 @@ const Timer = ({
   const [hourlyRateValidationErrors, setHourlyRateValidationErrors] = useState(
     null
   );
+  const [tagsValidationErrors, setTagsValidationErrors] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const updateDisplayedTime = useRef();
   useEffect(() => {
@@ -105,12 +112,15 @@ const Timer = ({
 
     if (!isTagsSyncing) {
       const existingTagNames = Object.values(tagItems).map(({ name }) => name);
-      tagsToAdd = tagsStr
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag !== "")
-        .filter(tag => !existingTagNames.includes(tag))
-        .map(name => ({ name, uuid: uuidv4() }));
+      tagsToAdd = [
+        ...new Set(
+          tagsStr
+            .split(",")
+            .map(tag => tag.trim())
+            .filter(tag => tag !== "")
+            .filter(tag => !existingTagNames.includes(tag))
+        )
+      ].map(name => ({ name, uuid: uuidv4() }));
     }
 
     return tagsToAdd;
@@ -163,11 +173,98 @@ const Timer = ({
 
   const stop = () => {
     stopTimer(timerInProgress);
+    setValidationErrors({});
   };
 
   const syncRetry = () => {
     syncAll();
   };
+
+  // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
+  const escapeRegexCharacters = str =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const getProjectSuggestions = value => {
+    const sortedItems = [...projectItems].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    const escapedValue = escapeRegexCharacters(value.trim());
+
+    if (escapedValue === "") {
+      return sortedItems;
+    }
+
+    const regex = new RegExp("^" + escapedValue, "i");
+
+    return sortedItems.filter(item => regex.test(item.name));
+  };
+
+  const getProjectSuggestionValue = suggestion => suggestion.name;
+
+  const renderSuggestion = suggestion => <span>{suggestion.name}</span>;
+
+  const [projectSuggestions, setProjectSuggestions] = useState([]);
+
+  const onProjectSuggestionsFetchRequested = ({ value }) => {
+    setProjectSuggestions(getProjectSuggestions(value));
+  };
+
+  const onProjectSuggestionsClearRequested = () => {
+    setProjectSuggestions([]);
+  };
+
+  const shouldRenderSuggestions = value => true;
+
+  const [projectAutosuggestId] = useState("autosuggest-" + uuidv4());
+
+  const getTagsSuggestions = value => {
+    const enteredTags = value.split(",").map(tag => tag.trim());
+    const tagsExceptLast = enteredTags.slice(0, -1);
+    const sortedItems = [...tagItems]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter(({ name }) => !tagsExceptLast.includes(name));
+
+    if (enteredTags.length === 0) {
+      return sortedItems;
+    }
+
+    const escapedValue = escapeRegexCharacters(
+      enteredTags[enteredTags.length - 1]
+    );
+
+    if (escapedValue === "") {
+      return sortedItems;
+    }
+
+    const regex = new RegExp("^" + escapedValue, "i");
+
+    return sortedItems.filter(item => regex.test(item.name));
+  };
+
+  const getTagsSuggestionValue = suggestion => {
+    const enteredTags = (typeof timerInProgress.tags === "string"
+      ? timerInProgress.tags
+      : ""
+    )
+      .split(",")
+      .map(tag => tag.trim())
+      .slice(0, -1);
+    enteredTags.push(suggestion.name);
+
+    return enteredTags.join(", ");
+  };
+
+  const [tagsSuggestions, setTagsSuggestions] = useState([]);
+
+  const onTagsSuggestionsFetchRequested = ({ value }) => {
+    setTagsSuggestions(getTagsSuggestions(value));
+  };
+
+  const onTagsSuggestionsClearRequested = () => {
+    setTagsSuggestions([]);
+  };
+
+  const [tagsAutosuggestId] = useState("autosuggest-" + uuidv4());
 
   return (
     <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
@@ -191,44 +288,85 @@ const Timer = ({
             />
           </div>
           <div className="uk-width-1-3">
-            <input
-              className="uk-input"
-              type="text"
-              value={
-                typeof timerInProgress.project === "string"
-                  ? timerInProgress.project
-                  : ""
-              }
-              placeholder={t("projectPlaceholder")}
-              disabled={isSyncing}
-              onChange={({ target: { value } }) => {
-                updateTimer({ ...timerInProgress, project: value });
+            <Autosuggest
+              suggestions={projectSuggestions}
+              onSuggestionsFetchRequested={onProjectSuggestionsFetchRequested}
+              onSuggestionsClearRequested={onProjectSuggestionsClearRequested}
+              getSuggestionValue={getProjectSuggestionValue}
+              renderSuggestion={renderSuggestion}
+              shouldRenderSuggestions={shouldRenderSuggestions}
+              inputProps={{
+                placeholder: t("projectPlaceholder"),
+                disabled: isSyncing,
+                value:
+                  typeof timerInProgress.project === "string"
+                    ? timerInProgress.project
+                    : "",
+                onChange: (_, { newValue: value }) => {
+                  updateTimer({ ...timerInProgress, project: value });
+                },
+                onBlur: projectInputBlur
               }}
-              onBlur={projectInputBlur}
+              theme={theme}
+              id={projectAutosuggestId}
             />
           </div>
           <div className="uk-width-1-3">
-            <input
-              className="uk-input"
-              type="text"
-              value={
-                typeof timerInProgress.tags === "string"
-                  ? timerInProgress.tags
-                  : ""
-              }
-              placeholder={t("tagsPlaceholder")}
-              disabled={isSyncing}
-              onChange={({ target: { value } }) => {
-                updateTimer({ ...timerInProgress, tags: value });
+            <Autosuggest
+              suggestions={tagsSuggestions}
+              onSuggestionsFetchRequested={onTagsSuggestionsFetchRequested}
+              onSuggestionsClearRequested={onTagsSuggestionsClearRequested}
+              getSuggestionValue={getTagsSuggestionValue}
+              renderSuggestion={renderSuggestion}
+              shouldRenderSuggestions={shouldRenderSuggestions}
+              inputProps={{
+                placeholder: t("tagsPlaceholder"),
+                disabled: isSyncing,
+                value:
+                  typeof timerInProgress.tags === "string"
+                    ? timerInProgress.tags
+                    : "",
+                onChange: (_, { newValue: value }) => {
+                  const validationResult = Joi.validate(
+                    value,
+                    Joi.stringArray()
+                      .items(Joi.string().trim())
+                      .unique()
+                      .label("tags"),
+                    { abortEarly: false }
+                  );
+                  setValidationErrors({
+                    ...validationErrors,
+                    tags: validationResult.error
+                      ? validationResult.error.details.map(
+                          ({ type, context }) => ({
+                            type,
+                            context
+                          })
+                        )
+                      : []
+                  });
+                  updateTimer({ ...timerInProgress, tags: value });
+                },
+                onBlur: tagsInputBlur
               }}
-              onBlur={tagsInputBlur}
+              theme={{
+                ...theme,
+                input:
+                  theme.input +
+                  (Array.isArray(validationErrors.tags) &&
+                  validationErrors.tags.length > 0
+                    ? " uk-form-danger"
+                    : "")
+              }}
+              id={tagsAutosuggestId}
             />
           </div>
           <div className="uk-width-1-3">
             <input
               className={`uk-input ${
-                Array.isArray(hourlyRateValidationErrors) &&
-                hourlyRateValidationErrors.length > 0
+                Array.isArray(validationErrors.hourlyRate) &&
+                validationErrors.hourlyRate.length > 0
                   ? "uk-form-danger"
                   : ""
               }`}
@@ -245,19 +383,21 @@ const Timer = ({
                   value,
                   Joi.number()
                     .min(0)
-                    .allow(""),
+                    .allow("")
+                    .label("hourlyRate"),
                   { abortEarly: false }
                 );
-                setHourlyRateValidationErrors(
-                  validationResult.error
+                setValidationErrors({
+                  ...validationErrors,
+                  hourlyRate: validationResult.error
                     ? validationResult.error.details.map(
                         ({ type, context }) => ({
                           type,
                           context
                         })
                       )
-                    : null
-                );
+                    : []
+                });
                 updateTimer({
                   ...timerInProgress,
                   hourlyRate: !validationResult.error
@@ -268,16 +408,22 @@ const Timer = ({
               onBlur={inputsBlur}
             />
           </div>
-          {Array.isArray(hourlyRateValidationErrors) &&
-          hourlyRateValidationErrors.length > 0 ? (
+          {Math.max(
+            ...Object.values(validationErrors).map(({ length }) => length)
+          ) > 0 ? (
             <div className="uk-width-1-1">
               <div className="uk-alert-danger" uk-alert="true">
                 <ul>
-                  {hourlyRateValidationErrors.map(({ type, context }) => (
-                    <li key={type}>
-                      {tj(type, { ...context, label: t("hourlyRateLabel") })}
-                    </li>
-                  ))}
+                  {[]
+                    .concat(...Object.values(validationErrors))
+                    .map(({ type, context }) => (
+                      <li key={type}>
+                        {tj(type, {
+                          ...context,
+                          label: t(`${context.label}Label`)
+                        })}
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>

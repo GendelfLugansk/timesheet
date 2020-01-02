@@ -1,6 +1,5 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
-import uuidv4 from "uuid/v4";
 import { DateTime } from "luxon";
 
 const tablesConfig = {

@@ -20,7 +20,7 @@ const Tags = ({ tags, definedTags, fetchState }) => {
           return (
             <span
               key={definedTag.uuid || index}
-              className="uk-label uk-margin-small-right"
+              className="uk-label uk-margin-small-right uk-margin-small-bottom"
               style={{ background: definedTag.colorRGB }}
             >
               {tag}
@@ -29,7 +29,10 @@ const Tags = ({ tags, definedTags, fetchState }) => {
         }
 
         return (
-          <span key={index} className="uk-label uk-margin-small-right">
+          <span
+            key={index}
+            className="uk-label uk-margin-small-right uk-margin-small-bottom"
+          >
             {tag}
           </span>
         );

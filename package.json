@@ -22,7 +22,7 @@
     "react-scripts": "3.2.0",
     "redux": "4.0.4",
     "redux-thunk": "2.3.0",
-    "uikit": "3.2.3",
+    "uikit": "3.2.6",
     "uuid": "3.3.3"
   },
   "scripts": {

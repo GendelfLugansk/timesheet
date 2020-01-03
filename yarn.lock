@@ -6619,7 +6619,7 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-luxon@^1.21.3:
+luxon@1.21.3:
   version "1.21.3"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.21.3.tgz#f1d5c2a7e855d039836cf4954f883ecac8fc4727"
   integrity sha512-lLRwNcNnkZLuv13A1FUuZRZmTWF7ro2ricYvb0L9cvBYHPvZhQdKwrYnZzi103D2XKmlVmxWpdn2wfIiOt2YEw==
@@ -8834,7 +8834,7 @@ react-app-polyfill@^1.0.4:
     regenerator-runtime "0.13.3"
     whatwg-fetch "3.0.0"
 
-react-autosuggest@^9.4.3:
+react-autosuggest@9.4.3:
   version "9.4.3"
   resolved "https://registry.yarnpkg.com/react-autosuggest/-/react-autosuggest-9.4.3.tgz#eb46852422a48144ab9f39fb5470319222f26c7c"
   integrity sha512-wFbp5QpgFQRfw9cwKvcgLR8theikOUkv8PFsuLYqI2PUgVlx186Cz8MYt5bLxculi+jxGGUUVt+h0esaBZZouw==
@@ -10628,10 +10628,10 @@ uglify-js@^3.1.4:
     commander "~2.20.0"
     source-map "~0.6.1"
 
-uikit@3.2.3:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/uikit/-/uikit-3.2.3.tgz#1ee5a9d19706769b32e5f171ccd3feec3aed4f1d"
-  integrity sha512-XDkFIlJQNA2sovxnMJAMyryqXwBFbOjL2VT7uDUDbxyl39hiKG0U60z6T+v8zBfI5AmANjDBoCSsK8CDkZJgAQ==
+uikit@3.2.6:
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/uikit/-/uikit-3.2.6.tgz#f6133b588b6db82e5d74fb7c24d32e235caea62d"
+  integrity sha512-Z44YOo9/MjwZRDxR+3M4Z9cGXbqtpxyuyXregxtvVADZatcCKI1a76qTI6VFIIsxARvREMPpYBDGQPFd5ymWsw==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

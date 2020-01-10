@@ -1,0 +1,41 @@
+.CalendarReportPage {
+  .day-cell {
+    min-height: 5em;
+    border: 1px solid #ddd;
+    position: relative;
+    padding: 0.5em 0.5em 1em;
+
+    .filler {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 0.3em;
+      background: #02a859;
+
+      @media print {
+        background: #02a859 !important;
+      }
+    }
+  }
+
+  .day-cell + .day-cell {
+    border-left: none;
+  }
+
+  .day-row + .day-row .day-cell {
+    border-top: none;
+  }
+
+  .calendar {
+    @media print {
+      display: block;
+    }
+  }
+
+  .month {
+    @media print {
+      page-break-before: always;
+      page-break-inside: avoid;
+    }
+  }
+}

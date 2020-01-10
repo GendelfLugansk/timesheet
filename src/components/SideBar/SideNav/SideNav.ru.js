@@ -1,6 +1,10 @@
 const ru = {
   home: "Главная",
-  login: "Вход"
+  login: "Вход",
+  reports: {
+    index: "Отчеты",
+    calendar: "Календарь"
+  }
 };
 
 export default ru;

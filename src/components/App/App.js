@@ -8,6 +8,7 @@ import SideBar from "../SideBar/SideBar";
 import DocumentTitle from "../DocumentTitle/DocumentTitle";
 import HomePage from "../HomePage/HomePage";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
+import ReportsPage from "../ReportsPage/ReportsPage";
 
 const App = () => (
   <Router>
@@ -19,6 +20,9 @@ const App = () => (
         <Switch>
           <AuthenticatedRoute exact path="/">
             <HomePage />
+          </AuthenticatedRoute>
+          <AuthenticatedRoute path="/reports">
+            <ReportsPage />
           </AuthenticatedRoute>
           <Route path="/login">
             <LoginPage />

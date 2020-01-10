@@ -4,4 +4,8 @@
   .bottom {
     margin-top: auto;
   }
+
+  @media print {
+    display: none;
+  }
 }

@@ -24,6 +24,23 @@ const SideNav = () => {
         <Link to="/">{t("home")}</Link>
       </LinkWrapper>
       <LinkWrapper
+        authenticated={true}
+        to="/reports"
+        activeClassName="uk-active"
+        className="uk-parent"
+      >
+        <Link to="/reports">{t("reports.index")}</Link>
+        <ul className="uk-nav-sub">
+          <LinkWrapper
+            authenticated={true}
+            to="/reports/calendar"
+            activeClassName="uk-active"
+          >
+            <Link to="/reports/calendar">{t("reports.calendar")}</Link>
+          </LinkWrapper>
+        </ul>
+      </LinkWrapper>
+      <LinkWrapper
         authenticated={false}
         to="/login"
         activeClassName="uk-active"

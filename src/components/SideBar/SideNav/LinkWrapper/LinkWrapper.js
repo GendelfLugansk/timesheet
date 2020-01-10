@@ -6,6 +6,7 @@ import { fetchAuthStatus } from "../../../../actions/auth";
 const LinkWrapper = ({
   to,
   activeClassName,
+  className,
   authenticated = null,
   isAuthenticated,
   fetchState,
@@ -28,7 +29,9 @@ const LinkWrapper = ({
       {...rest}
       path={path}
       children={({ match }) => (
-        <li className={match ? activeClassName : ""}>{children}</li>
+        <li className={className + " " + (match ? activeClassName : "")}>
+          {children}
+        </li>
       )}
     />
   );

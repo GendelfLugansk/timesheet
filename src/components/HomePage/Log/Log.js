@@ -20,7 +20,7 @@ import JoiBase from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import uuidv4 from "uuid/v4";
-import { stringArray } from "../../../utils/joi-extensions";
+import { stringArray } from "../../../utils/joiExtensions";
 import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
 
@@ -770,7 +770,7 @@ const Log = ({
                             </div>
                             <div className="uk-width-2-3">
                               {DateTime.fromISO(startTimeString).toFormat(
-                                "yyyy-MM-dd hh:mm:ss ZZZZ"
+                                "yyyy-MM-dd HH:mm:ss ZZZZ"
                               )}
                             </div>
                           </div>
@@ -780,7 +780,7 @@ const Log = ({
                             </div>
                             <div className="uk-width-2-3">
                               {DateTime.fromISO(endTimeString).toFormat(
-                                "yyyy-MM-dd hh:mm:ss ZZZZ"
+                                "yyyy-MM-dd HH:mm:ss ZZZZ"
                               )}
                             </div>
                           </div>

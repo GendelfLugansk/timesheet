@@ -145,6 +145,25 @@ const tablesConfig = {
       index: 4,
       alpha: "E"
     }
+  },
+
+  Config: {
+    key: {
+      index: 0,
+      alpha: "A"
+    },
+    value: {
+      index: 1,
+      alpha: "B"
+    },
+    uuid: {
+      index: 2,
+      alpha: "C"
+    },
+    updatedAt: {
+      index: 3,
+      alpha: "D"
+    }
   }
 };
 

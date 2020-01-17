@@ -17,7 +17,7 @@ import { DateTime } from "luxon";
 import JoiBase from "joi";
 import Autosuggest from "react-autosuggest";
 import theme from "../../../styles/autosuggestTheme";
-import { stringArray } from "../../../utils/joi-extensions";
+import { stringArray } from "../../../utils/joiExtensions";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -51,10 +51,6 @@ const Timer = ({
 
   const [spentTime, setSpentTime] = useState("00:00:00");
   const [spentSum, setSpentSum] = useState(null);
-  const [hourlyRateValidationErrors, setHourlyRateValidationErrors] = useState(
-    null
-  );
-  const [tagsValidationErrors, setTagsValidationErrors] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
 
   const updateDisplayedTime = useRef();

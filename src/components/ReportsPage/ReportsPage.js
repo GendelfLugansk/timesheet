@@ -8,7 +8,118 @@ import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
 import stringifyError from "../../utils/stringifyError";
 import CreateFirstWorkspace from "../HomePage/CreateFirstWorkspace/CreateFirstWorkspace";
 import SelectWorkspace from "../HomePage/SelectWorkspace/SelectWorkspace";
-import Timer from "../HomePage/Timer/Timer";
+import Filters from "./Filters/Filters";
+import { deserialize, serialize } from "../../utils/logFilters";
+import objectPath from "object-path";
+import uuidv4 from "uuid/v4";
+import { sync, upsertLocal } from "../../actions/syncableStorage";
+import { useTranslation } from "react-i18next";
+import i18n from "../../utils/i18n";
+import en from "./ReportsPage.en";
+import ru from "./ReportsPage.ru";
+import LoaderOverlay from "../Loader/LoaderOverlay/LoaderOverlay";
+
+const ns = "Filters";
+i18n.addResourceBundle("en", ns, en);
+i18n.addResourceBundle("ru", ns, ru);
+
+const WithFilters = connect(
+  (state, { workspaceId }) => ({
+    isSyncing: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Config.isSyncing`,
+      false
+    ),
+    syncError: objectPath.get(
+      state.syncableStorage,
+      `${workspaceId}.Config.error`,
+      null
+    ),
+    appliedFilters: deserialize(
+      (
+        objectPath
+          .get(state.syncableStorage, `${workspaceId}.Config.data`, [])
+          .filter(({ _deleted }) => !_deleted)
+          .filter(({ key, uuid }) => key === "filters")[0] || {}
+      ).value
+    ),
+    filtersUUID:
+      (
+        objectPath
+          .get(state.syncableStorage, `${workspaceId}.Config.data`, [])
+          .filter(({ _deleted }) => !_deleted)
+          .filter(({ key, uuid }) => key === "filters")[0] || {}
+      ).uuid || uuidv4()
+  }),
+  (dispatch, { workspaceId }) => ({
+    fetchState: () => {
+      dispatch(sync(workspaceId, "Config"));
+    },
+    setAppliedFilters: (filters, uuid) => {
+      dispatch(
+        upsertLocal(workspaceId, "Config", {
+          key: "filters",
+          value: serialize(filters),
+          uuid
+        })
+      );
+      dispatch(sync(workspaceId, "Config"));
+    }
+  })
+)(
+  ({
+    isSyncing,
+    syncError,
+    appliedFilters = [],
+    filtersUUID,
+    setAppliedFilters,
+    fetchState,
+    workspaceId
+  }) => {
+    const { t } = useTranslation(ns);
+    useEffect(fetchState, [workspaceId]);
+
+    const syncRetry = () => {
+      fetchState();
+    };
+
+    return (
+      <div className="uk-width-1-1 uk-position-relative">
+        {syncError ? (
+          <div className="uk-width-1-1">
+            <div className="uk-alert-danger" uk-alert="true">
+              {t("syncError", { error: stringifyError(syncError) })}{" "}
+              <button
+                onClick={syncRetry}
+                type="button"
+                className="uk-button uk-button-link"
+              >
+                {t("syncRetryButton")}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <Filters
+          workspaceId={workspaceId}
+          appliedFilters={appliedFilters}
+          setAppliedFilters={filters => setAppliedFilters(filters, filtersUUID)}
+        />
+        <Switch>
+          <AuthenticatedRoute exact path="/reports">
+            <Redirect to="/reports/calendar" />
+          </AuthenticatedRoute>
+          <AuthenticatedRoute exact path="/reports/calendar">
+            <CalendarReportsPage
+              workspaceId={workspaceId}
+              filters={appliedFilters}
+            />
+          </AuthenticatedRoute>
+        </Switch>
+      </div>
+    );
+  }
+);
 
 const ReportsPage = ({
   isLoading,
@@ -47,16 +158,7 @@ const ReportsPage = ({
     return <SelectWorkspace />;
   }
 
-  return (
-    <Switch>
-      <AuthenticatedRoute exact path="/reports">
-        <Redirect to="/reports/calendar" />
-      </AuthenticatedRoute>
-      <AuthenticatedRoute exact path="/reports/calendar">
-        <CalendarReportsPage workspaceId={currentWorkspace.id} />
-      </AuthenticatedRoute>
-    </Switch>
-  );
+  return <WithFilters workspaceId={currentWorkspace.id} />;
 };
 
 export { ReportsPage };

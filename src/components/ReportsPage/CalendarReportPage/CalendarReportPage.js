@@ -11,6 +11,7 @@ import i18n from "../../../utils/i18n";
 import en from "./CalendarReportPage.en";
 import ru from "./CalendarReportPage.ru";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
+import { filterFunction } from "../../../utils/logFilters";
 
 const ns = "CalendarReportPage";
 i18n.addResourceBundle("en", ns, en);
@@ -21,16 +22,13 @@ const CalendarReportPage = ({
   syncError,
   logItems,
   fetchState,
-  syncAll
+  syncAll,
+  workspaceId
 }) => {
   const { t } = useTranslation(ns);
   const { i18n } = useTranslation();
 
-  useEffect(() => {
-    if (logItems.length === 0) {
-      fetchState();
-    }
-  }, [logItems.length, fetchState]);
+  useEffect(fetchState, [workspaceId]);
 
   const fullDayHours = 8;
 
@@ -70,7 +68,6 @@ const CalendarReportPage = ({
         const weekIndex =
           Math.ceil((date.day + startOfMonth.weekday - 1) / 7) - 1;
         const weekdayIndex = date.weekday - 1;
-        console.log(acc[month], weekIndex, weekdayIndex);
         if (acc[month].weeks[weekIndex][weekdayIndex] === undefined) {
           acc[month].weeks[weekIndex][weekdayIndex] = {
             items: [],
@@ -204,7 +201,7 @@ const CalendarReportPage = ({
 export { CalendarReportPage };
 
 export default connect(
-  (state, { workspaceId }) => ({
+  (state, { workspaceId, filters = [] }) => ({
     isSyncing: objectPath.get(
       state.syncableStorage,
       `${workspaceId}.Log.isSyncing`,
@@ -218,6 +215,7 @@ export default connect(
     logItems: objectPath
       .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
       .filter(({ _deleted }) => !_deleted)
+      .filter(filterFunction(filters))
       .sort(
         (a, b) =>
           DateTime.fromISO(b.startTimeString) -

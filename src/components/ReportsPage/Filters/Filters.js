@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import objectPath from "object-path";
 import { getAvailableFilters } from "../../../utils/logFilters";
-import { sync, upsertLocal } from "../../../actions/syncableStorage";
+import { sync } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import stringifyError from "../../../utils/stringifyError";
 import { useTranslation } from "react-i18next";

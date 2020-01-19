@@ -17,7 +17,6 @@ import { useTranslation } from "react-i18next";
 import i18n from "../../utils/i18n";
 import en from "./ReportsPage.en";
 import ru from "./ReportsPage.ru";
-import LoaderOverlay from "../Loader/LoaderOverlay/LoaderOverlay";
 
 const ns = "Filters";
 i18n.addResourceBundle("en", ns, en);

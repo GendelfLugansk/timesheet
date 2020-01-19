@@ -10,7 +10,7 @@ const Logo = () => (
       alt=""
       uk-img={process.env.PUBLIC_URL + "/logo512.png"}
     />
-    Timesheets
+    Timesheet
     <hr />
   </div>
 );

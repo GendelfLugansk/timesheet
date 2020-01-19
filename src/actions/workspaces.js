@@ -1,6 +1,6 @@
 import loadGAPI from "../utils/googleapi";
 
-const workspaceKey = `__timesheets_workspace`;
+const workspaceKey = `__timesheet_workspace`;
 
 const FETCH_WORKSPACES_BEGIN = "FETCH_WORKSPACES_BEGIN";
 const FETCH_WORKSPACES_SUCCESS = "FETCH_WORKSPACES_SUCCESS";

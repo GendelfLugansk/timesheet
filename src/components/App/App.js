@@ -12,7 +12,7 @@ import ReportsPage from "../ReportsPage/ReportsPage";
 
 const App = () => (
   <Router>
-    <DocumentTitle title="Timesheets" />
+    <DocumentTitle title="Timesheet" />
     <div className="uk-flex App">
       <SideBar />
 

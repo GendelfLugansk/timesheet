@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "../../utils/i18n";
 import en from "./ReportsPage.en";
 import ru from "./ReportsPage.ru";
+import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
 
 const ns = "Filters";
 i18n.addResourceBundle("en", ns, en);
@@ -106,7 +107,13 @@ const WithFilters = connect(
         />
         <Switch>
           <AuthenticatedRoute exact path="/reports">
-            <Redirect to="/reports/calendar" />
+            <Redirect to="/reports/summary" />
+          </AuthenticatedRoute>
+          <AuthenticatedRoute exact path="/reports/summary">
+            <SummaryReportPage
+              workspaceId={workspaceId}
+              filters={appliedFilters}
+            />
           </AuthenticatedRoute>
           <AuthenticatedRoute exact path="/reports/calendar">
             <CalendarReportsPage

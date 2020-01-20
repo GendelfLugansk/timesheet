@@ -3,6 +3,7 @@ const ru = {
   login: "Вход",
   reports: {
     index: "Отчеты",
+    summary: "Сводные",
     calendar: "Календарь"
   }
 };

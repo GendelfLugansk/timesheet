@@ -5,7 +5,7 @@ const ru = {
     project: {
       title: "Проект: {{selectedQty}}",
       anySelected: "Любой",
-      emptyValue: "<Не указано>"
+      emptyValue: "<Не указан>"
     },
     tags: {
       title: "Теги: {{selectedQty}}",

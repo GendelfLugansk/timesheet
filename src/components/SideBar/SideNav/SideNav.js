@@ -33,6 +33,13 @@ const SideNav = () => {
         <ul className="uk-nav-sub">
           <LinkWrapper
             authenticated={true}
+            to="/reports/summary"
+            activeClassName="uk-active"
+          >
+            <Link to="/reports/summary">{t("reports.summary")}</Link>
+          </LinkWrapper>
+          <LinkWrapper
+            authenticated={true}
             to="/reports/calendar"
             activeClassName="uk-active"
           >

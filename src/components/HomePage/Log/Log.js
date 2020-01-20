@@ -6,7 +6,7 @@ import {
   sync,
   upsertLocal
 } from "../../../actions/syncableStorage";
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 import "./Log.scss";
 import noImage from "./no-image.png";
 import { useTranslation } from "react-i18next";
@@ -254,6 +254,7 @@ const Log = ({
             startTimeString,
             endTimeString,
             hourlyRate,
+            durationHours,
             sum,
             _synced,
             ...rest
@@ -290,9 +291,11 @@ const Log = ({
                       uk-grid="true"
                     >
                       <div className="uk-flex-1 uk-text-right">
-                        {DateTime.fromISO(endTimeString)
-                          .diff(DateTime.fromISO(startTimeString))
-                          .toFormat("hh:mm:ss")}
+                        {typeof durationHours === "number"
+                          ? Duration.fromObject({
+                              hours: durationHours
+                            }).toFormat("hh:mm:ss")
+                          : null}
                         {typeof sum === "number"
                           ? " / $" + sum.toFixed(2)
                           : null}
@@ -319,6 +322,7 @@ const Log = ({
                               startTimeString,
                               endTimeString,
                               hourlyRate,
+                              durationHours,
                               sum,
                               _synced,
                               ...rest

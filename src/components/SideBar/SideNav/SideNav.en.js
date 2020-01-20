@@ -3,6 +3,7 @@ const en = {
   login: "Sign in",
   reports: {
     index: "Reports",
+    summary: "Summary",
     calendar: "Calendar"
   }
 };

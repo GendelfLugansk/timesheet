@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
+import "./ProjectsPie.scss";
 
 const ns = "ProjectsPie";
 i18n.addResourceBundle("en", ns, en);
@@ -230,7 +231,14 @@ const ProjectsPie = ({
     displayModeBar: false
   };
 
-  return <Plot data={data} layout={layout} config={config} />;
+  return (
+    <Plot
+      data={data}
+      layout={layout}
+      config={config}
+      className="Plot ProjectsPie"
+    />
+  );
 };
 
 export { ProjectsPie };

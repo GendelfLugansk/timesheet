@@ -46,13 +46,12 @@ const SummaryReportPage = ({
   }
 
   return (
-    <div className="uk-padding-small SummaryReportPage">
+    <div className="uk-padding-small SummaryReportPage uk-position-relative">
+      {isSyncing ? <LoaderOverlay /> : null}
       <div
-        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@l uk-child-width-1-3@xl uk-position-relative uk-flex-center"
+        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@l uk-child-width-1-3@xl uk-flex-center"
         uk-grid="true"
       >
-        {isSyncing ? <LoaderOverlay /> : null}
-
         {syncError ? (
           <div className="uk-width-1-1">
             <div className="uk-alert-danger" uk-alert="true">

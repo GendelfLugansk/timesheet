@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
+import "./TagsPie.scss";
 
 const ns = "TagsPie";
 i18n.addResourceBundle("en", ns, en);
@@ -237,7 +238,14 @@ const TagsPie = ({
     displayModeBar: false
   };
 
-  return <Plot data={data} layout={layout} config={config} />;
+  return (
+    <Plot
+      data={data}
+      layout={layout}
+      config={config}
+      className="Plot TagsPie"
+    />
+  );
 };
 
 export { TagsPie };

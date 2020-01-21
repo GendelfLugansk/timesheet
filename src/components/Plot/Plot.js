@@ -26,7 +26,8 @@ const defaultLayout = {
 const Plot = ({
   data = [],
   layout = defaultLayout,
-  config = defaultConfig
+  config = defaultConfig,
+  className = "Plot"
 }) => {
   const { i18n } = useTranslation();
   const [elId] = useState(uuidv4());
@@ -44,7 +45,7 @@ const Plot = ({
   }, []);
 
   return (
-    <div className="Plot">
+    <div className={className}>
       <div className="PlotContainer" id={elId} />
     </div>
   );

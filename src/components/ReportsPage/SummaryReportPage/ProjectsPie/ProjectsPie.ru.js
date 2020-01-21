@@ -1,6 +1,7 @@
 const ru = {
   title: "<b>Распределение времени <br>по проектам</b>",
-  otherCategory: "Другие",
+  titleShort: "<b>По проектам</b>",
+  otherCategory: "Остальные",
   empty: "<Не указан>"
 };
 

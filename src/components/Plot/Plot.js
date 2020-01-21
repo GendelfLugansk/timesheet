@@ -45,7 +45,7 @@ const Plot = ({
 
   return (
     <div className="Plot">
-      <div id={elId} />
+      <div className="PlotContainer" id={elId} />
     </div>
   );
 };

@@ -13,6 +13,7 @@ import ru from "./SummaryReportPage.ru";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import { filterFunction } from "../../../utils/logFilters";
 import ProjectsPie from "./ProjectsPie/ProjectsPie";
+import TagsPie from "./TagsPie/TagsPie";
 
 const ns = "SummaryReportPage";
 i18n.addResourceBundle("en", ns, en);
@@ -47,7 +48,7 @@ const SummaryReportPage = ({
   return (
     <div className="uk-padding-small SummaryReportPage">
       <div
-        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@xl uk-position-relative uk-flex-center"
+        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@l uk-child-width-1-3@xl uk-position-relative uk-flex-center"
         uk-grid="true"
       >
         {isSyncing ? <LoaderOverlay /> : null}
@@ -69,6 +70,10 @@ const SummaryReportPage = ({
 
         <div>
           <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
+        </div>
+
+        <div>
+          <TagsPie logItems={logItems} workspaceId={workspaceId} />
         </div>
       </div>
     </div>

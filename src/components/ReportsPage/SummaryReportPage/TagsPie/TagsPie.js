@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import Plot, { defaultConfig, defaultLayout } from "../../../Plot/Plot";
-import en from "./ProjectsPie.en";
-import ru from "./ProjectsPie.ru";
+import en from "./TagsPie.en";
+import ru from "./TagsPie.ru";
 import i18n from "../../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
@@ -11,14 +11,14 @@ import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
 
-const ns = "ProjectsPie";
+const ns = "TagsPie";
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const ProjectsPie = ({
+const TagsPie = ({
   workspaceId,
   logItems,
-  definedProjects = [],
+  definedTags = [],
   responsiveLegend = true,
   width,
   height
@@ -85,19 +85,27 @@ const ProjectsPie = ({
   let rawData = Object.values(
     logItems
       .filter(({ durationHours }) => typeof durationHours === "number")
-      .map(({ project, durationHours }) => ({
-        project,
+      .map(({ tags, durationHours }) => ({
+        tags:
+          typeof tags === "string" && tags.length > 0
+            ? tags
+                .split(",")
+                .map(v => v.trim())
+                .filter(v => v.length > 0)
+                .sort()
+                .join("+")
+            : "",
         durationHours
       }))
-      .reduce((acc, { project, durationHours }) => {
+      .reduce((acc, { tags, durationHours }) => {
         const mutAcc = { ...acc };
-        if (mutAcc[project] === undefined) {
-          mutAcc[project] = {
-            project,
+        if (mutAcc[tags] === undefined) {
+          mutAcc[tags] = {
+            tags,
             durationHours: 0
           };
         }
-        mutAcc[project].durationHours += durationHours;
+        mutAcc[tags].durationHours += durationHours;
 
         return mutAcc;
       }, {})
@@ -111,48 +119,47 @@ const ProjectsPie = ({
     total > 0 && durationHours / total <= 0.000000000002;
   const showOthersSector =
     rawData.filter(({ durationHours }) => isOther(durationHours)).length > 1;
+
   if (showOthersSector || rawData.length > maxSectors) {
     rawData = Object.values(
-      rawData.reduce((acc, { project, durationHours }, index) => {
+      rawData.reduce((acc, { tags, durationHours }, index) => {
         const mutAcc = { ...acc };
-        const projectOrOther =
-          isOther(durationHours) || index >= maxSectors ? "__other__" : project;
-        if (mutAcc[projectOrOther] === undefined) {
-          mutAcc[projectOrOther] = {
-            project: projectOrOther,
+        const tagsOrOther =
+          isOther(durationHours) || index >= maxSectors ? "__other__" : tags;
+        if (mutAcc[tagsOrOther] === undefined) {
+          mutAcc[tagsOrOther] = {
+            tags: tagsOrOther,
             durationHours: 0
           };
         }
-        mutAcc[projectOrOther].durationHours += durationHours;
+        mutAcc[tagsOrOther].durationHours += durationHours;
 
         return mutAcc;
       }, {})
     ).sort((a, b) => b.durationHours - a.durationHours);
   }
 
-  const projectColorMapper = ({ project }) => {
-    const definedProject =
-      definedProjects.filter(
+  const tagsColorMapper = ({ tags }) => {
+    const definedTag =
+      definedTags.filter(
         ({ name, colorRGB }) =>
-          name === project &&
-          typeof colorRGB === "string" &&
-          colorRGB.length > 0
+          name === tags && typeof colorRGB === "string" && colorRGB.length > 0
       )[0] || {};
 
     return (
-      definedProject.colorRGB ||
-      chartColors.getColor(workspaceId + "_project", project)
+      definedTag.colorRGB ||
+      chartColors.getColor(workspaceId + "_tags_combined", tags)
     );
   };
 
   const data = [
     {
-      labels: rawData.map(({ project, durationHours }) => {
+      labels: rawData.map(({ tags, durationHours }) => {
         let label =
-          project === "__other__"
+          tags === "__other__"
             ? t("otherCategory")
-            : project !== ""
-            ? project
+            : tags !== ""
+            ? tags
             : t("empty");
         const leeway = 3;
         if (label.length > maxLegendLabelLength + leeway) {
@@ -164,11 +171,11 @@ const ProjectsPie = ({
           Duration.fromObject({ hours: durationHours }).toFormat("hh:mm:ss")
         );
       }),
-      text: rawData.map(({ project, durationHours }) =>
-        project === "__other__"
+      text: rawData.map(({ tags, durationHours }) =>
+        tags === "__other__"
           ? t("otherCategory")
-          : project !== ""
-          ? project
+          : tags !== ""
+          ? tags
           : t("empty")
       ),
       values: rawData.map(point => point.durationHours.toFixed(2)),
@@ -179,7 +186,7 @@ const ProjectsPie = ({
       textinfo: "text",
       textposition: "none",
       marker: {
-        colors: rawData.map(projectColorMapper),
+        colors: rawData.map(tagsColorMapper),
         line: {
           width: borderLineWidth,
           color: "rgba(255, 255, 255, 1)"
@@ -188,7 +195,7 @@ const ProjectsPie = ({
       hoverinfo: "text+percent+value",
       hoverlabel: {
         bgcolor: "#fff",
-        bordercolor: rawData.map(projectColorMapper),
+        bordercolor: rawData.map(tagsColorMapper),
         font: {
           color: "#333"
         }
@@ -233,19 +240,19 @@ const ProjectsPie = ({
   return <Plot data={data} layout={layout} config={config} />;
 };
 
-export { ProjectsPie };
+export { TagsPie };
 
 export default connect(
   (state, { workspaceId }) => ({
-    definedProjects: objectPath.get(
+    definedTags: objectPath.get(
       state.syncableStorage,
-      `${workspaceId}.Projects.data`,
+      `${workspaceId}.Tags.data`,
       []
     )
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Projects"));
+      dispatch(sync(workspaceId, "Tags"));
     }
   })
 )(({ workspaceId, fetchState, ...rest }) => {
@@ -253,7 +260,7 @@ export default connect(
 
   return (
     <ReactResizeDetector handleWidth handleHeight>
-      <ProjectsPie workspaceId={workspaceId} {...rest} />
+      <TagsPie workspaceId={workspaceId} {...rest} />
     </ReactResizeDetector>
   );
 });

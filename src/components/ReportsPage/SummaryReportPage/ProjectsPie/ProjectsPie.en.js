@@ -1,6 +1,7 @@
 const en = {
   title: "<b>Time distribution <br>by projects</b>",
-  otherCategory: "Other",
+  titleShort: "<b>By projects</b>",
+  otherCategory: "Rest",
   empty: "<Not specified>"
 };
 

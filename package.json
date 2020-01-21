@@ -28,6 +28,7 @@
     "redux": "4.0.4",
     "redux-thunk": "2.3.0",
     "uikit": "3.2.6",
+    "use-debounce": "^3.3.0",
     "uuid": "3.3.3"
   },
   "scripts": {

@@ -18,6 +18,7 @@ import i18n from "../../utils/i18n";
 import en from "./ReportsPage.en";
 import ru from "./ReportsPage.ru";
 import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
+import { useDebouncedCallback } from "use-debounce";
 
 const ns = "Filters";
 i18n.addResourceBundle("en", ns, en);
@@ -63,6 +64,8 @@ const WithFilters = connect(
           uuid
         })
       );
+    },
+    syncFilters: () => {
       dispatch(sync(workspaceId, "Config"));
     }
   })
@@ -73,11 +76,14 @@ const WithFilters = connect(
     appliedFilters = [],
     filtersUUID,
     setAppliedFilters,
+    syncFilters,
     fetchState,
     workspaceId
   }) => {
     const { t } = useTranslation(ns);
     useEffect(fetchState, [workspaceId]);
+
+    const [syncDebounced] = useDebouncedCallback(syncFilters, 1500);
 
     const syncRetry = () => {
       fetchState();
@@ -101,9 +107,13 @@ const WithFilters = connect(
         ) : null}
 
         <Filters
+          isSyncing={isSyncing}
           workspaceId={workspaceId}
           appliedFilters={appliedFilters}
-          setAppliedFilters={filters => setAppliedFilters(filters, filtersUUID)}
+          setAppliedFilters={filters => {
+            setAppliedFilters(filters, filtersUUID);
+            syncDebounced();
+          }}
         />
         <Switch>
           <AuthenticatedRoute exact path="/reports">

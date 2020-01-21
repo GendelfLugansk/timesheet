@@ -13,12 +13,14 @@ import { DateTime } from "luxon";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import Joi from "joi";
 import ReactHtmlParser from "react-html-parser";
+import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 
 const ns = "Filters";
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
 const FilterIncludes = ({
+  isSyncing,
   filterKey: key,
   type,
   availableValues,
@@ -53,6 +55,15 @@ const FilterIncludes = ({
         className="uk-card uk-card-body uk-card-default uk-overflow-auto uk-height-max-large"
         uk-dropdown="mode: click"
       >
+        {isSyncing ? (
+          <LoaderOverlay
+            ratio={Math.min(
+              3,
+              Math.max(Math.ceil(availableValues.length / 2), 1)
+            )}
+            opacity={0.96}
+          />
+        ) : null}
         <div
           className="uk-width-large@m uk-child-width-1-1 uk-child-width-1-2@m uk-grid-small uk-text-small"
           uk-grid="true"
@@ -88,6 +99,7 @@ const FilterIncludes = ({
 };
 
 const FilterBetweenDates = ({
+  isSyncing,
   filterKey: key,
   type,
   availableValues,
@@ -203,6 +215,7 @@ const FilterBetweenDates = ({
         className="uk-card uk-card-body uk-card-default uk-overflow-auto uk-height-max-large"
         uk-dropdown="mode: click"
       >
+        {isSyncing ? <LoaderOverlay ratio={2} opacity={0.96} /> : null}
         <form
           className="uk-width-large@m uk-child-width-1-1 uk-child-width-1-2@m uk-grid-small uk-text-small"
           uk-grid="true"
@@ -367,6 +380,7 @@ const Filters = ({
         if (type === "includes") {
           return (
             <FilterIncludes
+              isSyncing={isSyncing}
               key={key + "_" + type}
               filterKey={key}
               type={type}
@@ -394,6 +408,7 @@ const Filters = ({
         if (type === "between" && typeToCoerce === "DateTime") {
           return (
             <FilterBetweenDates
+              isSyncing={isSyncing}
               key={key + "_" + type}
               filterKey={key}
               type={type}
@@ -425,12 +440,13 @@ const Filters = ({
 };
 
 export default connect(
-  (state, { workspaceId }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.isSyncing`,
-      false
-    ),
+  (state, { workspaceId, isSyncing }) => ({
+    isSyncing:
+      objectPath.get(
+        state.syncableStorage,
+        `${workspaceId}.Log.isSyncing`,
+        false
+      ) || isSyncing,
     syncError: objectPath.get(
       state.syncableStorage,
       `${workspaceId}.Log.error`,

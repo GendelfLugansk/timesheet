@@ -86,6 +86,7 @@ const TimeBars = ({
       name: t("total"),
       x: rawData.map(({ date }) => date.toJSDate()),
       y: rawData.map(({ durationHours }) => durationHours),
+      xaxis: "x2",
       text: rawData.map(({ durationHours }) =>
         Duration.fromObject({
           hours: durationHours
@@ -179,6 +180,13 @@ const TimeBars = ({
       spikethickness: 1,
       spikemode: "across",
       title: t("xTitle")
+    },
+    xaxis2: {
+      matches: "x",
+      showspikes: false,
+      spikethickness: 1,
+      spikemode: "across",
+      overlaying: "x"
     },
     yaxis: {
       showspikes: false,

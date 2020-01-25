@@ -14,6 +14,7 @@ import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import { filterFunction } from "../../../utils/logFilters";
 import ProjectsPie from "./ProjectsPie/ProjectsPie";
 import TagsPie from "./TagsPie/TagsPie";
+import TimeBars from "./TimeBars/TimeBars";
 
 const ns = "SummaryReportPage";
 i18n.addResourceBundle("en", ns, en);
@@ -48,10 +49,7 @@ const SummaryReportPage = ({
   return (
     <div className="uk-padding-small SummaryReportPage uk-position-relative">
       {isSyncing ? <LoaderOverlay /> : null}
-      <div
-        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@l uk-child-width-1-3@xl uk-flex-center"
-        uk-grid="true"
-      >
+      <div className="uk-width-1-1 uk-flex-center" uk-grid="true">
         {syncError ? (
           <div className="uk-width-1-1">
             <div className="uk-alert-danger" uk-alert="true">
@@ -67,12 +65,15 @@ const SummaryReportPage = ({
           </div>
         ) : null}
 
-        <div>
-          <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
+        <div className="uk-width-expand">
+          <TimeBars logItems={logItems} workspaceId={workspaceId} />
         </div>
 
         <div>
-          <TagsPie logItems={logItems} workspaceId={workspaceId} />
+          <div className="PiesContainer">
+            <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
+            <TagsPie logItems={logItems} workspaceId={workspaceId} />
+          </div>
         </div>
       </div>
     </div>

@@ -4,4 +4,23 @@
   .PlotContainer {
     height: 100%;
   }
+
+  .js-plotly-plot .plotly .modebar .modebar-group {
+    background: none !important;
+  }
+
+  .js-plotly-plot .plotly .modebar-btn path {
+    fill: rgba(223, 215, 206, 0.4) !important;
+  }
+
+  .js-plotly-plot .plotly .modebar-btn.active path,
+  .js-plotly-plot .plotly .modebar-btn:hover path {
+    fill: rgba(204, 197, 189, 1) !important;
+  }
+
+  .rangeslider-mask-min,
+  .rangeslider-mask-max {
+    fill: rgb(223, 215, 206) !important;
+    fill-opacity: 0.3 !important;
+  }
 }

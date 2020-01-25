@@ -1,7 +1,27 @@
 .SummaryReportPage {
   .Plot {
+    height: auto;
+
     .PlotContainer {
-      height: 400px;
+      height: 600px;
+
+      @media (min-width: 1600px) {
+        height: 740px;
+      }
+    }
+  }
+
+  .PiesContainer {
+    .Plot {
+      .PlotContainer {
+        height: 300px;
+        width: 300px;
+
+        @media (min-width: 1600px) {
+          height: 370px;
+          width: 370px;
+        }
+      }
     }
   }
 }

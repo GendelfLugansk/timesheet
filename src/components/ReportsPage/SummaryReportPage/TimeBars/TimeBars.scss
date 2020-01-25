@@ -1,0 +1,11 @@
+.TimeBars {
+  .PlotContainer {
+    .legendtoggle {
+      cursor: auto !important;
+    }
+
+    .rangeslider-container .plot .scatterlayer {
+      visibility: hidden;
+    }
+  }
+}

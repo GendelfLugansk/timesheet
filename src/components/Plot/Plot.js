@@ -40,6 +40,21 @@ const Plot = ({
   }, [elId, data, layout, config, i18n.language]);
 
   useEffect(() => {
+    const onChange = () => {
+      const plotlyConfig = deepcopy(config);
+      plotlyConfig.locale = i18n.language;
+
+      Plotly.react(elId, deepcopy(data), deepcopy(layout), plotlyConfig);
+    };
+    const mql = window.matchMedia("print");
+    mql.addEventListener("change", onChange);
+
+    return () => {
+      mql.removeEventListener("change", onChange);
+    };
+  });
+
+  useEffect(() => {
     //Plotly.relayout(elId);
     //window.dispatchEvent(new Event("resize"));
   }, []);

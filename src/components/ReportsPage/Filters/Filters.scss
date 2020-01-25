@@ -1,0 +1,7 @@
+.Filters {
+  .uk-button-primary {
+    @media print {
+      border: 1px solid #000;
+    }
+  }
+}

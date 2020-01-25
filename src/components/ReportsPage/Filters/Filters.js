@@ -14,6 +14,7 @@ import groupJoiErrors from "../../../utils/groupJoiErrors";
 import Joi from "joi";
 import ReactHtmlParser from "react-html-parser";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
+import "./Filters.scss";
 
 const ns = "Filters";
 i18n.addResourceBundle("en", ns, en);

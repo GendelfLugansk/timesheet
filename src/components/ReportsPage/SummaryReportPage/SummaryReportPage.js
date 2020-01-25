@@ -71,8 +71,12 @@ const SummaryReportPage = ({
 
         <div>
           <div className="PiesContainer">
-            <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
-            <TagsPie logItems={logItems} workspaceId={workspaceId} />
+            <div>
+              <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
+            </div>
+            <div>
+              <TagsPie logItems={logItems} workspaceId={workspaceId} />
+            </div>
           </div>
         </div>
       </div>

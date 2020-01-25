@@ -15,6 +15,7 @@ import { filterFunction } from "../../../utils/logFilters";
 import ProjectsPie from "./ProjectsPie/ProjectsPie";
 import TagsPie from "./TagsPie/TagsPie";
 import TimeBars from "./TimeBars/TimeBars";
+import TotalHours from "./TotalHours/TotalHours";
 
 const ns = "SummaryReportPage";
 i18n.addResourceBundle("en", ns, en);
@@ -71,6 +72,9 @@ const SummaryReportPage = ({
 
         <div>
           <div className="PiesContainer">
+            <div>
+              <TotalHours logItems={logItems} />
+            </div>
             <div>
               <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
             </div>

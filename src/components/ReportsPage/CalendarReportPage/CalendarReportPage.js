@@ -112,7 +112,7 @@ const CalendarReportPage = ({
   return (
     <div className="uk-padding-small CalendarReportPage">
       <div
-        className="uk-width-1-1 uk-child-width-1-1 uk-child-width-1-2@xl calendar"
+        className="uk-child-width-1-1 uk-child-width-1-2@xl calendar"
         uk-grid="true"
       >
         {syncError ? (

@@ -51,7 +51,7 @@ const SummaryReportPage = ({
   return (
     <div className="uk-padding-small SummaryReportPage uk-position-relative">
       {isSyncing ? <LoaderOverlay /> : null}
-      <div className="uk-width-1-1 uk-flex-center" uk-grid="true">
+      <div className="uk-flex-center" uk-grid="true">
         {syncError ? (
           <div className="uk-width-1-1">
             <div className="uk-alert-danger" uk-alert="true">

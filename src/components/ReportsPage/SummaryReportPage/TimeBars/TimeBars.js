@@ -160,6 +160,7 @@ const TimeBars = ({
       b: 50,
       l: 40
     },
+    title: t("title"),
     showlegend: true,
     legend: {
       itemclick: false,

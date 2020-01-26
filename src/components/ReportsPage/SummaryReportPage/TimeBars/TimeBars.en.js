@@ -1,4 +1,5 @@
 const en = {
+  title: "Time distribution by days and projects",
   legendTitle: "<b>Project</b>",
   empty: "&lt;Not specified&gt;",
   xTitle: "Date",

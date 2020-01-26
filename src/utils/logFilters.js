@@ -137,10 +137,13 @@ const getEndTimeStringFilter = (logItems = []) => {
   return {
     key: "endTimeString",
     type: "between",
-    availableValues: [
-      Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
-      Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-    ].map(v => coerceDataValue(v, "DateTime")),
+    availableValues:
+      times.length > 0
+        ? [
+            Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
+            Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
+          ].map(v => coerceDataValue(v, "DateTime"))
+        : [],
     typeToCoerce: "DateTime"
   };
 };
@@ -152,10 +155,13 @@ const getStartTimeStringFilter = (logItems = []) => {
   return {
     key: "startTimeString",
     type: "between",
-    availableValues: [
-      Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
-      Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-    ].map(v => coerceDataValue(v, "DateTime")),
+    availableValues:
+      times.length > 0
+        ? [
+            Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
+            Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
+          ].map(v => coerceDataValue(v, "DateTime"))
+        : [],
     typeToCoerce: "DateTime"
   };
 };
@@ -166,7 +172,7 @@ const getAvailableFilters = (logItems = []) => {
     getTagsFilter(logItems),
     getStartTimeStringFilter(logItems),
     getEndTimeStringFilter(logItems)
-  ];
+  ].filter(({ availableValues }) => availableValues.length > 0);
 };
 
 const serialize = filters => {

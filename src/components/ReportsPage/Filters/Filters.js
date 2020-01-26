@@ -309,11 +309,7 @@ const Filters = ({
   fetchState
 }) => {
   const { t } = useTranslation(ns);
-  useEffect(() => {
-    if (availableFilters.length === 0) {
-      fetchState();
-    }
-  }, [availableFilters.length, fetchState]);
+  useEffect(fetchState, []);
 
   const syncRetry = () => {
     fetchState();

@@ -94,7 +94,8 @@ const createWorkspace = ({ name, sortOrder }) => async dispatch => {
         { properties: { title: "Log", gridProperties: { rowCount: 1 } } },
         { properties: { title: "Progress", gridProperties: { rowCount: 1 } } },
         { properties: { title: "Projects", gridProperties: { rowCount: 1 } } },
-        { properties: { title: "Tags", gridProperties: { rowCount: 1 } } }
+        { properties: { title: "Tags", gridProperties: { rowCount: 1 } } },
+        { properties: { title: "Config", gridProperties: { rowCount: 1 } } }
       ]
     });
     await dispatch(fetchWorkspaces(true));

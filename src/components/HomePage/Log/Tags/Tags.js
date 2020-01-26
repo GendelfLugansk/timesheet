@@ -3,13 +3,13 @@ import { connect } from "react-redux";
 import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 
-const Tags = ({ tags, definedTags, fetchState }) => {
+const Tags = ({ workspaceId, tags, definedTags, fetchState }) => {
   const maybeFetch = () => {
     if (definedTags.length === 0) {
       fetchState();
     }
   };
-  useEffect(maybeFetch, []);
+  useEffect(maybeFetch, [workspaceId]);
 
   return (
     <>

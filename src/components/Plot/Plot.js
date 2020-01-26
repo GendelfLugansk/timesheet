@@ -54,11 +54,6 @@ const Plot = ({
     };
   });
 
-  useEffect(() => {
-    //Plotly.relayout(elId);
-    //window.dispatchEvent(new Event("resize"));
-  }, []);
-
   return (
     <div className={className}>
       <div className="PlotContainer" id={elId} />

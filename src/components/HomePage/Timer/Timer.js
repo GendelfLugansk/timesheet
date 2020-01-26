@@ -42,12 +42,13 @@ const Timer = ({
   syncAll,
   syncProgress,
   syncTags,
-  syncProjects
+  syncProjects,
+  workspaceId
 }) => {
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
-  useEffect(fetchState, []);
+  useEffect(fetchState, [workspaceId]);
 
   const [spentTime, setSpentTime] = useState("00:00:00");
   const [spentSum, setSpentSum] = useState(null);

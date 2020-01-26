@@ -47,7 +47,7 @@ const Log = ({
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
-  useEffect(fetchState, []);
+  useEffect(fetchState, [workspaceId]);
 
   const itemsPerPage = 5;
   const totalPages = Math.max(1, Math.ceil(logItems.length / itemsPerPage));

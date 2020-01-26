@@ -10,8 +10,9 @@ import { createWorkspace } from "../../../actions/workspaces";
 import stringifyError from "../../../utils/stringifyError";
 import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
 import useTask from "../../../hooks/useTask";
+import uuidv4 from "uuid/v4";
 
-const ns = "CreateFirstWorkspace";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

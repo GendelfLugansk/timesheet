@@ -26,7 +26,7 @@ import Autosuggest from "react-autosuggest";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
-const ns = "Log";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

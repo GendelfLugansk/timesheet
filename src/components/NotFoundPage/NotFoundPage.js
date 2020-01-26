@@ -4,8 +4,9 @@ import i18n from "../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./NotFoundPage.en";
 import ru from "./NotFoundPage.ru";
+import uuidv4 from "uuid/v4";
 
-const ns = "NotFoundPage";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

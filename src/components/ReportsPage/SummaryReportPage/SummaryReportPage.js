@@ -16,8 +16,9 @@ import ProjectsPie from "./ProjectsPie/ProjectsPie";
 import TagsPie from "./TagsPie/TagsPie";
 import TimeBars from "./TimeBars/TimeBars";
 import TotalHours from "./TotalHours/TotalHours";
+import uuidv4 from "uuid/v4";
 
-const ns = "SummaryReportPage";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

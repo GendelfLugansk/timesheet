@@ -11,8 +11,9 @@ import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
 import { selectWorkspace } from "../../../actions/workspaces";
 import objectPath from "object-path";
 import stringifyError from "../../../utils/stringifyError";
+import uuidv4 from "uuid/v4";
 
-const ns = "SelectWorkspace";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

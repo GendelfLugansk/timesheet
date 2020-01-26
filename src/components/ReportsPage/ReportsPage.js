@@ -20,7 +20,7 @@ import ru from "./ReportsPage.ru";
 import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
 import { useDebouncedCallback } from "use-debounce";
 
-const ns = "Filters";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

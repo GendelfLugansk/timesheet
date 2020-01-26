@@ -11,8 +11,9 @@ import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
 import "./ProjectsPie.scss";
+import uuidv4 from "uuid/v4";
 
-const ns = "ProjectsPie";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

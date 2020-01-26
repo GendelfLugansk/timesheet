@@ -7,8 +7,9 @@ import { connect } from "react-redux";
 import { fetchWorkspaces } from "../../../actions/workspaces";
 import { selectWorkspace } from "../../../actions/workspaces";
 import objectPath from "object-path";
+import uuidv4 from "uuid/v4";
 
-const ns = "WorkspaceSelector";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

@@ -12,8 +12,9 @@ import en from "./LoginPage.en";
 import ru from "./LoginPage.ru";
 import Loader from "../Loader/Loader";
 import stringifyError from "../../utils/stringifyError";
+import uuidv4 from "uuid/v4";
 
-const ns = "LoginPage";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

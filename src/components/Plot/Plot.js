@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import deepcopy from "deepcopy";
-import uuidv4 from "uuid";
+import uuidv4 from "uuid/v4";
 import Plotly from "plotly.js";
 import { useTranslation } from "react-i18next";
 import plotlyLocaleRu from "../../utils/plotlyLocaleRu";

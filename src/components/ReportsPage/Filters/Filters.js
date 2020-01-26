@@ -15,8 +15,9 @@ import Joi from "joi";
 import ReactHtmlParser from "react-html-parser";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import "./Filters.scss";
+import uuidv4 from "uuid/v4";
 
-const ns = "Filters";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

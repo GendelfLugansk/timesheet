@@ -12,8 +12,9 @@ import en from "./CalendarReportPage.en";
 import ru from "./CalendarReportPage.ru";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import { filterFunction } from "../../../utils/logFilters";
+import uuidv4 from "uuid/v4";
 
-const ns = "CalendarReportPage";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

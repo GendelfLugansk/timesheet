@@ -5,8 +5,9 @@ import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./SideNav.en";
 import ru from "./SideNav.ru";
+import uuidv4 from "uuid/v4";
 
-const ns = "SideNav";
+const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 

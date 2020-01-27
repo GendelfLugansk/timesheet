@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import i18n from "../../../utils/i18n";
+import i18n from "../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./CreateFirstWorkspace.en";
 import ru from "./CreateFirstWorkspace.ru";
 import Joi from "joi";
-import groupJoiErrors from "../../../utils/groupJoiErrors";
+import groupJoiErrors from "../../utils/groupJoiErrors";
 import { connect } from "react-redux";
-import { createWorkspace } from "../../../actions/workspaces";
-import stringifyError from "../../../utils/stringifyError";
-import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
-import useTask from "../../../hooks/useTask";
+import { createWorkspace } from "../../actions/workspaces";
+import stringifyError from "../../utils/stringifyError";
+import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
+import useTask from "../../hooks/useTask";
 import uuidv4 from "uuid/v4";
 
 const ns = uuidv4();

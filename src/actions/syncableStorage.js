@@ -371,6 +371,7 @@ export {
   SYNCABLE_STORAGE_SYNC_SUCCESS,
   SYNCABLE_STORAGE_SYNC_FAILURE,
   upsertLocal,
+  replaceAllLocal,
   deleteLocal,
   sync
 };

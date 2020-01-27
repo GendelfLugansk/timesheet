@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
-import i18n from "../../../utils/i18n";
+import i18n from "../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./SelectWorkspace.en";
 import ru from "./SelectWorkspace.ru";
 import Joi from "joi";
-import groupJoiErrors from "../../../utils/groupJoiErrors";
+import groupJoiErrors from "../../utils/groupJoiErrors";
 import { connect } from "react-redux";
-import { fetchWorkspaces } from "../../../actions/workspaces";
-import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
-import { selectWorkspace } from "../../../actions/workspaces";
+import { fetchWorkspaces } from "../../actions/workspaces";
+import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
+import { selectWorkspace } from "../../actions/workspaces";
 import objectPath from "object-path";
-import stringifyError from "../../../utils/stringifyError";
+import stringifyError from "../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
 
 const ns = uuidv4();

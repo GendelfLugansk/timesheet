@@ -23,6 +23,7 @@ import uuidv4 from "uuid/v4";
 import { stringArray } from "../../../utils/joiExtensions";
 import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
+import GenerateDemo from "./GenerateDemo/GenerateDemo";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -57,7 +58,7 @@ const Log = ({
   const [validationErrors, setValidationErrors] = useState({});
 
   const realCurrentPage = Math.min(totalPages, Math.max(1, page));
-  const filteredItems = logItems.slice(
+  const pagedItems = logItems.slice(
     itemsPerPage * (realCurrentPage - 1),
     itemsPerPage * (realCurrentPage - 1) + itemsPerPage
   );
@@ -215,7 +216,7 @@ const Log = ({
 
   const [tagsAutosuggestId] = useState("autosuggest-" + uuidv4());
 
-  if (isSyncing && filteredItems.length === 0) {
+  if (isSyncing && pagedItems.length === 0) {
     return (
       <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
         <div>
@@ -223,6 +224,10 @@ const Log = ({
         </div>
       </div>
     );
+  }
+
+  if (logItems.length === 0) {
+    return <GenerateDemo workspaceId={workspaceId} />;
   }
 
   return (
@@ -243,7 +248,7 @@ const Log = ({
           </div>
         ) : null}
 
-        {filteredItems.map(
+        {pagedItems.map(
           ({
             uuid,
             userDisplayName,

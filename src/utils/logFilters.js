@@ -12,7 +12,9 @@ const coerceDataValue = (value, typeToCoerce) => {
       return Number(value);
 
     case "DateTime":
-      return typeof value === "string" ? DateTime.fromISO(value) : value;
+      return typeof value === "string"
+        ? DateTime.fromJSDate(new Date(value))
+        : value;
 
     case "ArrayOfStrings":
       return typeof value === "string"
@@ -37,7 +39,9 @@ const coerceFilterValue = (value, typeToCoerce) => {
       return Number(value);
 
     case "DateTime":
-      return typeof value === "string" ? DateTime.fromISO(value) : value;
+      return typeof value === "string"
+        ? DateTime.fromJSDate(new Date(value))
+        : value;
 
     default:
       return value;
@@ -132,7 +136,7 @@ const getTagsFilter = (logItems = []) => {
 
 const getEndTimeStringFilter = (logItems = []) => {
   const times = logItems.map(({ endTimeString }) =>
-    DateTime.fromISO(endTimeString)
+    DateTime.fromJSDate(new Date(endTimeString))
   );
   return {
     key: "endTimeString",
@@ -142,7 +146,7 @@ const getEndTimeStringFilter = (logItems = []) => {
         ? [
             Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-          ].map(v => coerceDataValue(v, "DateTime"))
+          ].map(v => DateTime.fromJSDate(new Date(v)))
         : [],
     typeToCoerce: "DateTime"
   };
@@ -150,7 +154,7 @@ const getEndTimeStringFilter = (logItems = []) => {
 
 const getStartTimeStringFilter = (logItems = []) => {
   const times = logItems.map(({ startTimeString }) =>
-    DateTime.fromISO(startTimeString)
+    DateTime.fromJSDate(new Date(startTimeString))
   );
   return {
     key: "startTimeString",
@@ -160,7 +164,7 @@ const getStartTimeStringFilter = (logItems = []) => {
         ? [
             Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-          ].map(v => coerceDataValue(v, "DateTime"))
+          ].map(v => DateTime.fromJSDate(new Date(v)))
         : [],
     typeToCoerce: "DateTime"
   };

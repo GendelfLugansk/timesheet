@@ -17,8 +17,6 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const workerInstance = worker();
-
 const GenerateDemo = ({
   isLoading,
   error,
@@ -31,11 +29,13 @@ const GenerateDemo = ({
   const { t } = useTranslation(ns);
 
   const generateDemo = useTask(async () => {
+    const workerInstance = worker();
     const data = await workerInstance.generateDemoData(
       userDisplayName,
       userId,
       userImage
     );
+    workerInstance.terminate();
     save(data);
     await sync();
   });

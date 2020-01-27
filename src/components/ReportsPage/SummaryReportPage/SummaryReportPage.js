@@ -107,11 +107,6 @@ export default connect(
       .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
       .filter(({ _deleted }) => !_deleted)
       .filter(filterFunction(filters))
-      .sort(
-        (a, b) =>
-          DateTime.fromISO(b.startTimeString) -
-          DateTime.fromISO(a.startTimeString)
-      )
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

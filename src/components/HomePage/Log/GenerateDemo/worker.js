@@ -42,7 +42,7 @@ export function generateDemoData(userDisplayName, userId, userImage) {
     return ret;
   };
   const currentDate = DateTime.local();
-  let date = currentDate.minus({ years: 5 });
+  let date = currentDate.minus({ years: 1 });
   const data = [];
   while (date <= currentDate) {
     const weekends = [7];

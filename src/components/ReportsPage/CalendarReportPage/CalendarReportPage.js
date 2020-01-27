@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import objectPath from "object-path";
 import { DateTime, Duration } from "luxon";
@@ -13,6 +13,9 @@ import ru from "./CalendarReportPage.ru";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import { filterFunction } from "../../../utils/logFilters";
 import uuidv4 from "uuid/v4";
+//eslint-disable-next-line import/no-webpack-loader-syntax
+import worker from "workerize-loader!./worker";
+import useTask from "../../../hooks/useTask";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -28,78 +31,42 @@ const CalendarReportPage = ({
 }) => {
   const { t } = useTranslation(ns);
   const { i18n } = useTranslation();
-
+  const [calendar, setCalendar] = useState({});
+  const [processingError, setProcessingError] = useState();
   useEffect(fetchState, [workspaceId]);
 
   const fullDayHours = 8;
 
-  const calendar = logItems.reduce((acc, item) => {
-    const startTime = DateTime.fromISO(item.startTimeString).toLocal();
-    const month = startTime.toFormat("y-M");
-    const startOfMonth = startTime.startOf("month");
-    if (acc[month] === undefined) {
-      //Map ignores empty values if array created as Array(7)
-      const typicalWeek = [
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-      ];
-      acc[month] = {
-        name: startTime.setLocale(i18n.language).toFormat("LLLL, y"),
-        startOfMonth,
-        weeks: [
-          [...typicalWeek],
-          [...typicalWeek],
-          [...typicalWeek],
-          [...typicalWeek],
-          [...typicalWeek],
-          [...typicalWeek]
-        ]
-      };
-      //Fill month with weeks
-      for (
-        let date = startOfMonth;
-        date <= startTime.endOf("month").endOf("day");
-        date = date.plus({ days: 1 })
-      ) {
-        const weekIndex =
-          Math.ceil((date.day + startOfMonth.weekday - 1) / 7) - 1;
-        const weekdayIndex = date.weekday - 1;
-        if (acc[month].weeks[weekIndex][weekdayIndex] === undefined) {
-          acc[month].weeks[weekIndex][weekdayIndex] = {
-            items: [],
-            durationHours: 0,
-            sum: 0,
-            dailyPercentage: 0,
-            day: date.day
-          };
-        }
-      }
+  const generateCalendar = useTask(async (logItems, fullDayHours, language) => {
+    try {
+      const start = new Date();
+      const workerInstance = worker();
+      const calendar = await workerInstance.generateCalendarData(
+        logItems,
+        fullDayHours,
+        language
+      );
+      workerInstance.terminate();
+      console.log(new Date().valueOf() - start.valueOf());
+      setCalendar(calendar);
+      setProcessingError(undefined);
+    } catch (e) {
+      setProcessingError(e);
     }
-    const weekIndex =
-      Math.ceil((startTime.day + startOfMonth.weekday - 1) / 7) - 1;
-    const weekdayIndex = startTime.weekday - 1;
-    acc[month].weeks[weekIndex][weekdayIndex].items.push(item);
-    acc[month].weeks[weekIndex][weekdayIndex].durationHours +=
-      typeof item.durationHours === "number" ? item.durationHours : 0;
-    acc[month].weeks[weekIndex][weekdayIndex].sum +=
-      typeof item.sum === "number" ? item.sum : 0;
-    acc[month].weeks[weekIndex][weekdayIndex].dailyPercentage =
-      (acc[month].weeks[weekIndex][weekdayIndex].durationHours * 100) /
-      fullDayHours;
+  });
 
-    return acc;
-  }, {});
+  useEffect(() => {
+    generateCalendar.perform(logItems, fullDayHours, i18n.language);
+  }, [logItems, fullDayHours, i18n.language, generateCalendar]);
 
   const syncRetry = () => {
     syncAll();
   };
 
-  if (isSyncing && logItems.length === 0) {
+  if (
+    (isSyncing && logItems.length === 0) ||
+    (generateCalendar.isRunning && Object.values(calendar).length === 0)
+  ) {
     return (
       <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
         <div>
@@ -126,6 +93,14 @@ const CalendarReportPage = ({
               >
                 {t("syncRetryButton")}
               </button>
+            </div>
+          </div>
+        ) : null}
+
+        {processingError ? (
+          <div className="uk-width-1-1">
+            <div className="uk-alert-danger" uk-alert="true">
+              {stringifyError(processingError)}
             </div>
           </div>
         ) : null}
@@ -217,11 +192,6 @@ export default connect(
       .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
       .filter(({ _deleted }) => !_deleted)
       .filter(filterFunction(filters))
-      .sort(
-        (a, b) =>
-          DateTime.fromISO(b.startTimeString) -
-          DateTime.fromISO(a.startTimeString)
-      )
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

@@ -63,7 +63,7 @@ const CalendarReportPage = ({
       //Fill month with weeks
       for (
         let date = startOfMonth;
-        date <= startTime.endOf("month").startOf("day");
+        date <= startTime.endOf("month").endOf("day");
         date = date.plus({ days: 1 })
       ) {
         const weekIndex =

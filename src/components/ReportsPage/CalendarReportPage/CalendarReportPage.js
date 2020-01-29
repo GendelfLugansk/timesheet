@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Duration } from "luxon";
 import { sync } from "../../../actions/syncableStorage";
@@ -14,7 +14,7 @@ import { filterFunction } from "../../../utils/logFilters";
 import uuidv4 from "uuid/v4";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
-import useTask from "../../../hooks/useTask";
+import useTask, { CONCURRENCY_STRATEGY_RESTART } from "../../../hooks/useTask";
 import {
   findMany,
   getError,
@@ -35,14 +35,12 @@ const CalendarReportPage = ({
 }) => {
   const { t } = useTranslation(ns);
   const { i18n } = useTranslation();
-  const [calendar, setCalendar] = useState({});
-  const [processingError, setProcessingError] = useState();
   useEffect(fetchState, [workspaceId]);
 
   const fullDayHours = 8;
 
-  const generateCalendar = useTask(async (logItems, fullDayHours, language) => {
-    try {
+  const generateCalendar = useTask(
+    async (logItems, fullDayHours, language) => {
       const start = new Date();
       const workerInstance = worker();
       const calendar = await workerInstance.generateCalendarData(
@@ -52,12 +50,11 @@ const CalendarReportPage = ({
       );
       workerInstance.terminate();
       console.log(new Date().valueOf() - start.valueOf());
-      setCalendar(calendar);
-      setProcessingError(undefined);
-    } catch (e) {
-      setProcessingError(e);
-    }
-  });
+      return calendar;
+    },
+    false,
+    CONCURRENCY_STRATEGY_RESTART
+  );
 
   useEffect(() => {
     generateCalendar.perform(logItems, fullDayHours, i18n.language);
@@ -69,7 +66,9 @@ const CalendarReportPage = ({
 
   if (
     (isSyncing && logItems.length === 0) ||
-    (generateCalendar.isRunning && Object.values(calendar).length === 0)
+    (generateCalendar.isRunning &&
+      typeof generateCalendar.result === "object" &&
+      Object.values(generateCalendar.result).length === 0)
   ) {
     return (
       <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
@@ -101,78 +100,84 @@ const CalendarReportPage = ({
           </div>
         ) : null}
 
-        {processingError ? (
+        {generateCalendar.getLatestInstanceErrorIfNotCanceled() ? (
           <div className="uk-width-1-1">
             <div className="uk-alert-danger" uk-alert="true">
-              {stringifyError(processingError)}
+              {stringifyError(
+                generateCalendar.getLatestInstanceErrorIfNotCanceled()
+              )}
             </div>
           </div>
         ) : null}
 
-        {Object.entries(calendar)
-          .sort(([, a], [, b]) => b.startOfMonth - a.startOfMonth)
-          .map(([key, { name, weeks }]) => (
-            <div key={key} className="month">
-              <div
-                className="uk-child-width-1-1 uk-grid-collapse uk-position-relative"
-                uk-grid="true"
-              >
-                {isSyncing ? <LoaderOverlay /> : null}
-                <div className="uk-text-lead uk-text-center uk-text-capitalize">
-                  {name}
-                </div>
-                {weeks.map((week, index) => (
-                  <div key={key + "_w_" + index} className="day-row">
-                    <div className="uk-grid-collapse" uk-grid="true">
-                      {week.map(
-                        (
-                          { dailyPercentage, durationHours, sum, day } = {},
-                          dayIndex
-                        ) => (
-                          <div
-                            key={key + "_w_" + index + "_d_" + dayIndex}
-                            className={
-                              "uk-width-1-7 day-cell " +
-                              (typeof day === "number"
-                                ? ""
-                                : "uk-background-muted")
-                            }
-                          >
-                            {typeof dailyPercentage === "number" ? (
-                              <div
-                                className="filler"
-                                style={{
-                                  width:
-                                    Math.min(100, dailyPercentage.toFixed(2)) +
-                                    "%"
-                                }}
-                              >
-                                &nbsp;
-                              </div>
-                            ) : null}
-                            <div className="uk-text-small">{day}</div>
-                            {typeof durationHours == "number" &&
-                            durationHours > 0 ? (
-                              <div className="uk-text-bold uk-text-small">
-                                {Duration.fromObject({
-                                  hours: durationHours
-                                }).toFormat("h:mm:ss")}
-                              </div>
-                            ) : null}
-                            {typeof sum == "number" && sum > 0 ? (
-                              <div className="uk-text-small">
-                                {"$" + sum.toFixed(2)}
-                              </div>
-                            ) : null}
-                          </div>
-                        )
-                      )}
+        {typeof generateCalendar.result === "object"
+          ? Object.entries(generateCalendar.result)
+              .sort(([, a], [, b]) => b.startOfMonth - a.startOfMonth)
+              .map(([key, { name, weeks }]) => (
+                <div key={key} className="month">
+                  <div
+                    className="uk-child-width-1-1 uk-grid-collapse uk-position-relative"
+                    uk-grid="true"
+                  >
+                    {isSyncing ? <LoaderOverlay /> : null}
+                    <div className="uk-text-lead uk-text-center uk-text-capitalize">
+                      {name}
                     </div>
+                    {weeks.map((week, index) => (
+                      <div key={key + "_w_" + index} className="day-row">
+                        <div className="uk-grid-collapse" uk-grid="true">
+                          {week.map(
+                            (
+                              { dailyPercentage, durationHours, sum, day } = {},
+                              dayIndex
+                            ) => (
+                              <div
+                                key={key + "_w_" + index + "_d_" + dayIndex}
+                                className={
+                                  "uk-width-1-7 day-cell " +
+                                  (typeof day === "number"
+                                    ? ""
+                                    : "uk-background-muted")
+                                }
+                              >
+                                {typeof dailyPercentage === "number" ? (
+                                  <div
+                                    className="filler"
+                                    style={{
+                                      width:
+                                        Math.min(
+                                          100,
+                                          dailyPercentage.toFixed(2)
+                                        ) + "%"
+                                    }}
+                                  >
+                                    &nbsp;
+                                  </div>
+                                ) : null}
+                                <div className="uk-text-small">{day}</div>
+                                {typeof durationHours == "number" &&
+                                durationHours > 0 ? (
+                                  <div className="uk-text-bold uk-text-small">
+                                    {Duration.fromObject({
+                                      hours: durationHours
+                                    }).toFormat("h:mm:ss")}
+                                  </div>
+                                ) : null}
+                                {typeof sum == "number" && sum > 0 ? (
+                                  <div className="uk-text-small">
+                                    {"$" + sum.toFixed(2)}
+                                  </div>
+                                ) : null}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                </div>
+              ))
+          : null}
       </div>
     </div>
   );

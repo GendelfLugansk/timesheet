@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const makeTaskInstance = (asyncFunc, statusCb) => {
   const taskInstance = {
@@ -83,15 +83,29 @@ const makeTask = (
     isIdle: true,
     numRunning: 0,
     instances: [],
-    latestInstance: undefined
+    latestInstance: undefined,
+    result: undefined,
+    error: undefined
   };
 
-  const updateCounters = () => {
+  const updateCounters = taskInstance => {
     task.numRunning = task.instances.filter(
       ({ isRunning }) => isRunning
     ).length;
     task.isRunning = task.numRunning > 0;
     task.isIdle = !task.isRunning;
+    task.result =
+      taskInstance !== undefined &&
+      taskInstance.isComplete &&
+      taskInstance.result !== undefined
+        ? taskInstance.result
+        : task.result;
+    task.error =
+      taskInstance !== undefined &&
+      taskInstance.isComplete &&
+      taskInstance.error !== undefined
+        ? taskInstance.error
+        : task.error;
     task.instances = task.instances.filter(({ isComplete }) => !isComplete);
     statusCb(task);
   };
@@ -107,7 +121,7 @@ const makeTask = (
       const instance = makeTaskInstance(asyncFunc, updateCounters);
       task.instances.push(instance);
       task.latestInstance = instance;
-      await instance.perform(...params);
+      return await instance.perform(...params);
     } catch (e) {
       if (performCanThrow) {
         throw e;
@@ -120,7 +134,7 @@ const makeTask = (
     updateCounters();
   };
 
-  task.getLatestErrorIfNotCanceled = () => {
+  task.getLatestInstanceErrorIfNotCanceled = () => {
     if (!task.latestInstance) {
       return;
     }
@@ -132,7 +146,7 @@ const makeTask = (
     return task.latestInstance.error;
   };
 
-  task.discardLatestError = () => {
+  task.discardLatestInstanceError = () => {
     if (!task.latestInstance) {
       return;
     }

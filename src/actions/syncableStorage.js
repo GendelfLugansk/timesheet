@@ -2,167 +2,209 @@ import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
 
+export const TYPE_STRING = "String";
+export const TYPE_NUMBER = "Number";
+export const TYPE_ARRAY_OF_STRINGS = "ArrayOfStrings";
+export const TYPE_ISO_DATE = "ISODate";
+
 const tablesConfig = {
   Log: {
     userDisplayName: {
       index: 0,
-      alpha: "A"
+      alpha: "A",
+      type: TYPE_STRING
     },
     taskDescription: {
       index: 1,
-      alpha: "B"
+      alpha: "B",
+      type: TYPE_STRING
     },
     project: {
       index: 2,
-      alpha: "C"
+      alpha: "C",
+      type: TYPE_STRING
     },
     tags: {
       index: 3,
-      alpha: "D"
+      alpha: "D",
+      type: TYPE_ARRAY_OF_STRINGS
     },
     startTimeString: {
       index: 4,
-      alpha: "E"
+      alpha: "E",
+      type: TYPE_ISO_DATE
     },
     endTimeString: {
       index: 5,
-      alpha: "F"
+      alpha: "F",
+      type: TYPE_ISO_DATE
     },
     hourlyRate: {
       index: 6,
-      alpha: "G"
+      alpha: "G",
+      type: TYPE_NUMBER
     },
     durationHours: {
       index: 7,
-      alpha: "H"
+      alpha: "H",
+      type: TYPE_NUMBER
     },
     sum: {
       index: 8,
-      alpha: "I"
+      alpha: "I",
+      type: TYPE_NUMBER
     },
     userId: {
       index: 9,
-      alpha: "J"
+      alpha: "J",
+      type: TYPE_STRING
     },
     uuid: {
       index: 10,
-      alpha: "K"
+      alpha: "K",
+      type: TYPE_STRING
     },
     updatedAt: {
       index: 11,
-      alpha: "L"
+      alpha: "L",
+      type: TYPE_ISO_DATE
     },
     userImage: {
       index: 12,
-      alpha: "M"
+      alpha: "M",
+      type: TYPE_STRING
     }
   },
 
   Progress: {
     userDisplayName: {
       index: 0,
-      alpha: "A"
+      alpha: "A",
+      type: TYPE_STRING
     },
     taskDescription: {
       index: 1,
-      alpha: "B"
+      alpha: "B",
+      type: TYPE_STRING
     },
     project: {
       index: 2,
-      alpha: "C"
+      alpha: "C",
+      type: TYPE_STRING
     },
     tags: {
       index: 3,
-      alpha: "D"
+      alpha: "D",
+      type: TYPE_ARRAY_OF_STRINGS
     },
     startTimeString: {
       index: 4,
-      alpha: "E"
+      alpha: "E",
+      type: TYPE_ISO_DATE
     },
     hourlyRate: {
       index: 5,
-      alpha: "F"
+      alpha: "F",
+      type: TYPE_NUMBER
     },
     userId: {
       index: 6,
-      alpha: "G"
+      alpha: "G",
+      type: TYPE_STRING
     },
     uuid: {
       index: 7,
-      alpha: "H"
+      alpha: "H",
+      type: TYPE_STRING
     },
     updatedAt: {
       index: 8,
-      alpha: "I"
+      alpha: "I",
+      type: TYPE_ISO_DATE
     },
     userImage: {
       index: 9,
-      alpha: "J"
+      alpha: "J",
+      type: TYPE_STRING
     }
   },
 
   Projects: {
     name: {
       index: 0,
-      alpha: "A"
+      alpha: "A",
+      type: TYPE_STRING
     },
     description: {
       index: 1,
-      alpha: "B"
+      alpha: "B",
+      type: TYPE_STRING
     },
     colorRGB: {
       index: 2,
-      alpha: "C"
+      alpha: "C",
+      type: TYPE_STRING
     },
     uuid: {
       index: 3,
-      alpha: "D"
+      alpha: "D",
+      type: TYPE_STRING
     },
     updatedAt: {
       index: 4,
-      alpha: "E"
+      alpha: "E",
+      type: TYPE_ISO_DATE
     }
   },
 
   Tags: {
     name: {
       index: 0,
-      alpha: "A"
+      alpha: "A",
+      type: TYPE_STRING
     },
     description: {
       index: 1,
-      alpha: "B"
+      alpha: "B",
+      type: TYPE_STRING
     },
     colorRGB: {
       index: 2,
-      alpha: "C"
+      alpha: "C",
+      type: TYPE_STRING
     },
     uuid: {
       index: 3,
-      alpha: "D"
+      alpha: "D",
+      type: TYPE_STRING
     },
     updatedAt: {
       index: 4,
-      alpha: "E"
+      alpha: "E",
+      type: TYPE_ISO_DATE
     }
   },
 
   Config: {
     key: {
       index: 0,
-      alpha: "A"
+      alpha: "A",
+      type: TYPE_STRING
     },
     value: {
       index: 1,
-      alpha: "B"
+      alpha: "B",
+      type: TYPE_STRING
     },
     uuid: {
       index: 2,
-      alpha: "C"
+      alpha: "C",
+      type: TYPE_STRING
     },
     updatedAt: {
       index: 3,
-      alpha: "D"
+      alpha: "D",
+      type: TYPE_ISO_DATE
     }
   }
 };

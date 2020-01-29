@@ -2,21 +2,27 @@ import { DateTime } from "luxon";
 import pako from "pako";
 import base64Decode from "./base64Decode";
 import base64Encode from "./base64Encode";
+import {
+  TYPE_ARRAY_OF_STRINGS,
+  TYPE_ISO_DATE,
+  TYPE_NUMBER,
+  TYPE_STRING
+} from "../actions/syncableStorage";
 
 const coerceDataValue = (value, typeToCoerce) => {
   switch (typeToCoerce) {
-    case "String":
+    case TYPE_STRING:
       return String(value);
 
-    case "Number":
+    case TYPE_NUMBER:
       return Number(value);
 
-    case "DateTime":
+    case TYPE_ISO_DATE:
       return typeof value === "string"
         ? DateTime.fromJSDate(new Date(value))
         : value;
 
-    case "ArrayOfStrings":
+    case TYPE_ARRAY_OF_STRINGS:
       return typeof value === "string"
         ? value
             .split(",")
@@ -31,14 +37,14 @@ const coerceDataValue = (value, typeToCoerce) => {
 
 const coerceFilterValue = (value, typeToCoerce) => {
   switch (typeToCoerce) {
-    case "String":
-    case "ArrayOfStrings":
+    case TYPE_STRING:
+    case TYPE_ARRAY_OF_STRINGS:
       return String(value);
 
-    case "Number":
+    case TYPE_NUMBER:
       return Number(value);
 
-    case "DateTime":
+    case TYPE_ISO_DATE:
       return typeof value === "string"
         ? DateTime.fromJSDate(new Date(value))
         : value;
@@ -111,7 +117,7 @@ const getProjectsFilter = (logItems = []) => {
     availableValues: [
       ...new Set(logItems.map(({ project }) => String(project)))
     ].sort(),
-    typeToCoerce: "String"
+    typeToCoerce: TYPE_STRING
   };
 };
 const getTagsFilter = (logItems = []) => {
@@ -130,7 +136,7 @@ const getTagsFilter = (logItems = []) => {
         )
       )
     ].sort(),
-    typeToCoerce: "ArrayOfStrings"
+    typeToCoerce: TYPE_ARRAY_OF_STRINGS
   };
 };
 
@@ -148,7 +154,7 @@ const getEndTimeStringFilter = (logItems = []) => {
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
           ].map(v => DateTime.fromJSDate(new Date(v)))
         : [],
-    typeToCoerce: "DateTime"
+    typeToCoerce: TYPE_ISO_DATE
   };
 };
 
@@ -166,7 +172,7 @@ const getStartTimeStringFilter = (logItems = []) => {
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
           ].map(v => DateTime.fromJSDate(new Date(v)))
         : [],
-    typeToCoerce: "DateTime"
+    typeToCoerce: TYPE_ISO_DATE
   };
 };
 

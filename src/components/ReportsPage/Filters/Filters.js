@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { getAvailableFilters } from "../../../utils/logFilters";
-import { sync } from "../../../actions/syncableStorage";
+import { sync, TYPE_ISO_DATE } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import stringifyError from "../../../utils/stringifyError";
 import { useTranslation } from "react-i18next";
@@ -407,7 +407,7 @@ const Filters = ({
           );
         }
 
-        if (type === "between" && typeToCoerce === "DateTime") {
+        if (type === "between" && typeToCoerce === TYPE_ISO_DATE) {
           return (
             <FilterBetweenDates
               isSyncing={isSyncing}

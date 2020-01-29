@@ -139,15 +139,15 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
             </div>
           ) : null}
 
-          {create.getLatestErrorIfNotCanceled() ? (
+          {create.getLatestInstanceErrorIfNotCanceled() ? (
             <div className="uk-margin">
               <div className="uk-alert-danger" uk-alert="true">
                 <button
                   className="uk-alert-close"
                   uk-close="true"
-                  onClick={() => create.discardLatestError()}
+                  onClick={() => create.discardLatestInstanceError()}
                 />
-                {stringifyError(create.getLatestErrorIfNotCanceled())}
+                {stringifyError(create.getLatestInstanceErrorIfNotCanceled())}
               </div>
             </div>
           ) : null}

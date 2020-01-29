@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import {
   deleteLocal,
   sync,
@@ -24,6 +23,11 @@ import { stringArray } from "../../../utils/joiExtensions";
 import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
 import GenerateDemo from "./GenerateDemo/GenerateDemo";
+import {
+  getError,
+  isSyncing,
+  findMany
+} from "../../../selectors/syncableStorage";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -906,39 +910,17 @@ export { Log };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.isSyncing`,
-      false
+    isSyncing: isSyncing(state, workspaceId, "Log"),
+    syncError: getError(state, workspaceId, "Log"),
+    logItems: findMany(state, workspaceId, "Log").sort(
+      (a, b) =>
+        DateTime.fromJSDate(new Date(b.endTimeString)) -
+        DateTime.fromJSDate(new Date(a.endTimeString))
     ),
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.error`,
-      null
-    ),
-    logItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
-      .filter(({ _deleted }) => !_deleted)
-      .sort(
-        (a, b) =>
-          DateTime.fromISO(b.endTimeString) - DateTime.fromISO(a.endTimeString)
-      ),
-    isTagsSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Tags.isSyncing`,
-      false
-    ),
-    tagItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Tags.data`, [])
-      .filter(({ _deleted }) => !_deleted),
-    isProjectsSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Projects.isSyncing`,
-      false
-    ),
-    projectItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Projects.data`, [])
-      .filter(({ _deleted }) => !_deleted)
+    isTagsSyncing: isSyncing(state, workspaceId, "Tags"),
+    tagItems: findMany(state, workspaceId, "Tags"),
+    isProjectsSyncing: isSyncing(state, workspaceId, "Projects"),
+    projectItems: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

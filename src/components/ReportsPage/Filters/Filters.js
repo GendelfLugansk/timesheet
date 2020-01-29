@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import { getAvailableFilters } from "../../../utils/logFilters";
 import { sync } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
@@ -16,6 +15,11 @@ import ReactHtmlParser from "react-html-parser";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import "./Filters.scss";
 import uuidv4 from "uuid/v4";
+import {
+  findMany,
+  getError,
+  isSyncing
+} from "../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -438,23 +442,10 @@ const Filters = ({
 };
 
 export default connect(
-  (state, { workspaceId, isSyncing }) => ({
-    isSyncing:
-      objectPath.get(
-        state.syncableStorage,
-        `${workspaceId}.Log.isSyncing`,
-        false
-      ) || isSyncing,
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.error`,
-      null
-    ),
-    availableFilters: getAvailableFilters(
-      objectPath
-        .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
-        .filter(({ _deleted }) => !_deleted)
-    )
+  (state, { workspaceId, isSyncing: isSyncing2 }) => ({
+    isSyncing: isSyncing(state, workspaceId, "Log") || isSyncing2,
+    syncError: getError(state, workspaceId, "Log"),
+    availableFilters: getAvailableFilters(findMany(state, workspaceId, "Log"))
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

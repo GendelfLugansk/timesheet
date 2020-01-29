@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import {
   sync,
   upsertLocal,
@@ -18,6 +17,11 @@ import JoiBase from "joi";
 import Autosuggest from "react-autosuggest";
 import theme from "../../../styles/autosuggestTheme";
 import { stringArray } from "../../../utils/joiExtensions";
+import {
+  findMany,
+  getError,
+  isSyncing
+} from "../../../selectors/syncableStorage";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -476,42 +480,21 @@ export { Timer };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Progress.isSyncing`,
-      false
-    ),
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Progress.error`,
-      null
-    ),
+    isSyncing: isSyncing(state, workspaceId, "Progress"),
+    syncError: getError(state, workspaceId, "Progress"),
     timerInProgress: {
       uuid: uuidv4(),
-      ...(objectPath
-        .get(state.syncableStorage, `${workspaceId}.Progress.data`, [])
-        .filter(({ _deleted }) => !_deleted)
-        .filter(row => row.userId === state.auth.currentUser.id)[0] || {}),
+      ...(findMany(state, workspaceId, "Progress").filter(
+        row => row.userId === state.auth.currentUser.id
+      )[0] || {}),
       userId: state.auth.currentUser.id,
       userDisplayName: state.auth.currentUser.name,
       userImage: state.auth.currentUser.image
     },
-    isTagsSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Tags.isSyncing`,
-      false
-    ),
-    tagItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Tags.data`, [])
-      .filter(({ _deleted }) => !_deleted),
-    isProjectsSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Projects.isSyncing`,
-      false
-    ),
-    projectItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Projects.data`, [])
-      .filter(({ _deleted }) => !_deleted)
+    isTagsSyncing: isSyncing(state, workspaceId, "Tags"),
+    tagItems: findMany(state, workspaceId, "Tags"),
+    isProjectsSyncing: isSyncing(state, workspaceId, "Projects"),
+    projectItems: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

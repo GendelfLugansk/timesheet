@@ -7,11 +7,11 @@ import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { Duration } from "luxon";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
 import "./ProjectsPie.scss";
 import uuidv4 from "uuid/v4";
+import { findMany } from "../../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -246,11 +246,7 @@ export { ProjectsPie };
 
 export default connect(
   (state, { workspaceId }) => ({
-    definedProjects: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Projects.data`,
-      []
-    )
+    definedProjects: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

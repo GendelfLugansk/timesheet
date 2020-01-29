@@ -7,11 +7,11 @@ import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { Duration } from "luxon";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
 import "./TagsPie.scss";
 import uuidv4 from "uuid/v4";
+import { findMany } from "../../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -253,11 +253,7 @@ export { TagsPie };
 
 export default connect(
   (state, { workspaceId }) => ({
-    definedTags: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Tags.data`,
-      []
-    )
+    definedTags: findMany(state, workspaceId, "Tags")
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

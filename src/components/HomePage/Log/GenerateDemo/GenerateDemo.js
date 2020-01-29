@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import en from "./GenerateDemo.en";
 import ru from "./GenerateDemo.ru";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import stringifyError from "../../../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
 import Loader from "../../../Loader/Loader";
@@ -12,6 +11,7 @@ import { sync, replaceAllLocal } from "../../../../actions/syncableStorage";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask from "../../../../hooks/useTask";
+import { getError, isSyncing } from "../../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -86,16 +86,8 @@ export { GenerateDemo };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isLoading: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.isSyncing`,
-      false
-    ),
-    error: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.error`,
-      null
-    ),
+    isLoading: isSyncing(state, workspaceId, "Log"),
+    error: getError(state, workspaceId, "Log"),
     userId: state.auth.currentUser.id,
     userDisplayName: state.auth.currentUser.name,
     userImage: state.auth.currentUser.image

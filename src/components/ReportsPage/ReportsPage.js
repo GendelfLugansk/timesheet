@@ -10,7 +10,6 @@ import CreateFirstWorkspace from "../CreateFirstWorkspace/CreateFirstWorkspace";
 import SelectWorkspace from "../SelectWorkspace/SelectWorkspace";
 import Filters from "./Filters/Filters";
 import { deserialize, serialize } from "../../utils/logFilters";
-import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
 import { sync, upsertLocal } from "../../actions/syncableStorage";
 import { useTranslation } from "react-i18next";
@@ -19,6 +18,7 @@ import en from "./ReportsPage.en";
 import ru from "./ReportsPage.ru";
 import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
 import { useDebouncedCallback } from "use-debounce";
+import { findMany, getError, isSyncing } from "../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -26,30 +26,20 @@ i18n.addResourceBundle("ru", ns, ru);
 
 const WithFilters = connect(
   (state, { workspaceId }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Config.isSyncing`,
-      false
-    ),
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Config.error`,
-      null
-    ),
+    isSyncing: isSyncing(state, workspaceId, "Config"),
+    syncError: getError(state, workspaceId, "Config"),
     appliedFilters: deserialize(
       (
-        objectPath
-          .get(state.syncableStorage, `${workspaceId}.Config.data`, [])
-          .filter(({ _deleted }) => !_deleted)
-          .filter(({ key, uuid }) => key === "filters")[0] || {}
+        findMany(state, workspaceId, "Config").filter(
+          ({ key, uuid }) => key === "filters"
+        )[0] || {}
       ).value
     ),
     filtersUUID:
       (
-        objectPath
-          .get(state.syncableStorage, `${workspaceId}.Config.data`, [])
-          .filter(({ _deleted }) => !_deleted)
-          .filter(({ key, uuid }) => key === "filters")[0] || {}
+        findMany(state, workspaceId, "Config").filter(
+          ({ key, uuid }) => key === "filters"
+        )[0] || {}
       ).uuid || uuidv4()
   }),
   (dispatch, { workspaceId }) => ({

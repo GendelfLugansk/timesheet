@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
-import { DateTime, Duration } from "luxon";
+import { Duration } from "luxon";
 import { sync } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
@@ -16,6 +15,11 @@ import uuidv4 from "uuid/v4";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask from "../../../hooks/useTask";
+import {
+  findMany,
+  getError,
+  isSyncing
+} from "../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -178,20 +182,11 @@ export { CalendarReportPage };
 
 export default connect(
   (state, { workspaceId, filters = [] }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.isSyncing`,
-      false
-    ),
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.error`,
-      null
-    ),
-    logItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
-      .filter(({ _deleted }) => !_deleted)
-      .filter(filterFunction(filters))
+    isSyncing: isSyncing(state, workspaceId, "Log"),
+    syncError: getError(state, workspaceId, "Log"),
+    logItems: findMany(state, workspaceId, "Log").filter(
+      filterFunction(filters)
+    )
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

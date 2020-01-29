@@ -1,7 +1,5 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
-import { DateTime } from "luxon";
 import { sync } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
@@ -17,6 +15,11 @@ import TagsPie from "./TagsPie/TagsPie";
 import TimeBars from "./TimeBars/TimeBars";
 import TotalHours from "./TotalHours/TotalHours";
 import uuidv4 from "uuid/v4";
+import {
+  findMany,
+  getError,
+  isSyncing
+} from "../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -93,20 +96,11 @@ export { SummaryReportPage };
 
 export default connect(
   (state, { workspaceId, filters = [] }) => ({
-    isSyncing: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.isSyncing`,
-      false
-    ),
-    syncError: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Log.error`,
-      null
-    ),
-    logItems: objectPath
-      .get(state.syncableStorage, `${workspaceId}.Log.data`, [])
-      .filter(({ _deleted }) => !_deleted)
-      .filter(filterFunction(filters))
+    isSyncing: isSyncing(state, workspaceId, "Log"),
+    syncError: getError(state, workspaceId, "Log"),
+    logItems: findMany(state, workspaceId, "Log").filter(
+      filterFunction(filters)
+    )
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

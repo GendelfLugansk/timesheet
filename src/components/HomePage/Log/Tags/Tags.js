@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import objectPath from "object-path";
 import { sync } from "../../../../actions/syncableStorage";
+import { findMany } from "../../../../selectors/syncableStorage";
 
 const Tags = ({ workspaceId, tags, definedTags, fetchState }) => {
   const maybeFetch = () => {
@@ -36,11 +36,7 @@ export { Tags };
 
 export default connect(
   (state, { workspaceId }) => ({
-    definedTags: objectPath.get(
-      state.syncableStorage,
-      `${workspaceId}.Tags.data`,
-      []
-    )
+    definedTags: findMany(state, workspaceId, "Tags")
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {

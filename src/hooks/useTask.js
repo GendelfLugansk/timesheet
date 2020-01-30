@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 
-const makeTaskInstance = (asyncFunc, statusCb) => {
+const makeTaskInstance = (asyncFunc, statusCb, cancelCb) => {
   const taskInstance = {
     isCanceled: false,
     isComplete: false,
     isRunning: false,
     result: undefined,
-    error: undefined
+    error: undefined,
+    performParams: []
   };
 
   taskInstance.cancel = () => {
     if (!taskInstance.isComplete) {
       taskInstance.isCanceled = true;
+      taskInstance.isComplete = true;
+      cancelCb(...taskInstance.performParams, taskInstance);
       statusCb(taskInstance);
     }
   };
@@ -34,6 +37,7 @@ const makeTaskInstance = (asyncFunc, statusCb) => {
     canceledError.isCanceled = true;
 
     try {
+      taskInstance.performParams = params;
       taskInstance.isRunning = true;
       statusCb(taskInstance);
       const result = await asyncFunc(...params);
@@ -76,7 +80,8 @@ const makeTask = (
   asyncFunc,
   performCanThrow,
   concurrencyStrategy,
-  statusCb
+  statusCb,
+  cancelCb
 ) => {
   const task = {
     isRunning: false,
@@ -118,7 +123,7 @@ const makeTask = (
         }
       }
 
-      const instance = makeTaskInstance(asyncFunc, updateCounters);
+      const instance = makeTaskInstance(asyncFunc, updateCounters, cancelCb);
       task.instances.push(instance);
       task.latestInstance = instance;
       return await instance.perform(...params);
@@ -160,16 +165,23 @@ const makeTask = (
 const useTask = (
   asyncFunc,
   performCanThrow = false,
-  concurrencyStrategy = CONCURRENCY_STRATEGY_DROP
+  concurrencyStrategy = CONCURRENCY_STRATEGY_DROP,
+  cancelCb = () => {}
 ) => {
   const [, render] = useState();
   const isMounted = useRef(true);
   const task = useRef(
-    makeTask(asyncFunc, performCanThrow, concurrencyStrategy, () => {
-      if (isMounted.current) {
-        render({});
-      }
-    })
+    makeTask(
+      asyncFunc,
+      performCanThrow,
+      concurrencyStrategy,
+      () => {
+        if (isMounted.current) {
+          render({});
+        }
+      },
+      cancelCb
+    )
   );
 
   useEffect(() => {

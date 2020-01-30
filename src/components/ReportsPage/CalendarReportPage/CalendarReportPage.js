@@ -40,9 +40,8 @@ const CalendarReportPage = ({
   const fullDayHours = 8;
 
   const generateCalendar = useTask(
-    async (logItems, fullDayHours, language) => {
+    async (logItems, fullDayHours, language, workerInstance) => {
       const start = new Date();
-      const workerInstance = worker();
       const calendar = await workerInstance.generateCalendarData(
         logItems,
         fullDayHours,
@@ -50,14 +49,17 @@ const CalendarReportPage = ({
       );
       workerInstance.terminate();
       console.log(new Date().valueOf() - start.valueOf());
-      return calendar;
+      return calendar.sort((a, b) => b.startOfMonth - a.startOfMonth);
     },
     false,
-    CONCURRENCY_STRATEGY_RESTART
+    CONCURRENCY_STRATEGY_RESTART,
+    (logItems, fullDayHours, language, workerInstance, taskInstance) => {
+      workerInstance.terminate();
+    }
   );
 
   useEffect(() => {
-    generateCalendar.perform(logItems, fullDayHours, i18n.language);
+    generateCalendar.perform(logItems, fullDayHours, i18n.language, worker());
   }, [logItems, fullDayHours, i18n.language, generateCalendar]);
 
   const syncRetry = () => {
@@ -67,8 +69,8 @@ const CalendarReportPage = ({
   if (
     (isSyncing && logItems.length === 0) ||
     (generateCalendar.isRunning &&
-      typeof generateCalendar.result === "object" &&
-      Object.values(generateCalendar.result).length === 0)
+      Array.isArray(generateCalendar.result) &&
+      generateCalendar.result.length === 0)
   ) {
     return (
       <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
@@ -110,73 +112,71 @@ const CalendarReportPage = ({
           </div>
         ) : null}
 
-        {typeof generateCalendar.result === "object"
-          ? Object.entries(generateCalendar.result)
-              .sort(([, a], [, b]) => b.startOfMonth - a.startOfMonth)
-              .map(([key, { name, weeks }]) => (
-                <div key={key} className="month">
-                  <div
-                    className="uk-child-width-1-1 uk-grid-collapse uk-position-relative"
-                    uk-grid="true"
-                  >
-                    {isSyncing ? <LoaderOverlay /> : null}
-                    <div className="uk-text-lead uk-text-center uk-text-capitalize">
-                      {name}
-                    </div>
-                    {weeks.map((week, index) => (
-                      <div key={key + "_w_" + index} className="day-row">
-                        <div className="uk-grid-collapse" uk-grid="true">
-                          {week.map(
-                            (
-                              { dailyPercentage, durationHours, sum, day } = {},
-                              dayIndex
-                            ) => (
-                              <div
-                                key={key + "_w_" + index + "_d_" + dayIndex}
-                                className={
-                                  "uk-width-1-7 day-cell " +
-                                  (typeof day === "number"
-                                    ? ""
-                                    : "uk-background-muted")
-                                }
-                              >
-                                {typeof dailyPercentage === "number" ? (
-                                  <div
-                                    className="filler"
-                                    style={{
-                                      width:
-                                        Math.min(
-                                          100,
-                                          dailyPercentage.toFixed(2)
-                                        ) + "%"
-                                    }}
-                                  >
-                                    &nbsp;
-                                  </div>
-                                ) : null}
-                                <div className="uk-text-small">{day}</div>
-                                {typeof durationHours == "number" &&
-                                durationHours > 0 ? (
-                                  <div className="uk-text-bold uk-text-small">
-                                    {Duration.fromObject({
-                                      hours: durationHours
-                                    }).toFormat("h:mm:ss")}
-                                  </div>
-                                ) : null}
-                                {typeof sum == "number" && sum > 0 ? (
-                                  <div className="uk-text-small">
-                                    {"$" + sum.toFixed(2)}
-                                  </div>
-                                ) : null}
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    ))}
+        {Array.isArray(generateCalendar.result)
+          ? generateCalendar.result.map(({ key, name, weeks }) => (
+              <div key={key} className="month">
+                <div
+                  className="uk-child-width-1-1 uk-grid-collapse uk-position-relative"
+                  uk-grid="true"
+                >
+                  {isSyncing ? <LoaderOverlay /> : null}
+                  <div className="uk-text-lead uk-text-center uk-text-capitalize">
+                    {name}
                   </div>
+                  {weeks.map((week, index) => (
+                    <div key={key + "_w_" + index} className="day-row">
+                      <div className="uk-grid-collapse" uk-grid="true">
+                        {week.map(
+                          (
+                            { dailyPercentage, durationHours, sum, day } = {},
+                            dayIndex
+                          ) => (
+                            <div
+                              key={key + "_w_" + index + "_d_" + dayIndex}
+                              className={
+                                "uk-width-1-7 day-cell " +
+                                (typeof day === "number"
+                                  ? ""
+                                  : "uk-background-muted")
+                              }
+                            >
+                              {typeof dailyPercentage === "number" ? (
+                                <div
+                                  className="filler"
+                                  style={{
+                                    width:
+                                      Math.min(
+                                        100,
+                                        dailyPercentage.toFixed(2)
+                                      ) + "%"
+                                  }}
+                                >
+                                  &nbsp;
+                                </div>
+                              ) : null}
+                              <div className="uk-text-small">{day}</div>
+                              {typeof durationHours == "number" &&
+                              durationHours > 0 ? (
+                                <div className="uk-text-bold uk-text-small">
+                                  {Duration.fromObject({
+                                    hours: durationHours
+                                  }).toFormat("h:mm:ss")}
+                                </div>
+                              ) : null}
+                              {typeof sum == "number" && sum > 0 ? (
+                                <div className="uk-text-small">
+                                  {"$" + sum.toFixed(2)}
+                                </div>
+                              ) : null}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))
+              </div>
+            ))
           : null}
       </div>
     </div>

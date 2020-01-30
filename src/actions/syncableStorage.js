@@ -1,6 +1,7 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
+import { findMany, isSyncing } from "../selectors/syncableStorage";
 
 export const TYPE_STRING = "String";
 export const TYPE_NUMBER = "Number";
@@ -251,13 +252,9 @@ const sync = (workspaceId, table, allowConcurrency = false) => async (
   getState
 ) => {
   try {
-    const { syncableStorage } = getState();
+    const state = getState();
 
-    const isLoading = objectPath.get(
-      syncableStorage,
-      `${workspaceId}.${table}.isSyncing`,
-      false
-    );
+    const isLoading = isSyncing(state, workspaceId, table);
 
     if (isLoading && !allowConcurrency) {
       return;
@@ -294,9 +291,9 @@ const sync = (workspaceId, table, allowConcurrency = false) => async (
         return mapped;
       });
     const lastRowInSpreadsheet = data.length;
-    const localRowsToSave = objectPath
-      .get(syncableStorage, `${workspaceId}.${table}.data`, [])
-      .filter(({ _synced }) => !_synced);
+    const localRowsToSave = findMany(state, workspaceId, table).filter(
+      ({ _synced }) => !_synced
+    );
     const rangesToClear = [],
       dataToUpdate = [],
       valuesToAppend = [];

@@ -1,3 +1,4 @@
+import deepcopy from "deepcopy";
 import {
   SYNCABLE_STORAGE_UPSERT_LOCAL,
   SYNCABLE_STORAGE_DELETE_LOCAL,
@@ -20,34 +21,18 @@ const supportedActions = [
 const initialTableState = {
   isSyncing: false,
   error: null,
-  data: []
+  data: {}
 };
 
 const table = (state = initialTableState, action) => {
   switch (action.type) {
     case SYNCABLE_STORAGE_UPSERT_LOCAL: {
-      let rowIndex;
-      const data = [...state.data.map(row => ({ ...row }))];
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] && data[i].uuid === action.payload.row.uuid) {
-          rowIndex = i;
-          break;
-        }
-      }
-
-      if (rowIndex === undefined) {
-        data.push({
-          ...action.payload.row,
-          _updatedAt: DateTime.utc().toISO(),
-          _synced: action.payload.synced
-        });
-      } else {
-        data[rowIndex] = {
-          ...action.payload.row,
-          _updatedAt: DateTime.utc().toISO(),
-          _synced: action.payload.synced
-        };
-      }
+      const data = deepcopy(state.data);
+      data[action.payload.row.uuid] = {
+        ...action.payload.row,
+        _updatedAt: DateTime.utc().toISO(),
+        _synced: action.payload.synced
+      };
 
       return {
         ...state,
@@ -56,22 +41,10 @@ const table = (state = initialTableState, action) => {
     }
 
     case SYNCABLE_STORAGE_DELETE_LOCAL: {
-      let rowIndex;
-      const data = [...state.data.map(row => ({ ...row }))];
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] && data[i].uuid === action.payload.uuid) {
-          rowIndex = i;
-          break;
-        }
-      }
-
-      if (rowIndex === undefined) {
-        return state;
-      }
-
-      data[rowIndex]._deleted = true;
-      data[rowIndex]._updatedAt = DateTime.utc().toISO();
-      data[rowIndex]._synced = action.payload.synced;
+      const data = deepcopy(state.data);
+      data[action.payload.uuid]._deleted = true;
+      data[action.payload.uuid]._updatedAt = DateTime.utc().toISO();
+      data[action.payload.uuid]._synced = action.payload.synced;
 
       return {
         ...state,
@@ -82,11 +55,15 @@ const table = (state = initialTableState, action) => {
     case SYNCABLE_STORAGE_REPLACE_ALL_LOCAL:
       return {
         ...state,
-        data: action.payload.rows.map(row => ({
-          ...row,
-          _updatedAt: DateTime.utc().toISO(),
-          _synced: action.payload.synced
-        }))
+        data: action.payload.rows.reduce((acc, row) => {
+          acc[row.uuid] = {
+            ...row,
+            _updatedAt: DateTime.utc().toISO(),
+            _synced: action.payload.synced
+          };
+
+          return acc;
+        }, {})
       };
 
     case SYNCABLE_STORAGE_SYNC_BEGIN:

@@ -94,10 +94,12 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     sync: async () => {
-      await dispatch(sync(workspaceId, ["Log"]));
+      await dispatch(sync(workspaceId, ["Log", "Projects", "Tags"]));
     },
-    save: (data = []) => {
-      dispatch(replaceAllLocal(workspaceId, "Log", data));
+    save: ({ log, projects, tags }) => {
+      dispatch(replaceAllLocal(workspaceId, "Log", log));
+      dispatch(replaceAllLocal(workspaceId, "Projects", projects));
+      dispatch(replaceAllLocal(workspaceId, "Tags", tags));
     }
   })
 )(GenerateDemo);

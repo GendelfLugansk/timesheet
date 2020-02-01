@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import uuidv4 from "uuid/v4";
+import { colors } from "../../../../utils/chartColors";
 
 export function generateDemoData(userDisplayName, userId, userImage) {
   const projectNamesPool = [
@@ -43,7 +44,7 @@ export function generateDemoData(userDisplayName, userId, userImage) {
   };
   const currentDate = DateTime.local();
   let date = currentDate.minus({ years: 1 });
-  const data = [];
+  const log = [];
   while (date <= currentDate) {
     const weekends = [7];
     if (Math.random() < 0.95) {
@@ -99,11 +100,23 @@ export function generateDemoData(userDisplayName, userId, userImage) {
           updatedAt: DateTime.local().toISO(),
           userImage
         };
-        data.push(task);
+        log.push(task);
       }
     }
     date = date.plus({ days: 1 });
   }
 
-  return data;
+  return {
+    log,
+    projects: projectNamesPool.map((name, index) => ({
+      name,
+      colorRGB: colors[index],
+      uuid: uuidv4()
+    })),
+    tags: tagsPool.map((name, index) => ({
+      name,
+      colorRGB: colors[index],
+      uuid: uuidv4()
+    }))
+  };
 }

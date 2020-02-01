@@ -21,13 +21,6 @@ const WorkspaceSelector = ({
 }) => {
   const { t } = useTranslation(ns);
 
-  const maybeFetch = () => {
-    if (workspaces.length === 0) {
-      fetchState();
-    }
-  };
-  useEffect(maybeFetch, []);
-
   if (workspaces.length === 0) {
     return null;
   }

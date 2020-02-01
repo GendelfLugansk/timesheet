@@ -3,8 +3,6 @@ import { connect } from "react-redux";
 import { fetchAuthStatus } from "../../actions/auth";
 
 const AuthenticatedContainer = ({ isAuthenticated, fetchState, children }) => {
-  useEffect(fetchState, []);
-
   if (isAuthenticated === true) {
     return <>{children}</>;
   }

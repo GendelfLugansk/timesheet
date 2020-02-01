@@ -1,7 +1,11 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
-import { findMany, isSyncing } from "../selectors/syncableStorage";
+import {
+  findMany,
+  isAnySyncing,
+  isSyncing
+} from "../selectors/syncableStorage";
 
 export const TYPE_STRING = "String";
 export const TYPE_NUMBER = "Number";
@@ -247,30 +251,27 @@ const syncFailure = (workspaceId, table, error) => ({
   payload: { workspaceId, table, error }
 });
 
-const sync = (workspaceId, table, allowConcurrency = false) => async (
-  dispatch,
-  getState
-) => {
+const sync = (workspaceId, tables) => async (dispatch, getState) => {
   try {
+    console.assert(
+      Array.isArray(tables),
+      "Please pass an array of tables to sync instead of string"
+    );
     const state = getState();
+    const tablesArray = Array.isArray(tables) ? tables : [tables];
 
-    const isLoading = isSyncing(state, workspaceId, table);
-
-    if (isLoading && !allowConcurrency) {
-      return;
-    }
-
-    dispatch(syncBegin(workspaceId, table));
+    tablesArray.forEach(table => dispatch(syncBegin(workspaceId, table)));
     const gapi = await loadGAPI();
-    const tableColumns = tablesConfig[table] || {};
-    const ranges = [];
-    const firstColumnAlpha = Object.values(tableColumns)
-      .map(({ alpha }) => alpha)
-      .sort((a, b) => a.localeCompare(b))[0];
-    const lastColumnAlpha = Object.values(tableColumns)
-      .map(({ alpha }) => alpha)
-      .sort((a, b) => b.localeCompare(a))[0];
-    ranges.push(`${table}!${firstColumnAlpha}:${lastColumnAlpha}`);
+    const ranges = tablesArray.map(table => {
+      const tableColumns = tablesConfig[table] || {};
+      const firstColumnAlpha = Object.values(tableColumns)
+        .map(({ alpha }) => alpha)
+        .sort((a, b) => a.localeCompare(b))[0];
+      const lastColumnAlpha = Object.values(tableColumns)
+        .map(({ alpha }) => alpha)
+        .sort((a, b) => b.localeCompare(a))[0];
+      return `${table}!${firstColumnAlpha}:${lastColumnAlpha}`;
+    });
     const valueRanges = await gapi.client.sheets.spreadsheets.values.batchGet({
       spreadsheetId: workspaceId,
       ranges,
@@ -278,127 +279,146 @@ const sync = (workspaceId, table, allowConcurrency = false) => async (
       dateTimeRenderOption: "FORMATTED_STRING",
       majorDimension: "ROWS"
     });
-    const data = objectPath
-      .get(valueRanges, "result.valueRanges.0.values", [])
-      .map(row => {
-        const mapped = {};
-        for (const key in tableColumns) {
-          if (tableColumns.hasOwnProperty(key)) {
-            mapped[key] = row[tableColumns[key].index];
+    for (let index = 0; index < tablesArray.length; index++) {
+      const table = tablesArray[index];
+      try {
+        const tableColumns = tablesConfig[table] || {};
+        const firstColumnAlpha = Object.values(tableColumns)
+          .map(({ alpha }) => alpha)
+          .sort((a, b) => a.localeCompare(b))[0];
+        const lastColumnAlpha = Object.values(tableColumns)
+          .map(({ alpha }) => alpha)
+          .sort((a, b) => b.localeCompare(a))[0];
+        const data = objectPath
+          .get(valueRanges, `result.valueRanges.${index}.values`, [])
+          .map(row => {
+            const mapped = {};
+            for (const key in tableColumns) {
+              if (tableColumns.hasOwnProperty(key)) {
+                mapped[key] = row[tableColumns[key].index];
+              }
+            }
+
+            return mapped;
+          });
+        const lastRowInSpreadsheet = data.length;
+        const localRowsToSave = findMany(
+          state,
+          workspaceId,
+          table,
+          true
+        ).filter(({ _synced }) => !_synced);
+        const rangesToClear = [],
+          dataToUpdate = [],
+          valuesToAppend = [];
+        for (const localRow of localRowsToSave) {
+          let rowIndex;
+          for (let i = 0; i < data.length; i++) {
+            if (data[i] && data[i].uuid === localRow.uuid) {
+              rowIndex = i;
+              break;
+            }
           }
-        }
+          if (rowIndex !== undefined) {
+            const row = data[rowIndex];
+            const updatedAt = DateTime.fromISO(row.updatedAt);
+            const _updatedAt = DateTime.fromISO(localRow._updatedAt);
+            if (
+              updatedAt.isValid &&
+              _updatedAt.isValid &&
+              _updatedAt.valueOf() >= updatedAt.valueOf()
+            ) {
+              if (localRow._deleted) {
+                data[rowIndex] = undefined;
 
-        return mapped;
-      });
-    const lastRowInSpreadsheet = data.length;
-    const localRowsToSave = findMany(state, workspaceId, table).filter(
-      ({ _synced }) => !_synced
-    );
-    const rangesToClear = [],
-      dataToUpdate = [],
-      valuesToAppend = [];
-    for (const localRow of localRowsToSave) {
-      let rowIndex;
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] && data[i].uuid === localRow.uuid) {
-          rowIndex = i;
-          break;
-        }
-      }
-      if (rowIndex !== undefined) {
-        const row = data[rowIndex];
-        const updatedAt = DateTime.fromISO(row.updatedAt);
-        const _updatedAt = DateTime.fromISO(localRow._updatedAt);
-        if (
-          updatedAt.isValid &&
-          _updatedAt.isValid &&
-          _updatedAt.valueOf() >= updatedAt.valueOf()
-        ) {
-          if (localRow._deleted) {
-            data[rowIndex] = undefined;
+                rangesToClear.push(
+                  `${table}!${firstColumnAlpha}${rowIndex +
+                    1}:${lastColumnAlpha}${rowIndex + 1}`
+                );
+              } else {
+                data[rowIndex] = {
+                  ...data[rowIndex],
+                  ...localRow,
+                  updatedAt: localRow._updatedAt
+                };
 
-            rangesToClear.push(
-              `${table}!${firstColumnAlpha}${rowIndex +
-                1}:${lastColumnAlpha}${rowIndex + 1}`
-            );
-          } else {
-            data[rowIndex] = {
-              ...data[rowIndex],
+                const value = [];
+                for (const key in tableColumns) {
+                  if (tableColumns.hasOwnProperty(key)) {
+                    value[tableColumns[key].index] = data[rowIndex][key];
+                  }
+                }
+                dataToUpdate.push({
+                  range: `${table}!${firstColumnAlpha}${rowIndex +
+                    1}:${lastColumnAlpha}${rowIndex + 1}`,
+                  majorDimension: "ROWS",
+                  values: [value]
+                });
+              }
+            }
+          } else if (!localRow._deleted) {
+            const newRow = {
               ...localRow,
               updatedAt: localRow._updatedAt
             };
+            data.push(newRow);
 
             const value = [];
             for (const key in tableColumns) {
               if (tableColumns.hasOwnProperty(key)) {
-                value[tableColumns[key].index] = data[rowIndex][key];
+                value[tableColumns[key].index] = newRow[key];
               }
             }
-            dataToUpdate.push({
-              range: `${table}!${firstColumnAlpha}${rowIndex +
-                1}:${lastColumnAlpha}${rowIndex + 1}`,
+            valuesToAppend.push(value);
+          }
+        }
+        if (rangesToClear.length > 0) {
+          await gapi.client.sheets.spreadsheets.values.batchClear(
+            { spreadsheetId: workspaceId },
+            { ranges: rangesToClear }
+          );
+        }
+        if (dataToUpdate.length > 0) {
+          await gapi.client.sheets.spreadsheets.values.batchUpdate(
+            { spreadsheetId: workspaceId },
+            {
+              valueInputOption: "RAW",
+              data: dataToUpdate
+            }
+          );
+        }
+        if (valuesToAppend.length > 0) {
+          await gapi.client.sheets.spreadsheets.values.append(
+            {
+              spreadsheetId: workspaceId,
+              range: `${table}!${firstColumnAlpha}${lastRowInSpreadsheet +
+                1}:${lastColumnAlpha}`,
+              valueInputOption: "RAW",
+              insertDataOption: "INSERT_ROWS"
+            },
+            {
               majorDimension: "ROWS",
-              values: [value]
-            });
-          }
+              values: valuesToAppend
+            }
+          );
         }
-      } else if (!localRow._deleted) {
-        const newRow = {
-          ...localRow,
-          updatedAt: localRow._updatedAt
-        };
-        data.push(newRow);
-
-        const value = [];
-        for (const key in tableColumns) {
-          if (tableColumns.hasOwnProperty(key)) {
-            value[tableColumns[key].index] = newRow[key];
-          }
-        }
-        valuesToAppend.push(value);
+        dispatch(
+          replaceAllLocal(
+            workspaceId,
+            table,
+            data
+              .filter(datum => datum !== undefined)
+              .filter(({ uuid }) => !!uuid),
+            true
+          )
+        );
+        dispatch(syncSuccess(workspaceId, table));
+      } catch (e) {
+        dispatch(syncFailure(workspaceId, table, e));
       }
     }
-    if (rangesToClear.length > 0) {
-      await gapi.client.sheets.spreadsheets.values.batchClear(
-        { spreadsheetId: workspaceId },
-        { ranges: rangesToClear }
-      );
-    }
-    if (dataToUpdate.length > 0) {
-      await gapi.client.sheets.spreadsheets.values.batchUpdate(
-        { spreadsheetId: workspaceId },
-        {
-          valueInputOption: "RAW",
-          data: dataToUpdate
-        }
-      );
-    }
-    if (valuesToAppend.length > 0) {
-      await gapi.client.sheets.spreadsheets.values.append(
-        {
-          spreadsheetId: workspaceId,
-          range: `${table}!${firstColumnAlpha}${lastRowInSpreadsheet +
-            1}:${lastColumnAlpha}`,
-          valueInputOption: "RAW",
-          insertDataOption: "INSERT_ROWS"
-        },
-        {
-          majorDimension: "ROWS",
-          values: valuesToAppend
-        }
-      );
-    }
-    dispatch(
-      replaceAllLocal(
-        workspaceId,
-        table,
-        data.filter(datum => datum !== undefined).filter(({ uuid }) => !!uuid),
-        true
-      )
-    );
-    dispatch(syncSuccess(workspaceId, table));
   } catch (e) {
-    dispatch(syncFailure(workspaceId, table, e));
+    tables.forEach(table => dispatch(syncFailure(workspaceId, table, e)));
   }
 };
 

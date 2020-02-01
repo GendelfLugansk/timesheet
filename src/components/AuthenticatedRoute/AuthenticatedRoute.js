@@ -14,8 +14,6 @@ const AuthenticatedRoute = ({
   children,
   ...rest
 }) => {
-  useEffect(fetchState, []);
-
   if (isAuthenticated === true) {
     return <Route {...rest} render={() => children} />;
   }

@@ -52,8 +52,6 @@ const Timer = ({
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
-  useEffect(fetchState, [workspaceId]);
-
   const [spentTime, setSpentTime] = useState("00:00:00");
   const [spentSum, setSpentSum] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -173,8 +171,8 @@ const Timer = ({
   };
 
   const stop = () => {
-    stopTimer(timerInProgress);
     setValidationErrors({});
+    stopTimer(timerInProgress);
   };
 
   const syncRetry = () => {
@@ -498,11 +496,7 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      (async () => {
-        await dispatch(sync(workspaceId, "Progress"));
-        await dispatch(sync(workspaceId, "Tags"));
-        await dispatch(sync(workspaceId, "Projects"));
-      })();
+      dispatch(sync(workspaceId, ["Progress", "Projects", "Tags"]));
     },
     updateTimer: timerInProgress => {
       dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
@@ -526,11 +520,7 @@ export default connect(
       if (project) {
         dispatch(upsertLocal(workspaceId, "Projects", project));
       }
-      (async () => {
-        dispatch(sync(workspaceId, "Progress"));
-        dispatch(sync(workspaceId, "Tags"));
-        dispatch(sync(workspaceId, "Projects"));
-      })();
+      dispatch(sync(workspaceId, ["Progress", "Projects", "Tags"]));
     },
     stopTimer: timerInProgress => {
       const endTimeString = DateTime.local().toISO();
@@ -551,28 +541,19 @@ export default connect(
       };
       dispatch(upsertLocal(workspaceId, "Log", logEntry));
       dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
-
-      (async () => {
-        await dispatch(sync(workspaceId, "Log"));
-        await dispatch(sync(workspaceId, "Progress"));
-      })();
+      dispatch(sync(workspaceId, ["Log", "Progress"]));
     },
     syncAll: () => {
-      (async () => {
-        await dispatch(sync(workspaceId, "Log"));
-        await dispatch(sync(workspaceId, "Progress"));
-        await dispatch(sync(workspaceId, "Tags"));
-        await dispatch(sync(workspaceId, "Projects"));
-      })();
+      dispatch(sync(workspaceId, ["Log", "Progress", "Projects", "Tags"]));
     },
     syncProgress: () => {
-      dispatch(sync(workspaceId, "Progress"));
+      dispatch(sync(workspaceId, ["Progress"]));
     },
     syncTags: () => {
-      dispatch(sync(workspaceId, "Tags"));
+      dispatch(sync(workspaceId, ["Tags"]));
     },
     syncProjects: () => {
-      dispatch(sync(workspaceId, "Projects"));
+      dispatch(sync(workspaceId, ["Projects"]));
     }
   })
 )(Timer);

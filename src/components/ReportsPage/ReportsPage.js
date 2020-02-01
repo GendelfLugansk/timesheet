@@ -44,7 +44,7 @@ const WithFilters = connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Config"));
+      dispatch(sync(workspaceId, ["Config"]));
     },
     setAppliedFilters: (filters, uuid) => {
       dispatch(
@@ -56,7 +56,7 @@ const WithFilters = connect(
       );
     },
     syncFilters: () => {
-      dispatch(sync(workspaceId, "Config"));
+      dispatch(sync(workspaceId, ["Config"]));
     }
   })
 )(
@@ -71,7 +71,6 @@ const WithFilters = connect(
     workspaceId
   }) => {
     const { t } = useTranslation(ns);
-    useEffect(fetchState, [workspaceId]);
 
     const [syncDebounced] = useDebouncedCallback(syncFilters, 1500);
 
@@ -134,12 +133,6 @@ const ReportsPage = ({
   currentWorkspace,
   fetchState
 }) => {
-  useEffect(() => {
-    if (workspaces.length === 0) {
-      fetchState();
-    }
-  }, [workspaces.length, fetchState]);
-
   if (isLoading) {
     return <LoaderFullPage />;
   }

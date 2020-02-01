@@ -10,8 +10,6 @@ function UnauthenticatedRoute({
   children,
   ...rest
 }) {
-  useEffect(fetchState, []);
-
   if (isAuthenticated === true) {
     return (
       <Route

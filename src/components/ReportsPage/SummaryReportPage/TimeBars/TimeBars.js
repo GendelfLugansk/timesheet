@@ -247,12 +247,10 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Projects"));
+      dispatch(sync(workspaceId, ["Projects"]));
     }
   })
 )(({ workspaceId, fetchState, ...rest }) => {
-  useEffect(fetchState, [workspaceId]);
-
   return (
     <ReactResizeDetector handleWidth handleHeight>
       <TimeBars workspaceId={workspaceId} {...rest} />

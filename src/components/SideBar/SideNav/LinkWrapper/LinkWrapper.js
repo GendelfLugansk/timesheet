@@ -13,7 +13,6 @@ const LinkWrapper = ({
   children,
   ...rest
 }) => {
-  useEffect(fetchState, []);
   const path = typeof to === "string" ? to : to.pathname;
 
   if (authenticated === true && !isAuthenticated) {

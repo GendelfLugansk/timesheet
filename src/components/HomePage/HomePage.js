@@ -15,8 +15,6 @@ const HomePage = ({
   currentWorkspace,
   fetchState
 }) => {
-  useEffect(fetchState, []);
-
   if (isLoading) {
     return <LoaderFullPage />;
   }

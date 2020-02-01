@@ -94,7 +94,7 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     sync: async () => {
-      await dispatch(sync(workspaceId, "Log"));
+      await dispatch(sync(workspaceId, ["Log"]));
     },
     save: (data = []) => {
       dispatch(replaceAllLocal(workspaceId, "Log", data));

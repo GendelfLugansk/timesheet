@@ -35,7 +35,6 @@ const CalendarReportPage = ({
 }) => {
   const { t } = useTranslation(ns);
   const { i18n } = useTranslation();
-  useEffect(fetchState, [workspaceId]);
 
   const fullDayHours = 8;
 
@@ -195,10 +194,10 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     },
     syncAll: () => {
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     }
   })
 )(CalendarReportPage);

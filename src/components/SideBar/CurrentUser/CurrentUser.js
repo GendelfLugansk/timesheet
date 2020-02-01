@@ -22,7 +22,6 @@ const CurrentUser = ({
   signOutButtonClick,
   signOutClearError
 }) => {
-  useEffect(fetchState, []);
   const { t } = useTranslation(ns);
 
   if (isAuthenticated) {

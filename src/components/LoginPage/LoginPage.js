@@ -30,8 +30,6 @@ const LoginPage = ({
   signOutButtonClick,
   signOutClearError
 }) => {
-  useEffect(fetchState, []);
-
   const { t } = useTranslation(ns);
 
   let history = useHistory();

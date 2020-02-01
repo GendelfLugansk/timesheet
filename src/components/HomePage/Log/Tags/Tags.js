@@ -3,14 +3,7 @@ import { connect } from "react-redux";
 import { sync } from "../../../../actions/syncableStorage";
 import { findMany } from "../../../../selectors/syncableStorage";
 
-const Tags = ({ workspaceId, tags, definedTags, fetchState }) => {
-  const maybeFetch = () => {
-    if (definedTags.length === 0) {
-      fetchState();
-    }
-  };
-  useEffect(maybeFetch, [workspaceId]);
-
+const Tags = ({ workspaceId, tags, definedTags }) => {
   return (
     <>
       {tags.map((tag, index) => {
@@ -40,7 +33,7 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Tags"));
+      dispatch(sync(workspaceId, ["Tags"]));
     }
   })
 )(Tags);

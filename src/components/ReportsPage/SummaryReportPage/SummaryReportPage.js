@@ -35,8 +35,6 @@ const SummaryReportPage = ({
 }) => {
   const { t } = useTranslation(ns);
 
-  useEffect(fetchState, [workspaceId]);
-
   const syncRetry = () => {
     syncAll();
   };
@@ -104,10 +102,10 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     },
     syncAll: () => {
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     }
   })
 )(SummaryReportPage);

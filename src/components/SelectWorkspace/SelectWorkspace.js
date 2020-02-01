@@ -27,13 +27,6 @@ const SelectWorkspace = ({
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
-  const maybeFetch = () => {
-    if (workspaces.length === 0) {
-      fetchState();
-    }
-  };
-  useEffect(maybeFetch, []);
-
   const [formData, setFormData] = useState({
     workspaceId: undefined
   });

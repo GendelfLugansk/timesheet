@@ -44,15 +44,12 @@ const Log = ({
   tagItems,
   isProjectsSyncing,
   projectItems,
-  fetchState,
   syncAll,
   deleteItem,
   saveItem
 }) => {
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
-
-  useEffect(fetchState, [workspaceId]);
 
   const itemsPerPage = 5;
   const totalPages = Math.max(1, Math.ceil(logItems.length / itemsPerPage));
@@ -923,23 +920,12 @@ export default connect(
     projectItems: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      (async () => {
-        await dispatch(sync(workspaceId, "Log"));
-        await dispatch(sync(workspaceId, "Tags"));
-        await dispatch(sync(workspaceId, "Projects"));
-      })();
-    },
     syncAll: () => {
-      (async () => {
-        await dispatch(sync(workspaceId, "Log"));
-        await dispatch(sync(workspaceId, "Tags"));
-        await dispatch(sync(workspaceId, "Projects"));
-      })();
+      dispatch(sync(workspaceId, ["Log", "Tags", "Projects"]));
     },
     deleteItem: uuid => {
       dispatch(deleteLocal(workspaceId, "Log", uuid));
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     },
     saveItem: (data, tags = [], project) => {
       dispatch(upsertLocal(workspaceId, "Log", data));
@@ -947,12 +933,7 @@ export default connect(
       if (project) {
         dispatch(upsertLocal(workspaceId, "Projects", project));
       }
-
-      (async () => {
-        await dispatch(sync(workspaceId, "Log"));
-        await dispatch(sync(workspaceId, "Tags"));
-        await dispatch(sync(workspaceId, "Projects"));
-      })();
+      dispatch(sync(workspaceId, ["Log", "Projects", "Tags"]));
     }
   })
 )(Log);

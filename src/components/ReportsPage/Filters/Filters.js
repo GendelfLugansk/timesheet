@@ -313,7 +313,6 @@ const Filters = ({
   fetchState
 }) => {
   const { t } = useTranslation(ns);
-  useEffect(fetchState, []);
 
   const syncRetry = () => {
     fetchState();
@@ -449,7 +448,7 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Log"));
+      dispatch(sync(workspaceId, ["Log"]));
     }
   })
 )(Filters);

@@ -257,12 +257,10 @@ export default connect(
   }),
   (dispatch, { workspaceId }) => ({
     fetchState: () => {
-      dispatch(sync(workspaceId, "Tags"));
+      dispatch(sync(workspaceId, ["Tags"]));
     }
   })
 )(({ workspaceId, fetchState, ...rest }) => {
-  useEffect(fetchState, [workspaceId]);
-
   return (
     <ReactResizeDetector handleWidth handleHeight>
       <TagsPie workspaceId={workspaceId} {...rest} />

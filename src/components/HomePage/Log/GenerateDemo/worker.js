@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import uuidv4 from "uuid/v4";
-import { colors } from "../../../../utils/chartColors";
+import chartColors from "../../../../utils/chartColors";
+import Color from "color";
 
 export function generateDemoData(userDisplayName, userId, userImage) {
   const projectNamesPool = [
@@ -108,14 +109,20 @@ export function generateDemoData(userDisplayName, userId, userImage) {
 
   return {
     log,
-    projects: projectNamesPool.map((name, index) => ({
+    projects: projectNamesPool.map(name => ({
       name,
-      colorRGB: colors[index],
+      colorRGB: Color(chartColors.getColor("_generated_projects", name))
+        .desaturate(0.3)
+        .rgb()
+        .string(),
       uuid: uuidv4()
     })),
-    tags: tagsPool.map((name, index) => ({
+    tags: tagsPool.map(name => ({
       name,
-      colorRGB: colors[index],
+      colorRGB: Color(chartColors.getColor("_generated_tags", name))
+        .desaturate(0.3)
+        .rgb()
+        .string(),
       uuid: uuidv4()
     }))
   };

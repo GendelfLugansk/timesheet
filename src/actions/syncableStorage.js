@@ -1,11 +1,7 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
-import {
-  findMany,
-  isAnySyncing,
-  isSyncing
-} from "../selectors/syncableStorage";
+import { findMany } from "../selectors/syncableStorage";
 
 export const TYPE_STRING = "String";
 export const TYPE_NUMBER = "Number";

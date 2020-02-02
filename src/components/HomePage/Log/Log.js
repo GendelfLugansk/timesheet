@@ -14,7 +14,6 @@ import en from "./Log.en";
 import ru from "./Log.ru";
 import Tags from "./Tags/Tags";
 import Loader from "../../Loader/Loader";
-import stringifyError from "../../../utils/stringifyError";
 import JoiBase from "joi";
 import groupJoiErrors from "../../../utils/groupJoiErrors";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
@@ -23,11 +22,7 @@ import { stringArray } from "../../../utils/joiExtensions";
 import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
 import GenerateDemo from "./GenerateDemo/GenerateDemo";
-import {
-  getError,
-  isSyncing,
-  findMany
-} from "../../../selectors/syncableStorage";
+import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -38,13 +33,9 @@ i18n.addResourceBundle("ru", ns, ru);
 const Log = ({
   workspaceId,
   isSyncing,
-  syncError,
   logItems,
-  isTagsSyncing,
   tagItems,
-  isProjectsSyncing,
   projectItems,
-  syncAll,
   deleteItem,
   saveItem
 }) => {
@@ -127,10 +118,6 @@ const Log = ({
       }
     }
   }, [entryToEdit, needReValidation]);
-
-  const syncRetry = () => {
-    syncAll();
-  };
 
   const escapeRegexCharacters = str =>
     str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -234,21 +221,6 @@ const Log = ({
   return (
     <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle Log">
       <div className="uk-width-1-1">
-        {syncError ? (
-          <div className="uk-width-1-1">
-            <div className="uk-alert-danger" uk-alert="true">
-              {t("syncError", { error: stringifyError(syncError) })}{" "}
-              <button
-                onClick={syncRetry}
-                type="button"
-                className="uk-button uk-button-link"
-              >
-                {t("syncRetryButton")}
-              </button>
-            </div>
-          </div>
-        ) : null}
-
         {pagedItems.map(
           ({
             uuid,
@@ -622,33 +594,27 @@ const Log = ({
                             }
 
                             let tagsToAdd = [];
-                            if (!isTagsSyncing) {
-                              const existingTagNames = Object.values(
-                                tagItems
-                              ).map(({ name }) => name);
-                              tagsToAdd = cleanData.tags
-                                .split(",")
-                                .map(tag => tag.trim())
-                                .filter(tag => tag !== "")
-                                .filter(tag => !existingTagNames.includes(tag))
-                                .map(name => ({ name, uuid: uuidv4() }));
-                            }
+                            const existingTagNames = Object.values(
+                              tagItems
+                            ).map(({ name }) => name);
+                            tagsToAdd = cleanData.tags
+                              .split(",")
+                              .map(tag => tag.trim())
+                              .filter(tag => tag !== "")
+                              .filter(tag => !existingTagNames.includes(tag))
+                              .map(name => ({ name, uuid: uuidv4() }));
                             let projectToAdd;
-                            if (!isProjectsSyncing) {
-                              const existingProjectNames = Object.values(
-                                projectItems
-                              ).map(({ name }) => name);
-                              if (
-                                cleanData.project !== "" &&
-                                !existingProjectNames.includes(
-                                  cleanData.project
-                                )
-                              ) {
-                                projectToAdd = {
-                                  name: cleanData.project,
-                                  uuid: uuidv4()
-                                };
-                              }
+                            const existingProjectNames = Object.values(
+                              projectItems
+                            ).map(({ name }) => name);
+                            if (
+                              cleanData.project !== "" &&
+                              !existingProjectNames.includes(cleanData.project)
+                            ) {
+                              projectToAdd = {
+                                name: cleanData.project,
+                                uuid: uuidv4()
+                              };
                             }
 
                             const durationHours = DateTime.fromISO(
@@ -907,22 +873,16 @@ export { Log };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isSyncing: isSyncing(state, workspaceId, "Log"),
-    syncError: getError(state, workspaceId, "Log"),
+    isSyncing: isAnySyncing(state, workspaceId, ["Log", "Tags", "Projects"]),
     logItems: findMany(state, workspaceId, "Log").sort(
       (a, b) =>
         DateTime.fromJSDate(new Date(b.endTimeString)) -
         DateTime.fromJSDate(new Date(a.endTimeString))
     ),
-    isTagsSyncing: isSyncing(state, workspaceId, "Tags"),
     tagItems: findMany(state, workspaceId, "Tags"),
-    isProjectsSyncing: isSyncing(state, workspaceId, "Projects"),
     projectItems: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
-    syncAll: () => {
-      dispatch(sync(workspaceId, ["Log", "Tags", "Projects"]));
-    },
     deleteItem: uuid => {
       dispatch(deleteLocal(workspaceId, "Log", uuid));
       dispatch(sync(workspaceId, ["Log"]));

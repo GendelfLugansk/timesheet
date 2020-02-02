@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../actions/auth";
 import { signIn, signInClearError } from "../../actions/signIn";
 import { signOut, signOutClearError } from "../../actions/signOut";
 import { useHistory, useLocation } from "react-router-dom";
@@ -24,7 +23,6 @@ const LoginPage = ({
   currentUser,
   signInError,
   signOutError,
-  fetchState,
   signInButtonClick,
   signInClearError,
   signOutButtonClick,
@@ -140,9 +138,6 @@ export default connect(
     signOutError: state.signOut.error
   }),
   dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    },
     signInButtonClick: async () => {
       await dispatch(signIn());
     },

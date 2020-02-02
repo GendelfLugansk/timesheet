@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./WorkspaceSelector.en";
 import ru from "./WorkspaceSelector.ru";
 import { connect } from "react-redux";
-import { fetchWorkspaces } from "../../../actions/workspaces";
 import { selectWorkspace } from "../../../actions/workspaces";
 import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
@@ -16,7 +15,6 @@ i18n.addResourceBundle("ru", ns, ru);
 const WorkspaceSelector = ({
   workspaces,
   currentWorkspace,
-  fetchState,
   selectWorkspace
 }) => {
   const { t } = useTranslation(ns);
@@ -86,9 +84,6 @@ export default connect(
     currentWorkspace: state.workspaces.currentWorkspace
   }),
   dispatch => ({
-    fetchState: () => {
-      dispatch(fetchWorkspaces());
-    },
     selectWorkspace: workspace => {
       dispatch(selectWorkspace(workspace));
     }

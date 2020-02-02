@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../../actions/auth";
 import { signOut, signOutClearError } from "../../../actions/signOut";
 import "./CurrentUser.scss";
 import i18n from "../../../utils/i18n";
@@ -18,7 +17,6 @@ const CurrentUser = ({
   isAuthenticated,
   currentUser,
   signOutError,
-  fetchState,
   signOutButtonClick,
   signOutClearError
 }) => {
@@ -75,9 +73,6 @@ export default connect(
     signOutError: state.signOut.error
   }),
   dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    },
     signOutButtonClick: () => {
       dispatch(signOut());
     },

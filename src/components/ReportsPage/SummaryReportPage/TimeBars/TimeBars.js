@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Plot, { defaultConfig, defaultLayout } from "../../../Plot/Plot";
 import en from "./TimeBars.en";
 import ru from "./TimeBars.ru";
@@ -7,8 +7,6 @@ import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { DateTime, Duration } from "luxon";
 import { connect } from "react-redux";
-import { sync } from "../../../../actions/syncableStorage";
-import ReactResizeDetector from "react-resize-detector";
 import "./TimeBars.scss";
 import uuidv4 from "uuid/v4";
 import { findMany } from "../../../../selectors/syncableStorage";
@@ -17,14 +15,7 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const TimeBars = ({
-  workspaceId,
-  logItems,
-  definedProjects = [],
-  responsiveLegend = true,
-  width,
-  height
-}) => {
+const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
   const { t } = useTranslation(ns);
 
   let allProjects = [
@@ -241,19 +232,6 @@ const TimeBars = ({
 
 export { TimeBars };
 
-export default connect(
-  (state, { workspaceId }) => ({
-    definedProjects: findMany(state, workspaceId, "Projects")
-  }),
-  (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      dispatch(sync(workspaceId, ["Projects"]));
-    }
-  })
-)(({ workspaceId, fetchState, ...rest }) => {
-  return (
-    <ReactResizeDetector handleWidth handleHeight>
-      <TimeBars workspaceId={workspaceId} {...rest} />
-    </ReactResizeDetector>
-  );
-});
+export default connect((state, { workspaceId }) => ({
+  definedProjects: findMany(state, workspaceId, "Projects")
+}))(TimeBars);

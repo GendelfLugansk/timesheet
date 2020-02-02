@@ -7,9 +7,7 @@ const ru = {
   hourlyRateLabel: "Почасовой рейт",
   tagsLabel: "Теги",
   startButton: "Старт",
-  stopButton: "Стоп",
-  syncError: "Ошибка синхронизации с Google документом: {{error}}",
-  syncRetryButton: "Попробовать ещё раз"
+  stopButton: "Стоп"
 };
 
 export default ru;

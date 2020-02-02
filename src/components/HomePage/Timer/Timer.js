@@ -6,7 +6,6 @@ import {
   deleteLocal
 } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
-import stringifyError from "../../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
@@ -17,11 +16,7 @@ import JoiBase from "joi";
 import Autosuggest from "react-autosuggest";
 import theme from "../../../styles/autosuggestTheme";
 import { stringArray } from "../../../utils/joiExtensions";
-import {
-  findMany,
-  getError,
-  isSyncing
-} from "../../../selectors/syncableStorage";
+import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -31,19 +26,14 @@ i18n.addResourceBundle("ru", ns, ru);
 
 const Timer = ({
   isSyncing,
-  syncError,
   timerInProgress,
-  isTagsSyncing,
   tagItems,
-  isProjectsSyncing,
   projectItems,
-  fetchState,
   updateTimer,
   updateTags,
   updateProject,
   startTimer,
   stopTimer,
-  syncAll,
   syncProgress,
   syncTags,
   syncProjects,
@@ -109,18 +99,16 @@ const Timer = ({
   const getTagsToAdd = (tagsStr = "") => {
     let tagsToAdd = [];
 
-    if (!isTagsSyncing) {
-      const existingTagNames = Object.values(tagItems).map(({ name }) => name);
-      tagsToAdd = [
-        ...new Set(
-          tagsStr
-            .split(",")
-            .map(tag => tag.trim())
-            .filter(tag => tag !== "")
-            .filter(tag => !existingTagNames.includes(tag))
-        )
-      ].map(name => ({ name, uuid: uuidv4() }));
-    }
+    const existingTagNames = Object.values(tagItems).map(({ name }) => name);
+    tagsToAdd = [
+      ...new Set(
+        tagsStr
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(tag => tag !== "")
+          .filter(tag => !existingTagNames.includes(tag))
+      )
+    ].map(name => ({ name, uuid: uuidv4() }));
 
     return tagsToAdd;
   };
@@ -128,14 +116,12 @@ const Timer = ({
   const getProjectToAdd = (projectStr = "") => {
     let projectToAdd;
 
-    if (!isProjectsSyncing) {
-      const existingProjectNames = Object.values(projectItems).map(
-        ({ name }) => name
-      );
-      const project = projectStr.trim();
-      if (project !== "" && !existingProjectNames.includes(project)) {
-        projectToAdd = { name: project, uuid: uuidv4() };
-      }
+    const existingProjectNames = Object.values(projectItems).map(
+      ({ name }) => name
+    );
+    const project = projectStr.trim();
+    if (project !== "" && !existingProjectNames.includes(project)) {
+      projectToAdd = { name: project, uuid: uuidv4() };
     }
 
     return projectToAdd;
@@ -173,10 +159,6 @@ const Timer = ({
   const stop = () => {
     setValidationErrors({});
     stopTimer(timerInProgress);
-  };
-
-  const syncRetry = () => {
-    syncAll();
   };
 
   // https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions#Using_Special_Characters
@@ -433,20 +415,6 @@ const Timer = ({
               <span className="uk-heading-small">{" / $" + spentSum}</span>
             ) : null}
           </div>
-          {syncError ? (
-            <div className="uk-width-1-1">
-              <div className="uk-alert-danger" uk-alert="true">
-                {t("syncError", { error: stringifyError(syncError) })}{" "}
-                <button
-                  onClick={syncRetry}
-                  type="button"
-                  className="uk-button uk-button-link"
-                >
-                  {t("syncRetryButton")}
-                </button>
-              </div>
-            </div>
-          ) : null}
           <div className="uk-width-1-1 uk-text-center">
             {timerInProgress.startTimeString && timerInProgress.uuid ? (
               <button
@@ -478,8 +446,11 @@ export { Timer };
 
 export default connect(
   (state, { workspaceId }) => ({
-    isSyncing: isSyncing(state, workspaceId, "Progress"),
-    syncError: getError(state, workspaceId, "Progress"),
+    isSyncing: isAnySyncing(state, workspaceId, [
+      "Progress",
+      "Tags",
+      "Projects"
+    ]),
     timerInProgress: {
       uuid: uuidv4(),
       ...(findMany(state, workspaceId, "Progress").filter(
@@ -489,15 +460,10 @@ export default connect(
       userDisplayName: state.auth.currentUser.name,
       userImage: state.auth.currentUser.image
     },
-    isTagsSyncing: isSyncing(state, workspaceId, "Tags"),
     tagItems: findMany(state, workspaceId, "Tags"),
-    isProjectsSyncing: isSyncing(state, workspaceId, "Projects"),
     projectItems: findMany(state, workspaceId, "Projects")
   }),
   (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      dispatch(sync(workspaceId, ["Progress", "Projects", "Tags"]));
-    },
     updateTimer: timerInProgress => {
       dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
     },
@@ -542,9 +508,6 @@ export default connect(
       dispatch(upsertLocal(workspaceId, "Log", logEntry));
       dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
       dispatch(sync(workspaceId, ["Log", "Progress"]));
-    },
-    syncAll: () => {
-      dispatch(sync(workspaceId, ["Log", "Progress", "Projects", "Tags"]));
     },
     syncProgress: () => {
       dispatch(sync(workspaceId, ["Progress"]));

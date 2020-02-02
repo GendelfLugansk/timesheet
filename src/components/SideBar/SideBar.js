@@ -11,14 +11,15 @@ const SideBar = () => {
   return (
     <div className="uk-padding-small uk-light uk-background-secondary uk-flex uk-flex-column SideBar">
       <Logo />
+      <hr />
       <CurrentUser />
+      <AuthenticatedContainer>
+        <WorkspaceSelector />
+        <hr />
+      </AuthenticatedContainer>
       <SideNav />
-      <div className="bottom">
-        <AuthenticatedContainer>
-          <WorkspaceSelector />
-        </AuthenticatedContainer>
-        <LocaleChanger />
-      </div>
+      <hr />
+      <LocaleChanger />
     </div>
   );
 };

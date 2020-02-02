@@ -1,6 +1,5 @@
 const en = {
-  syncError: "Synchronization with Google spreadsheet failed, error: {{error}}",
-  syncRetryButton: "Retry"
+  noData: "You have no data to display"
 };
 
 export default en;

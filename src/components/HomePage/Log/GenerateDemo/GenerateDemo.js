@@ -4,14 +4,13 @@ import { useTranslation } from "react-i18next";
 import en from "./GenerateDemo.en";
 import ru from "./GenerateDemo.ru";
 import { connect } from "react-redux";
-import stringifyError from "../../../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
 import Loader from "../../../Loader/Loader";
 import { sync, replaceAllLocal } from "../../../../actions/syncableStorage";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask from "../../../../hooks/useTask";
-import { getError, isSyncing } from "../../../../selectors/syncableStorage";
+import { isSyncing } from "../../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -19,7 +18,6 @@ i18n.addResourceBundle("ru", ns, ru);
 
 const GenerateDemo = ({
   isLoading,
-  error,
   sync,
   save,
   userId,
@@ -52,18 +50,6 @@ const GenerateDemo = ({
     );
   }
 
-  if (error) {
-    return (
-      <div className="uk-flex uk-flex-center uk-flex-middle">
-        <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
-          <div className="uk-alert-danger" uk-alert="true">
-            {stringifyError(error)}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="uk-flex uk-flex-center uk-flex-middle">
       <div className="uk-text-center uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
@@ -87,7 +73,6 @@ export { GenerateDemo };
 export default connect(
   (state, { workspaceId }) => ({
     isLoading: isSyncing(state, workspaceId, "Log"),
-    error: getError(state, workspaceId, "Log"),
     userId: state.auth.currentUser.id,
     userDisplayName: state.auth.currentUser.name,
     userImage: state.auth.currentUser.image

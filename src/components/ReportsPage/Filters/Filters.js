@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { getAvailableFilters } from "../../../utils/logFilters";
-import { sync, TYPE_ISO_DATE } from "../../../actions/syncableStorage";
+import { TYPE_ISO_DATE } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
-import stringifyError from "../../../utils/stringifyError";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../utils/i18n";
 import en from "./Filters.en";
@@ -15,11 +14,7 @@ import ReactHtmlParser from "react-html-parser";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import "./Filters.scss";
 import uuidv4 from "uuid/v4";
-import {
-  findMany,
-  getError,
-  isSyncing
-} from "../../../selectors/syncableStorage";
+import { findMany, isSyncing } from "../../../selectors/syncableStorage";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -306,18 +301,10 @@ const FilterBetweenDates = ({
 
 const Filters = ({
   isSyncing,
-  syncError,
   availableFilters = [],
   appliedFilters = [],
-  setAppliedFilters,
-  fetchState
+  setAppliedFilters
 }) => {
-  const { t } = useTranslation(ns);
-
-  const syncRetry = () => {
-    fetchState();
-  };
-
   const filters = availableFilters
     .map(({ key, type, availableValues, typeToCoerce }) => ({
       key,
@@ -362,21 +349,6 @@ const Filters = ({
 
   return (
     <div className="uk-padding-small Filters">
-      {syncError ? (
-        <div className="uk-width-1-1">
-          <div className="uk-alert-danger" uk-alert="true">
-            {t("syncError", { error: stringifyError(syncError) })}{" "}
-            <button
-              onClick={syncRetry}
-              type="button"
-              className="uk-button uk-button-link"
-            >
-              {t("syncRetryButton")}
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       {filters.map(({ key, type, availableValues, values, typeToCoerce }) => {
         if (type === "includes") {
           return (
@@ -440,15 +412,7 @@ const Filters = ({
   );
 };
 
-export default connect(
-  (state, { workspaceId, isSyncing: isSyncing2 }) => ({
-    isSyncing: isSyncing(state, workspaceId, "Log") || isSyncing2,
-    syncError: getError(state, workspaceId, "Log"),
-    availableFilters: getAvailableFilters(findMany(state, workspaceId, "Log"))
-  }),
-  (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      dispatch(sync(workspaceId, ["Log"]));
-    }
-  })
-)(Filters);
+export default connect((state, { workspaceId, isSyncing: isSyncing2 }) => ({
+  isSyncing: isSyncing(state, workspaceId, "Log") || isSyncing2,
+  availableFilters: getAvailableFilters(findMany(state, workspaceId, "Log"))
+}))(Filters);

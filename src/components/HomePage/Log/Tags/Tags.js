@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { sync } from "../../../../actions/syncableStorage";
 import { findMany } from "../../../../selectors/syncableStorage";
 import Color from "color";
 
-const Tags = ({ workspaceId, tags, definedTags }) => {
+const Tags = ({ tags, definedTags }) => {
   return (
     <>
       {tags.map((tag, index) => {
@@ -39,13 +38,6 @@ const Tags = ({ workspaceId, tags, definedTags }) => {
 
 export { Tags };
 
-export default connect(
-  (state, { workspaceId }) => ({
-    definedTags: findMany(state, workspaceId, "Tags")
-  }),
-  (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      dispatch(sync(workspaceId, ["Tags"]));
-    }
-  })
-)(Tags);
+export default connect((state, { workspaceId }) => ({
+  definedTags: findMany(state, workspaceId, "Tags")
+}))(Tags);

@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Route } from "react-router-dom";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../../../actions/auth";
 
 const LinkWrapper = ({
   to,
@@ -9,7 +8,6 @@ const LinkWrapper = ({
   className,
   authenticated = null,
   isAuthenticated,
-  fetchState,
   children,
   ...rest
 }) => {
@@ -38,13 +36,6 @@ const LinkWrapper = ({
 
 export { LinkWrapper };
 
-export default connect(
-  state => ({
-    isAuthenticated: state.auth.isAuthenticated
-  }),
-  dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    }
-  })
-)(LinkWrapper);
+export default connect(state => ({
+  isAuthenticated: state.auth.isAuthenticated
+}))(LinkWrapper);

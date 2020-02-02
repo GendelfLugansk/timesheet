@@ -11,7 +11,6 @@ const Logo = () => (
       style={{ position: "relative", top: "-2px" }}
     />
     Timesheet
-    <hr />
   </div>
 );
 

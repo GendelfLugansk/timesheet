@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Plot, { defaultConfig, defaultLayout } from "../../../Plot/Plot";
 import en from "./TagsPie.en";
 import ru from "./TagsPie.ru";
@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { Duration } from "luxon";
 import { connect } from "react-redux";
-import { sync } from "../../../../actions/syncableStorage";
 import ReactResizeDetector from "react-resize-detector";
 import "./TagsPie.scss";
 import uuidv4 from "uuid/v4";
@@ -251,16 +250,9 @@ const TagsPie = ({
 
 export { TagsPie };
 
-export default connect(
-  (state, { workspaceId }) => ({
-    definedTags: findMany(state, workspaceId, "Tags")
-  }),
-  (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      dispatch(sync(workspaceId, ["Tags"]));
-    }
-  })
-)(({ workspaceId, fetchState, ...rest }) => {
+export default connect((state, { workspaceId }) => ({
+  definedTags: findMany(state, workspaceId, "Tags")
+}))(({ workspaceId, fetchState, ...rest }) => {
   return (
     <ReactResizeDetector handleWidth handleHeight>
       <TagsPie workspaceId={workspaceId} {...rest} />

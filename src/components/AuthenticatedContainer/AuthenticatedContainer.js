@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../actions/auth";
 
-const AuthenticatedContainer = ({ isAuthenticated, fetchState, children }) => {
+const AuthenticatedContainer = ({ isAuthenticated, children }) => {
   if (isAuthenticated === true) {
     return <>{children}</>;
   }
@@ -12,13 +11,6 @@ const AuthenticatedContainer = ({ isAuthenticated, fetchState, children }) => {
 
 export { AuthenticatedContainer };
 
-export default connect(
-  state => ({
-    isAuthenticated: state.auth.isAuthenticated
-  }),
-  dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    }
-  })
-)(AuthenticatedContainer);
+export default connect(state => ({
+  isAuthenticated: state.auth.isAuthenticated
+}))(AuthenticatedContainer);

@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { connect } from "react-redux";
-import { fetchAuthStatus } from "../../actions/auth";
 import { Route, Redirect } from "react-router-dom";
 
 function UnauthenticatedRoute({
   isAuthenticated,
-  fetchState,
   redirectTo = "/",
   children,
   ...rest
@@ -31,13 +29,6 @@ function UnauthenticatedRoute({
 
 export { UnauthenticatedRoute };
 
-export default connect(
-  state => ({
-    isAuthenticated: state.auth.isAuthenticated
-  }),
-  dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    }
-  })
-)(UnauthenticatedRoute);
+export default connect(state => ({
+  isAuthenticated: state.auth.isAuthenticated
+}))(UnauthenticatedRoute);

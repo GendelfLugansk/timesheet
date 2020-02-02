@@ -1,6 +1,4 @@
 const ru = {
-  syncError: "Ошибка синхронизации с Google документом: {{error}}",
-  syncRetryButton: "Попробовать ещё раз",
   filters: {
     project: {
       title: "Проект: {{selectedQty}}",

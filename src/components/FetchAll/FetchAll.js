@@ -4,12 +4,7 @@ import { fetchAuthStatus } from "../../actions/auth";
 import { fetchWorkspaces } from "../../actions/workspaces";
 import objectPath from "object-path";
 import { sync } from "../../actions/syncableStorage";
-import {
-  getFirstError,
-  getError,
-  isAnySyncing,
-  isSyncing
-} from "../../selectors/syncableStorage";
+import { getFirstError, isAnySyncing } from "../../selectors/syncableStorage";
 import stringifyError from "../../utils/stringifyError";
 import i18n from "../../utils/i18n";
 import en from "./FetchAll.en";

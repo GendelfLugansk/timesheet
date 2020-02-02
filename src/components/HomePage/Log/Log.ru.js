@@ -6,8 +6,6 @@ const ru = {
   finishedAt: "Конец",
   hourlyRate: "Почасовой рейт",
   sum: "Сумма",
-  syncError: "Ошибка синхронизации с Google документом: {{error}}",
-  syncRetryButton: "Попробовать ещё раз",
   previousPage: "Пред.",
   nextPage: "След.",
   removePrompt: "Вы уверены что хотите удалить эту запись навсегда?",

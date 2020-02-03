@@ -44,7 +44,7 @@ export function generateDemoData(userDisplayName, userId, userImage) {
     return ret;
   };
   const currentDate = DateTime.local();
-  let date = currentDate.minus({ years: 1 });
+  let date = currentDate.minus({ years: 50 });
   const log = [];
   while (date <= currentDate) {
     const weekends = [7];
@@ -57,7 +57,12 @@ export function generateDemoData(userDisplayName, userId, userImage) {
         minute: getRndInteger(0, 59)
       });
       const tasksDone = getRndInteger(1, 5);
-      const hoursToSpendDaily = getRndInteger(4, 12);
+      const hoursToSpendDaily =
+        Math.random() > 0.9
+          ? Math.random() < 0.5
+            ? getRndInteger(4, 6)
+            : getRndInteger(12, 14)
+          : 8 + getRndInteger(0, 5) / 10 - getRndInteger(0, 2) / 10;
       let hoursSpent = 0;
       for (let taskIndex = 1; taskIndex <= tasksDone; taskIndex++) {
         const hoursRemainder = hoursToSpendDaily - hoursSpent;

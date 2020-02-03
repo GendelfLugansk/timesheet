@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { Duration } from "luxon";
+import { DateTime, Duration } from "luxon";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
 import "./CalendarReportPage.scss";
@@ -23,14 +23,37 @@ i18n.addResourceBundle("ru", ns, ru);
 const CalendarReportPage = ({ isSyncing, logItems }) => {
   const { i18n } = useTranslation();
   const { t } = useTranslation(ns);
+  const [year, setYear] = useState();
 
   const fullDayHours = 8;
 
+  const years = [
+    ...new Set(
+      logItems.map(
+        ({ startTimeString }) =>
+          DateTime.fromJSDate(new Date(startTimeString)).toLocal().year
+      )
+    )
+  ].sort((a, b) => b - a);
+  let yearToDisplay = year;
+  if (
+    !years.includes(yearToDisplay) &&
+    years.length > 0 &&
+    typeof years[0] === "number"
+  ) {
+    yearToDisplay = years[0];
+    setYear(yearToDisplay);
+  }
+
   const generateCalendar = useTask(
-    async (logItems, fullDayHours, language, workerInstance) => {
+    async (logItems, fullDayHours, yearToDisplay, language, workerInstance) => {
       const start = new Date();
       const calendar = await workerInstance.generateCalendarData(
-        logItems,
+        logItems.filter(
+          ({ startTimeString }) =>
+            DateTime.fromJSDate(new Date(startTimeString)).toLocal().year ===
+            yearToDisplay
+        ),
         fullDayHours,
         language
       );
@@ -40,20 +63,33 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
     },
     false,
     CONCURRENCY_STRATEGY_RESTART,
-    (logItems, fullDayHours, language, workerInstance, taskInstance) => {
+    (
+      logItems,
+      fullDayHours,
+      yearToDisplay,
+      language,
+      workerInstance,
+      taskInstance
+    ) => {
       workerInstance.terminate();
     }
   );
 
   useEffect(() => {
-    generateCalendar.perform(logItems, fullDayHours, i18n.language, worker());
-  }, [logItems, fullDayHours, i18n.language, generateCalendar]);
+    generateCalendar.perform(
+      logItems,
+      fullDayHours,
+      yearToDisplay,
+      i18n.language,
+      worker()
+    );
+  }, [logItems, fullDayHours, yearToDisplay, i18n.language, generateCalendar]);
 
   if (
     (isSyncing && logItems.length === 0) ||
     (generateCalendar.isRunning &&
-      Array.isArray(generateCalendar.result) &&
-      generateCalendar.result.length === 0)
+      (!Array.isArray(generateCalendar.result) ||
+        generateCalendar.result.length === 0))
   ) {
     return (
       <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
@@ -76,6 +112,26 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
 
   return (
     <div className="uk-padding-small CalendarReportPage">
+      {years.length > 1 ? (
+        <ul className="uk-pagination uk-flex-center uk-margin-medium-bottom unprintable">
+          {years.map(year => (
+            <li
+              className={year === yearToDisplay ? "uk-active" : null}
+              key={year}
+            >
+              <button
+                type="button"
+                className="button-link"
+                onClick={() => {
+                  setYear(year);
+                }}
+              >
+                {year}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div
         className="uk-child-width-1-1 uk-child-width-1-2@xl calendar"
         uk-grid="true"
@@ -97,7 +153,9 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
                   className="uk-child-width-1-1 uk-grid-collapse uk-position-relative"
                   uk-grid="true"
                 >
-                  {isSyncing ? <LoaderOverlay /> : null}
+                  {isSyncing || generateCalendar.isRunning ? (
+                    <LoaderOverlay />
+                  ) : null}
                   <div className="uk-text-lead uk-text-center uk-text-capitalize">
                     {name}
                   </div>
@@ -157,6 +215,27 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
             ))
           : null}
       </div>
+
+      {years.length > 1 ? (
+        <ul className="uk-pagination uk-flex-center uk-margin-medium-top unprintable">
+          {years.map(year => (
+            <li
+              className={year === yearToDisplay ? "uk-active" : null}
+              key={year}
+            >
+              <button
+                type="button"
+                className="button-link"
+                onClick={() => {
+                  setYear(year);
+                }}
+              >
+                {year}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 };

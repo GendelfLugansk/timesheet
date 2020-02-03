@@ -30,6 +30,7 @@ export function generateCalendarData(logItems, fullDayHours, language) {
         acc[monthStr] = {
           key: monthStr,
           name: monthName,
+          year: startTime.year,
           startOfMonth: Number(startOfMonth),
           weeks: [
             [...typicalWeek],

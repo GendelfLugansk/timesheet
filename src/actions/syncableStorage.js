@@ -398,16 +398,12 @@ const sync = (workspaceId, tables) => async (dispatch, getState) => {
             }
           );
         }
-        dispatch(
-          replaceAllLocal(
-            workspaceId,
-            table,
-            data
-              .filter(datum => datum !== undefined)
-              .filter(({ uuid }) => !!uuid),
-            true
-          )
-        );
+        const dataToInsert = data
+          .filter(datum => datum !== undefined)
+          .filter(({ uuid }) => !!uuid);
+        const start = new Date();
+        dispatch(replaceAllLocal(workspaceId, table, dataToInsert, true));
+        console.log(`Synced ${table}`, new Date().valueOf() - start.valueOf());
         dispatch(syncSuccess(workspaceId, table));
       } catch (e) {
         dispatch(syncFailure(workspaceId, table, e));

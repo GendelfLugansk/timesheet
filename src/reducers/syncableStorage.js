@@ -1,4 +1,3 @@
-import deepcopy from "deepcopy";
 import {
   SYNCABLE_STORAGE_UPSERT_LOCAL,
   SYNCABLE_STORAGE_DELETE_LOCAL,
@@ -27,7 +26,7 @@ const initialTableState = {
 const table = (state = initialTableState, action) => {
   switch (action.type) {
     case SYNCABLE_STORAGE_UPSERT_LOCAL: {
-      const data = deepcopy(state.data);
+      const data = { ...state.data };
       data[action.payload.row.uuid] = {
         ...action.payload.row,
         _updatedAt: DateTime.utc().toISO(),
@@ -41,10 +40,13 @@ const table = (state = initialTableState, action) => {
     }
 
     case SYNCABLE_STORAGE_DELETE_LOCAL: {
-      const data = deepcopy(state.data);
-      data[action.payload.uuid]._deleted = true;
-      data[action.payload.uuid]._updatedAt = DateTime.utc().toISO();
-      data[action.payload.uuid]._synced = action.payload.synced;
+      const data = { ...state.data };
+      if (typeof data[action.payload.uuid] === "object") {
+        data[action.payload.uuid] = { ...data[action.payload.uuid] };
+        data[action.payload.uuid]._deleted = true;
+        data[action.payload.uuid]._updatedAt = DateTime.utc().toISO();
+        data[action.payload.uuid]._synced = action.payload.synced;
+      }
 
       return {
         ...state,

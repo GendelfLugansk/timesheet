@@ -43,10 +43,10 @@ export function generateDemoData(userDisplayName, userId, userImage) {
     }
     return ret;
   };
-  const currentDate = DateTime.local();
-  let date = currentDate.minus({ years: 5 });
+  const yesterday = DateTime.local().minus({ days: 1 });
+  let date = yesterday.minus({ years: 10 });
   const log = [];
-  while (date <= currentDate) {
+  while (date <= yesterday) {
     const weekends = [7];
     if (Math.random() < 0.95) {
       weekends.push(6);

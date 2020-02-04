@@ -44,7 +44,7 @@ export function generateDemoData(userDisplayName, userId, userImage) {
     return ret;
   };
   const currentDate = DateTime.local();
-  let date = currentDate.minus({ years: 50 });
+  let date = currentDate.minus({ years: 5 });
   const log = [];
   while (date <= currentDate) {
     const weekends = [7];

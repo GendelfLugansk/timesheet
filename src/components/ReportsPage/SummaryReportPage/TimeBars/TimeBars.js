@@ -26,14 +26,43 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
     )
   ].sort();
 
+  const TIMEFRAME_DAY = "day";
+  const TIMEFRAME_WEEK = "week";
+  const TIMEFRAME_MONTH = "month";
+  const TIMEFRAME_YEAR = "year";
+
+  let timeframe = TIMEFRAME_DAY;
+  const startTimes = logItems
+    .filter(({ durationHours }) => typeof durationHours === "number")
+    .map(({ startTimeString }) =>
+      DateTime.fromJSDate(new Date(startTimeString))
+    )
+    .sort((a, b) => a - b);
+
+  if (startTimes.length > 1) {
+    const periodDuration = startTimes[startTimes.length - 1].diff(
+      startTimes[0]
+    );
+    if (periodDuration.as("days") > 14) {
+      timeframe = TIMEFRAME_WEEK;
+    }
+    if (periodDuration.as("weeks") > 14) {
+      timeframe = TIMEFRAME_MONTH;
+    }
+    if (periodDuration.as("months") > 14) {
+      timeframe = TIMEFRAME_YEAR;
+    }
+  }
+  console.log(timeframe);
+  const start = new Date();
   let rawData = Object.values(
     logItems
       .filter(({ durationHours }) => typeof durationHours === "number")
       .map(({ project, startTimeString, durationHours }) => ({
         project,
-        date: DateTime.fromISO(startTimeString)
+        date: DateTime.fromJSDate(new Date(startTimeString))
           .toLocal()
-          .startOf("day"),
+          .startOf(timeframe),
         durationHours
       }))
       .reduce((acc, { project, date, durationHours }) => {
@@ -56,7 +85,10 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
 
         return mutAcc;
       }, {})
-  ).sort((a, b) => a.date - b.date);
+  )
+    .sort((a, b) => a.date - b.date)
+    .slice(-14);
+  console.log(new Date().valueOf() - start.valueOf());
 
   const projectColorMapper = project => {
     const definedProject =
@@ -75,10 +107,9 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
 
   const data = [
     {
-      name: t("total"),
+      name: t("total_" + timeframe),
       x: rawData.map(({ date }) => date.toJSDate()),
       y: rawData.map(({ durationHours }) => durationHours),
-      xaxis: "x2",
       text: rawData.map(({ durationHours }) =>
         Duration.fromObject({
           hours: durationHours
@@ -149,9 +180,9 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
       r: 20,
       t: 40,
       b: 50,
-      l: 40
+      l: 50
     },
-    title: t("title"),
+    title: t("title_" + timeframe),
     showlegend: true,
     legend: {
       itemclick: false,
@@ -166,20 +197,24 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
     },
     barmode: "stack",
     xaxis: {
-      rangeslider: {
-        visible: true
-      },
       showspikes: false,
       spikethickness: 1,
       spikemode: "across",
-      title: t("xTitle")
-    },
-    xaxis2: {
-      matches: "x",
-      showspikes: false,
-      spikethickness: 1,
-      spikemode: "across",
-      overlaying: "x"
+      title: t("xTitle_" + timeframe),
+      tickformat: (timeframe => {
+        switch (timeframe) {
+          default:
+          case TIMEFRAME_DAY:
+          case TIMEFRAME_WEEK:
+            return "%Y-%m-%d";
+
+          case TIMEFRAME_MONTH:
+            return "%Y, %B";
+
+          case TIMEFRAME_YEAR:
+            return "%Y";
+        }
+      })(timeframe)
     },
     yaxis: {
       showspikes: false,
@@ -202,19 +237,6 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
       }
     ]
   };
-
-  if (
-    rawData.length > 0 &&
-    rawData[rawData.length - 1].date.diff(rawData[0].date).as("days") > 14
-  ) {
-    layout.xaxis.range = [
-      rawData[rawData.length - 1].date
-        .minus({ days: 14, hours: 12 })
-        .toJSDate(),
-      rawData[rawData.length - 1].date.plus({ hours: 12 }).toJSDate()
-    ];
-    layout.xaxis.autorange = false;
-  }
 
   const config = {
     ...defaultConfig

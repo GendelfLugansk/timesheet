@@ -188,7 +188,7 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
       itemclick: false,
       itemdoubleclick: false,
       orientation: "h",
-      y: -0.7,
+      y: -0.1,
       yanchor: "top",
       title: {
         text: t("legendTitle"),

@@ -19,7 +19,7 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const SummaryReportPage = ({ isSyncing, logItems, workspaceId }) => {
+const SummaryReportPage = ({ isSyncing, logItems }) => {
   const { t } = useTranslation(ns);
 
   if (isSyncing && logItems.length === 0) {
@@ -47,7 +47,7 @@ const SummaryReportPage = ({ isSyncing, logItems, workspaceId }) => {
       {isSyncing ? <LoaderOverlay /> : null}
       <div className="uk-flex-center" uk-grid="true">
         <div className="uk-width-expand">
-          <TimeBars logItems={logItems} workspaceId={workspaceId} />
+          <TimeBars logItems={logItems} />
         </div>
 
         <div>
@@ -56,10 +56,10 @@ const SummaryReportPage = ({ isSyncing, logItems, workspaceId }) => {
               <TotalHours logItems={logItems} />
             </div>
             <div>
-              <ProjectsPie logItems={logItems} workspaceId={workspaceId} />
+              <ProjectsPie logItems={logItems} />
             </div>
             <div>
-              <TagsPie logItems={logItems} workspaceId={workspaceId} />
+              <TagsPie logItems={logItems} />
             </div>
           </div>
         </div>
@@ -70,7 +70,7 @@ const SummaryReportPage = ({ isSyncing, logItems, workspaceId }) => {
 
 export { SummaryReportPage };
 
-export default connect((state, { workspaceId, filters = [] }) => ({
-  isSyncing: isSyncing(state, workspaceId, "Log"),
-  logItems: findMany(state, workspaceId, "Log").filter(filterFunction(filters))
+export default connect((state, { filters = [] }) => ({
+  isSyncing: isSyncing(state, "Log"),
+  logItems: findMany(state, "Log").filter(filterFunction(filters))
 }))(SummaryReportPage);

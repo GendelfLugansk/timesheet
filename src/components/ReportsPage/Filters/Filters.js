@@ -412,7 +412,7 @@ const Filters = ({
   );
 };
 
-export default connect((state, { workspaceId, isSyncing: isSyncing2 }) => ({
-  isSyncing: isSyncing(state, workspaceId, "Log") || isSyncing2,
-  availableFilters: getAvailableFilters(findMany(state, workspaceId, "Log"))
+export default connect((state, { isSyncing: isSyncing2 }) => ({
+  isSyncing: isSyncing(state, "Log") || isSyncing2,
+  availableFilters: getAvailableFilters(findMany(state, "Log"))
 }))(Filters);

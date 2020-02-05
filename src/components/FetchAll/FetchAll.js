@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { fetchAuthStatus } from "../../actions/auth";
 import { fetchWorkspaces } from "../../actions/workspaces";
 import objectPath from "object-path";
-import { sync } from "../../actions/syncableStorage";
+import { syncInWorkspace } from "../../actions/syncableStorage";
 import { getFirstError, isAnySyncing } from "../../selectors/syncableStorage";
 import stringifyError from "../../utils/stringifyError";
 import i18n from "../../utils/i18n";
@@ -102,14 +102,14 @@ const FetchWorkspaces = connect(
 
 const FetchData = connect(
   (state, { workspaceId }) => ({
-    isLoading: isAnySyncing(state, workspaceId, [
+    isLoading: isAnySyncing(state, [
       "Log",
       "Progress",
       "Projects",
       "Tags",
       "Config"
     ]),
-    error: getFirstError(state, workspaceId, [
+    error: getFirstError(state, [
       "Log",
       "Progress",
       "Projects",
@@ -121,7 +121,13 @@ const FetchData = connect(
     fetchState: () => {
       if (typeof workspaceId === "string" && workspaceId.length > 0) {
         dispatch(
-          sync(workspaceId, ["Log", "Progress", "Projects", "Tags", "Config"])
+          syncInWorkspace(workspaceId, [
+            "Log",
+            "Progress",
+            "Projects",
+            "Tags",
+            "Config"
+          ])
         );
       }
     }

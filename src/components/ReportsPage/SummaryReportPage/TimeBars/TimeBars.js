@@ -10,6 +10,7 @@ import { connect } from "react-redux";
 import "./TimeBars.scss";
 import uuidv4 from "uuid/v4";
 import { findMany } from "../../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -254,6 +255,7 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
 
 export { TimeBars };
 
-export default connect((state, { workspaceId }) => ({
-  definedProjects: findMany(state, workspaceId, "Projects")
+export default connect(state => ({
+  definedProjects: findMany(state, "Projects"),
+  workspaceId: getCurrentWorkspaceId(state)
 }))(TimeBars);

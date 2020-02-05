@@ -1,7 +1,8 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
-import { findMany } from "../selectors/syncableStorage";
+import { findMany, findManyInWorkspace } from "../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../selectors/workspaces";
 
 export const TYPE_STRING = "String";
 export const TYPE_NUMBER = "Number";
@@ -247,7 +248,12 @@ const syncFailure = (workspaceId, table, error) => ({
   payload: { workspaceId, table, error }
 });
 
-const sync = (workspaceId, tables) => async (dispatch, getState) => {
+const sync = tables => async (dispatch, getState) => {
+  const state = getState();
+  await dispatch(syncInWorkspace(getCurrentWorkspaceId(state), tables));
+};
+
+const syncInWorkspace = (workspaceId, tables) => async (dispatch, getState) => {
   try {
     console.assert(
       Array.isArray(tables),
@@ -298,7 +304,7 @@ const sync = (workspaceId, tables) => async (dispatch, getState) => {
             return mapped;
           });
         const lastRowInSpreadsheet = data.length;
-        const localRowsToSave = findMany(
+        const localRowsToSave = findManyInWorkspace(
           state,
           workspaceId,
           table,
@@ -424,5 +430,6 @@ export {
   upsertLocal,
   replaceAllLocal,
   deleteLocal,
+  syncInWorkspace,
   sync
 };

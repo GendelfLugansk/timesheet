@@ -22,15 +22,7 @@ const WithWorkspace = ({
     return <SelectWorkspace />;
   }
 
-  return (
-    <>
-      {React.Children.map(children, child => {
-        return React.cloneElement(child, {
-          workspaceId: currentWorkspace.id
-        });
-      })}
-    </>
-  );
+  return <>{children}</>;
 };
 
 export { WithWorkspace };

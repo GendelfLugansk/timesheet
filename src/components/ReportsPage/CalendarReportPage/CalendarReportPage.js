@@ -242,7 +242,7 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
 
 export { CalendarReportPage };
 
-export default connect((state, { workspaceId, filters = [] }) => ({
-  isSyncing: isSyncing(state, workspaceId, "Log"),
-  logItems: findMany(state, workspaceId, "Log").filter(filterFunction(filters))
+export default connect((state, { filters = [] }) => ({
+  isSyncing: isSyncing(state, "Log"),
+  logItems: findMany(state, "Log").filter(filterFunction(filters))
 }))(CalendarReportPage);

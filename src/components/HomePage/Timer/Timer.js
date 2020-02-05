@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
 import {
-  sync,
+  syncInWorkspace,
   upsertLocal,
-  deleteLocal
+  deleteLocal,
+  sync
 } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import uuidv4 from "uuid/v4";
@@ -17,6 +18,7 @@ import Autosuggest from "react-autosuggest";
 import theme from "../../../styles/autosuggestTheme";
 import { stringArray } from "../../../utils/joiExtensions";
 import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../selectors/workspaces";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -36,8 +38,7 @@ const Timer = ({
   stopTimer,
   syncProgress,
   syncTags,
-  syncProjects,
-  workspaceId
+  syncProjects
 }) => {
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
@@ -445,25 +446,28 @@ const Timer = ({
 export { Timer };
 
 export default connect(
-  (state, { workspaceId }) => ({
-    isSyncing: isAnySyncing(state, workspaceId, [
-      "Progress",
-      "Tags",
-      "Projects"
-    ]),
+  state => ({
+    isSyncing: isAnySyncing(state, ["Progress", "Tags", "Projects"]),
     timerInProgress: {
       uuid: uuidv4(),
-      ...(findMany(state, workspaceId, "Progress").filter(
+      taskDescription: "",
+      project: "",
+      tags: "",
+      ...(findMany(state, "Progress").filter(
         row => row.userId === state.auth.currentUser.id
       )[0] || {}),
       userId: state.auth.currentUser.id,
       userDisplayName: state.auth.currentUser.name,
       userImage: state.auth.currentUser.image
     },
-    tagItems: findMany(state, workspaceId, "Tags"),
-    projectItems: findMany(state, workspaceId, "Projects")
+    tagItems: findMany(state, "Tags"),
+    projectItems: findMany(state, "Projects"),
+    workspaceId: getCurrentWorkspaceId(state)
   }),
-  (dispatch, { workspaceId }) => ({
+  null,
+  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
+    ...ownProps,
+    ...rest,
     updateTimer: timerInProgress => {
       dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
     },
@@ -486,7 +490,7 @@ export default connect(
       if (project) {
         dispatch(upsertLocal(workspaceId, "Projects", project));
       }
-      dispatch(sync(workspaceId, ["Progress", "Projects", "Tags"]));
+      dispatch(sync(["Progress", "Projects", "Tags"]));
     },
     stopTimer: timerInProgress => {
       const endTimeString = DateTime.local().toISO();
@@ -507,16 +511,16 @@ export default connect(
       };
       dispatch(upsertLocal(workspaceId, "Log", logEntry));
       dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
-      dispatch(sync(workspaceId, ["Log", "Progress"]));
+      dispatch(sync(["Log", "Progress"]));
     },
     syncProgress: () => {
-      dispatch(sync(workspaceId, ["Progress"]));
+      dispatch(sync(["Progress"]));
     },
     syncTags: () => {
-      dispatch(sync(workspaceId, ["Tags"]));
+      dispatch(sync(["Tags"]));
     },
     syncProjects: () => {
-      dispatch(sync(workspaceId, ["Projects"]));
+      dispatch(sync(["Projects"]));
     }
   })
 )(Timer);

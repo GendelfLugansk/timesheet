@@ -11,6 +11,7 @@ import ReactResizeDetector from "react-resize-detector";
 import "./TagsPie.scss";
 import uuidv4 from "uuid/v4";
 import { findMany } from "../../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -250,9 +251,10 @@ const TagsPie = ({
 
 export { TagsPie };
 
-export default connect((state, { workspaceId }) => ({
-  definedTags: findMany(state, workspaceId, "Tags")
-}))(({ workspaceId, fetchState, ...rest }) => {
+export default connect(state => ({
+  definedTags: findMany(state, "Tags"),
+  workspaceId: getCurrentWorkspaceId(state)
+}))(({ workspaceId, ...rest }) => {
   return (
     <ReactResizeDetector handleWidth handleHeight>
       <TagsPie workspaceId={workspaceId} {...rest} />

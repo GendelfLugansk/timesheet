@@ -6,11 +6,16 @@ import ru from "./GenerateDemo.ru";
 import { connect } from "react-redux";
 import uuidv4 from "uuid/v4";
 import Loader from "../../../Loader/Loader";
-import { sync, replaceAllLocal } from "../../../../actions/syncableStorage";
+import {
+  syncInWorkspace,
+  replaceAllLocal,
+  sync
+} from "../../../../actions/syncableStorage";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask from "../../../../hooks/useTask";
 import { isSyncing } from "../../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -71,15 +76,19 @@ const GenerateDemo = ({
 export { GenerateDemo };
 
 export default connect(
-  (state, { workspaceId }) => ({
-    isLoading: isSyncing(state, workspaceId, "Log"),
+  state => ({
+    isLoading: isSyncing(state, "Log"),
     userId: state.auth.currentUser.id,
     userDisplayName: state.auth.currentUser.name,
-    userImage: state.auth.currentUser.image
+    userImage: state.auth.currentUser.image,
+    workspaceId: getCurrentWorkspaceId(state)
   }),
-  (dispatch, { workspaceId }) => ({
+  null,
+  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
+    ...ownProps,
+    ...rest,
     sync: async () => {
-      await dispatch(sync(workspaceId, ["Log", "Projects", "Tags"]));
+      await dispatch(sync(["Log", "Projects", "Tags"]));
     },
     save: ({ log, projects, tags }) => {
       dispatch(replaceAllLocal(workspaceId, "Log", log));

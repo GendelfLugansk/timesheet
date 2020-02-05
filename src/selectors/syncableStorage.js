@@ -1,30 +1,49 @@
 import objectPath from "object-path";
+import { getCurrentWorkspaceId } from "./workspaces";
 
-const findMany = (state, workspaceId, table, includeDeleted = false) =>
+const findManyInWorkspace = (
+  state,
+  workspaceId,
+  table,
+  includeDeleted = false
+) =>
   Object.values(
     objectPath.get(state.syncableStorage, `${workspaceId}.${table}.data`, {})
   ).filter(({ _deleted }) => includeDeleted || !_deleted);
 
-const isSyncing = (state, workspaceId, table) =>
+const findMany = (state, table, includeDeleted = false) =>
+  findManyInWorkspace(
+    state,
+    getCurrentWorkspaceId(state),
+    table,
+    includeDeleted
+  );
+
+const isSyncing = (state, table) =>
   objectPath.get(
     state.syncableStorage,
-    `${workspaceId}.${table}.isSyncing`,
+    `${getCurrentWorkspaceId(state)}.${table}.isSyncing`,
     false
   );
 
-const isAnySyncing = (state, workspaceId, tables) =>
-  tables.reduce(
-    (acc, table) => acc || isSyncing(state, workspaceId, table),
-    false
-  );
+const isAnySyncing = (state, tables) =>
+  tables.reduce((acc, table) => acc || isSyncing(state, table), false);
 
-const getError = (state, workspaceId, table) =>
-  objectPath.get(state.syncableStorage, `${workspaceId}.${table}.error`, null);
-
-const getFirstError = (state, workspaceId, tables) =>
-  tables.reduce(
-    (acc, table) => acc || getError(state, workspaceId, table),
+const getError = (state, table) =>
+  objectPath.get(
+    state.syncableStorage,
+    `${getCurrentWorkspaceId(state)}.${table}.error`,
     null
   );
 
-export { findMany, isSyncing, isAnySyncing, getError, getFirstError };
+const getFirstError = (state, tables) =>
+  tables.reduce((acc, table) => acc || getError(state, table), null);
+
+export {
+  findManyInWorkspace,
+  findMany,
+  isSyncing,
+  isAnySyncing,
+  getError,
+  getFirstError
+};

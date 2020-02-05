@@ -9,7 +9,7 @@ const initialState = {
   isLoading: false,
   error: null,
   list: [],
-  currentWorkspace: null
+  currentWorkspace: undefined
 };
 
 const workspaces = (state = initialState, action) => {

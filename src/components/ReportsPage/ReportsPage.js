@@ -6,30 +6,39 @@ import { connect } from "react-redux";
 import Filters from "./Filters/Filters";
 import { deserialize, serialize } from "../../utils/logFilters";
 import uuidv4 from "uuid/v4";
-import { sync, upsertLocal } from "../../actions/syncableStorage";
+import {
+  sync,
+  syncInWorkspace,
+  upsertLocal
+} from "../../actions/syncableStorage";
 import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
 import { useDebouncedCallback } from "use-debounce";
 import { findMany, isSyncing } from "../../selectors/syncableStorage";
 import WithWorkspace from "../WithWorkspace/WithWorkspace";
+import { getCurrentWorkspaceId } from "../../selectors/workspaces";
 
 const ContentWithFilters = connect(
-  (state, { workspaceId }) => ({
-    isSyncing: isSyncing(state, workspaceId, "Config"),
+  state => ({
+    isSyncing: isSyncing(state, "Config"),
     appliedFilters: deserialize(
       (
-        findMany(state, workspaceId, "Config").filter(
+        findMany(state, "Config").filter(
           ({ key, uuid }) => key === "filters"
         )[0] || {}
       ).value
     ),
     filtersUUID:
       (
-        findMany(state, workspaceId, "Config").filter(
+        findMany(state, "Config").filter(
           ({ key, uuid }) => key === "filters"
         )[0] || {}
-      ).uuid || uuidv4()
+      ).uuid || uuidv4(),
+    workspaceId: getCurrentWorkspaceId(state)
   }),
-  (dispatch, { workspaceId }) => ({
+  null,
+  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
+    ...ownProps,
+    ...rest,
     setAppliedFilters: (filters, uuid) => {
       dispatch(
         upsertLocal(workspaceId, "Config", {
@@ -40,7 +49,7 @@ const ContentWithFilters = connect(
       );
     },
     syncFilters: () => {
-      dispatch(sync(workspaceId, ["Config"]));
+      dispatch(sync(["Config"]));
     }
   })
 )(
@@ -49,8 +58,7 @@ const ContentWithFilters = connect(
     appliedFilters = [],
     filtersUUID,
     setAppliedFilters,
-    syncFilters,
-    workspaceId
+    syncFilters
   }) => {
     const [syncDebounced] = useDebouncedCallback(syncFilters, 1500);
 
@@ -58,7 +66,6 @@ const ContentWithFilters = connect(
       <div className="uk-width-1-1 uk-position-relative">
         <Filters
           isSyncing={isSyncing}
-          workspaceId={workspaceId}
           appliedFilters={appliedFilters}
           setAppliedFilters={filters => {
             setAppliedFilters(filters, filtersUUID);
@@ -70,16 +77,10 @@ const ContentWithFilters = connect(
             <Redirect to="/reports/summary" />
           </AuthenticatedRoute>
           <AuthenticatedRoute exact path="/reports/summary">
-            <SummaryReportPage
-              workspaceId={workspaceId}
-              filters={appliedFilters}
-            />
+            <SummaryReportPage filters={appliedFilters} />
           </AuthenticatedRoute>
           <AuthenticatedRoute exact path="/reports/calendar">
-            <CalendarReportsPage
-              workspaceId={workspaceId}
-              filters={appliedFilters}
-            />
+            <CalendarReportsPage filters={appliedFilters} />
           </AuthenticatedRoute>
         </Switch>
       </div>

@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import {
   deleteLocal,
   sync,
+  syncInWorkspace,
   upsertLocal
 } from "../../../actions/syncableStorage";
 import { DateTime, Duration } from "luxon";
@@ -23,6 +24,7 @@ import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
 import GenerateDemo from "./GenerateDemo/GenerateDemo";
 import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../selectors/workspaces";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -31,7 +33,6 @@ i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
 const Log = ({
-  workspaceId,
   isSyncing,
   logItems,
   tagItems,
@@ -215,7 +216,7 @@ const Log = ({
   }
 
   if (logItems.length === 0) {
-    return <GenerateDemo workspaceId={workspaceId} />;
+    return <GenerateDemo />;
   }
 
   return (
@@ -709,7 +710,6 @@ const Log = ({
                               {typeof tags === "string" &&
                               tags.trim().length > 0 ? (
                                 <Tags
-                                  workspaceId={workspaceId}
                                   tags={tags.split(",").map(tag => tag.trim())}
                                 />
                               ) : (
@@ -872,20 +872,24 @@ const Log = ({
 export { Log };
 
 export default connect(
-  (state, { workspaceId }) => ({
-    isSyncing: isAnySyncing(state, workspaceId, ["Log", "Tags", "Projects"]),
-    logItems: findMany(state, workspaceId, "Log").sort(
+  state => ({
+    isSyncing: isAnySyncing(state, ["Log", "Tags", "Projects"]),
+    logItems: findMany(state, "Log").sort(
       (a, b) =>
         DateTime.fromJSDate(new Date(b.endTimeString)) -
         DateTime.fromJSDate(new Date(a.endTimeString))
     ),
-    tagItems: findMany(state, workspaceId, "Tags"),
-    projectItems: findMany(state, workspaceId, "Projects")
+    tagItems: findMany(state, "Tags"),
+    projectItems: findMany(state, "Projects"),
+    workspaceId: getCurrentWorkspaceId(state)
   }),
-  (dispatch, { workspaceId }) => ({
+  null,
+  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
+    ...ownProps,
+    ...rest,
     deleteItem: uuid => {
       dispatch(deleteLocal(workspaceId, "Log", uuid));
-      dispatch(sync(workspaceId, ["Log"]));
+      dispatch(sync(["Log"]));
     },
     saveItem: (data, tags = [], project) => {
       dispatch(upsertLocal(workspaceId, "Log", data));
@@ -893,7 +897,7 @@ export default connect(
       if (project) {
         dispatch(upsertLocal(workspaceId, "Projects", project));
       }
-      dispatch(sync(workspaceId, ["Log", "Projects", "Tags"]));
+      dispatch(sync(["Log", "Projects", "Tags"]));
     }
   })
 )(Log);

@@ -38,6 +38,6 @@ const Tags = ({ tags, definedTags }) => {
 
 export { Tags };
 
-export default connect((state, { workspaceId }) => ({
-  definedTags: findMany(state, workspaceId, "Tags")
+export default connect(state => ({
+  definedTags: findMany(state, "Tags")
 }))(Tags);

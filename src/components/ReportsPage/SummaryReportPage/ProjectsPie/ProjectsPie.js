@@ -11,6 +11,7 @@ import ReactResizeDetector from "react-resize-detector";
 import "./ProjectsPie.scss";
 import uuidv4 from "uuid/v4";
 import { findMany } from "../../../../selectors/syncableStorage";
+import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -243,9 +244,10 @@ const ProjectsPie = ({
 
 export { ProjectsPie };
 
-export default connect((state, { workspaceId }) => ({
-  definedProjects: findMany(state, workspaceId, "Projects")
-}))(({ workspaceId, fetchState, ...rest }) => {
+export default connect(state => ({
+  definedProjects: findMany(state, "Projects"),
+  workspaceId: getCurrentWorkspaceId(state)
+}))(({ workspaceId, ...rest }) => {
   return (
     <ReactResizeDetector handleWidth handleHeight>
       <ProjectsPie workspaceId={workspaceId} {...rest} />

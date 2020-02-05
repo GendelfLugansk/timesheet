@@ -3,6 +3,56 @@ import uuidv4 from "uuid/v4";
 import chartColors from "../../../../utils/chartColors";
 import Color from "color";
 
+/**
+ * Returns random number
+ *
+ * @link https://snipplr.com/view/37687/random-number-float-generator
+ * @param minValue Minimum, included
+ * @param maxValue Maximum, included
+ * @param precision
+ * @returns {number}
+ */
+const getRandomFloat = (minValue, maxValue, precision = 2) =>
+  parseFloat(
+    Math.min(
+      minValue + Math.random() * (maxValue - minValue),
+      maxValue
+    ).toFixed(precision)
+  );
+
+/**
+ * Returns random integer
+ *
+ * @param min
+ * @param max
+ * @returns {*}
+ */
+const getRandomInteger = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+/**
+ * Make array and fill with filler values
+ *
+ * @param length
+ * @param filler
+ * @returns {[]}
+ */
+const makeArray = (length, filler = 0) => {
+  const ret = [];
+  for (let i = 0; i < length; i++) {
+    ret.push(filler);
+  }
+  return ret;
+};
+
+/**
+ * Generates time log using a lot of random numbers and pool of project names
+ *
+ * @param userDisplayName
+ * @param userId
+ * @param userImage
+ * @returns {{projects: {name: string, uuid: *, colorRGB: *}[], log: [], tags: {name: (string), uuid: *, colorRGB: *}[]}}
+ */
 export function generateDemoData(userDisplayName, userId, userImage) {
   const projectNamesPool = [
     "Webster Green Moth",
@@ -34,65 +84,65 @@ export function generateDemoData(userDisplayName, userId, userImage) {
     "Investigate random crashes",
     "Participate in a meeting"
   ];
-  const getRndInteger = (min, max) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
-  const makeArray = (length, filler = 0) => {
-    const ret = [];
-    for (let i = 0; i < length; i++) {
-      ret.push(filler);
-    }
-    return ret;
-  };
+
   const yesterday = DateTime.local().minus({ days: 1 });
+  //Generate log for period of 10 years
   let date = yesterday.minus({ years: 10 });
   const log = [];
   while (date <= yesterday) {
+    //Sunday is a weekend
     const weekends = [7];
+    //In most cases saturday is a weekend too but sometimes (5% chance) you need to do extra work
     if (Math.random() < 0.95) {
       weekends.push(6);
     }
     if (!weekends.includes(date.weekday)) {
+      //Start our day between 7:00 and 12:59
       let endTime = date.set({
-        hour: getRndInteger(7, 12),
-        minute: getRndInteger(0, 59)
+        hour: getRandomInteger(7, 12),
+        minute: getRandomInteger(0, 59)
       });
-      const tasksDone = getRndInteger(1, 5);
+      //Usually we do 1 to 8 tasks in day but some days (10% chance) are full with small tasks (8 to 20)
+      const tasksDone =
+        Math.random() > 0.9 ? getRandomInteger(8, 20) : getRandomInteger(1, 8);
+      //Most of days have 7.6 to 8.2 working hours but with 10% chance day will be exceptionally long (12 to 14)
+      //or exceptionally short (4 to 6)
       const hoursToSpendDaily =
         Math.random() > 0.9
           ? Math.random() < 0.5
-            ? getRndInteger(4, 6)
-            : getRndInteger(12, 14)
-          : 8 + getRndInteger(0, 5) / 10 - getRndInteger(0, 2) / 10;
+            ? getRandomFloat(4, 6)
+            : getRandomFloat(12, 14)
+          : getRandomFloat(7.6, 8.2);
       let hoursSpent = 0;
       for (let taskIndex = 1; taskIndex <= tasksDone; taskIndex++) {
         const hoursRemainder = hoursToSpendDaily - hoursSpent;
         if (hoursRemainder <= 0) {
           break;
         }
+        //Randomly determine time spent on this task. This math has a flaw - first
+        //tasks of the day will always tend to be shorter
         const taskHours =
           taskIndex === tasksDone
             ? hoursRemainder
-            : getRndInteger(
-                0,
-                Math.floor(hoursRemainder / (tasksDone - taskIndex + 1))
-              ) + Number(Math.random().toFixed(2));
+            : getRandomFloat(0.1, hoursRemainder / (tasksDone - taskIndex + 1));
         hoursSpent += taskHours;
+        //Tasks may have gaps between them, 0 to 15 minutes
         const startTime = endTime.plus({
-          minutes: getRndInteger(0, 15),
+          minutes: getRandomInteger(0, 15),
           milliseconds: 1
         });
         endTime = startTime.plus({ hours: taskHours });
-        const hourlyRate = getRndInteger(0, 100) || undefined;
+        const hourlyRate = getRandomInteger(0, 100) || undefined;
         const task = {
           userDisplayName,
           taskDescription:
-            descriptionsPool[getRndInteger(0, descriptionsPool.length - 1)],
+            descriptionsPool[getRandomInteger(0, descriptionsPool.length - 1)],
           project:
-            projectNamesPool[getRndInteger(0, projectNamesPool.length - 1)],
+            projectNamesPool[getRandomInteger(0, projectNamesPool.length - 1)],
           tags: [
             ...new Set(
-              makeArray(getRndInteger(1, 3)).map(
-                () => tagsPool[getRndInteger(0, tagsPool.length - 1)]
+              makeArray(getRandomInteger(1, 3)).map(
+                () => tagsPool[getRandomInteger(0, tagsPool.length - 1)]
               )
             )
           ].join(", "),

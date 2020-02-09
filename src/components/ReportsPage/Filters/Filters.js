@@ -319,7 +319,8 @@ const Filters = memo(() => {
   const isLogSyncing = useSelector(isLogSyncingSelector, shallowEqual);
   const isFiltersSyncing = useSelector(isFiltersSyncingSelector, shallowEqual);
   const isSyncing = isLogSyncing || isFiltersSyncing;
-  const filtersUUID = useSelector(filtersRowUUIDSelector, shallowEqual);
+  const filtersUUID =
+    useSelector(filtersRowUUIDSelector, shallowEqual) || uuidv4();
   const dispatch = useDispatch();
   const syncFilters = () => {
     dispatch(sync(["Config"]));
@@ -331,7 +332,7 @@ const Filters = memo(() => {
       upsertLocal(workspaceId, "Config", {
         key: "filters",
         value: serialize(filters),
-        filtersUUID
+        uuid: filtersUUID
       })
     );
     syncDebounced();

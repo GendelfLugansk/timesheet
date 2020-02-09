@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import { getAvailableFilters } from "../../../utils/logFilters";
-import { TYPE_ISO_DATE } from "../../../actions/syncableStorage";
+import React, { useEffect, useState, memo } from "react";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { getAvailableFilters, serialize } from "../../../utils/logFilters";
+import {
+  sync,
+  TYPE_ISO_DATE,
+  upsertLocal
+} from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../utils/i18n";
@@ -14,7 +18,15 @@ import ReactHtmlParser from "react-html-parser";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import "./Filters.scss";
 import uuidv4 from "uuid/v4";
-import { findMany, isSyncing } from "../../../selectors/syncableStorage";
+import { isLogSyncingSelector, logSelector } from "../../../selectors/log";
+import {
+  filtersRowUUIDSelector,
+  filtersSelector,
+  isFiltersSyncingSelector
+} from "../../../selectors/filters";
+import { useDebouncedCallback } from "use-debounce";
+import { workspaceIdSelector } from "../../../selectors/workspaces";
+import useRenderCounter from "../../../hooks/useRenderCounter";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -299,12 +311,32 @@ const FilterBetweenDates = ({
   );
 };
 
-const Filters = ({
-  isSyncing,
-  availableFilters = [],
-  appliedFilters = [],
-  setAppliedFilters
-}) => {
+const Filters = memo(() => {
+  useRenderCounter("Filters");
+  const logItems = useSelector(logSelector, shallowEqual);
+  const availableFilters = getAvailableFilters(logItems);
+  const appliedFilters = useSelector(filtersSelector, shallowEqual);
+  const isLogSyncing = useSelector(isLogSyncingSelector, shallowEqual);
+  const isFiltersSyncing = useSelector(isFiltersSyncingSelector, shallowEqual);
+  const isSyncing = isLogSyncing || isFiltersSyncing;
+  const filtersUUID = useSelector(filtersRowUUIDSelector, shallowEqual);
+  const dispatch = useDispatch();
+  const syncFilters = () => {
+    dispatch(sync(["Config"]));
+  };
+  const [syncDebounced] = useDebouncedCallback(syncFilters, 1500);
+  const workspaceId = useSelector(workspaceIdSelector, shallowEqual);
+  const setAppliedFilters = filters => {
+    dispatch(
+      upsertLocal(workspaceId, "Config", {
+        key: "filters",
+        value: serialize(filters),
+        filtersUUID
+      })
+    );
+    syncDebounced();
+  };
+
   const filters = availableFilters
     .map(({ key, type, availableValues, typeToCoerce }) => ({
       key,
@@ -410,9 +442,6 @@ const Filters = ({
       })}
     </div>
   );
-};
+});
 
-export default connect((state, { isSyncing: isSyncing2 }) => ({
-  isSyncing: isSyncing(state, "Log") || isSyncing2,
-  availableFilters: getAvailableFilters(findMany(state, "Log"))
-}))(Filters);
+export default Filters;

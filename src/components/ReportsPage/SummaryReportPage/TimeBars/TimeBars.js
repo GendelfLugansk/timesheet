@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useEffect } from "react";
 import Plot, { defaultConfig, defaultLayout } from "../../../Plot/Plot";
 import en from "./TimeBars.en";
 import ru from "./TimeBars.ru";
@@ -6,17 +6,23 @@ import i18n from "../../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { DateTime, Duration } from "luxon";
-import { connect } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 import "./TimeBars.scss";
 import uuidv4 from "uuid/v4";
-import { findMany } from "../../../../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
+import { workspaceIdSelector } from "../../../../selectors/workspaces";
+import { projectsSelector } from "../../../../selectors/projects";
+import useRenderCounter from "../../../../hooks/useRenderCounter";
+import useFilteredLog from "../../../../hooks/useFilteredLog";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
+const TimeBars = memo(() => {
+  useRenderCounter("TimeBars");
+  const logItems = useFilteredLog();
+  const definedProjects = useSelector(projectsSelector, shallowEqual);
+  const workspaceId = useSelector(workspaceIdSelector, shallowEqual);
   const { t } = useTranslation(ns);
 
   let allProjects = [
@@ -243,6 +249,11 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
     ...defaultConfig
   };
 
+  useEffect(() => {
+    //Stupid Plotly does not render chart properly on first page load
+    window.dispatchEvent(new Event("resize"));
+  }, []);
+
   return (
     <Plot
       data={data}
@@ -251,11 +262,6 @@ const TimeBars = ({ workspaceId, logItems, definedProjects = [] }) => {
       className="Plot TimeBars"
     />
   );
-};
+});
 
-export { TimeBars };
-
-export default connect(state => ({
-  definedProjects: findMany(state, "Projects"),
-  workspaceId: getCurrentWorkspaceId(state)
-}))(TimeBars);
+export default TimeBars;

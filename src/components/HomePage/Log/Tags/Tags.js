@@ -1,9 +1,11 @@
-import React from "react";
-import { connect } from "react-redux";
-import { findMany } from "../../../../selectors/syncableStorage";
+import React, { memo } from "react";
+import { shallowEqual, useSelector } from "react-redux";
 import Color from "color";
+import { tagsSelector } from "../../../../selectors/tags";
 
-const Tags = ({ tags, definedTags }) => {
+const Tags = memo(({ tags }) => {
+  const definedTags = useSelector(tagsSelector, shallowEqual);
+
   return (
     <>
       {tags.map((tag, index) => {
@@ -34,10 +36,8 @@ const Tags = ({ tags, definedTags }) => {
       })}
     </>
   );
-};
+});
 
 export { Tags };
 
-export default connect(state => ({
-  definedTags: findMany(state, "Tags")
-}))(Tags);
+export default Tags;

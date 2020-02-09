@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useState, memo, useCallback } from "react";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
   deleteLocal,
   sync,
-  syncInWorkspace,
   upsertLocal
 } from "../../../actions/syncableStorage";
 import { DateTime, Duration } from "luxon";
@@ -23,8 +22,11 @@ import { stringArray } from "../../../utils/joiExtensions";
 import theme from "../../../styles/autosuggestTheme";
 import Autosuggest from "react-autosuggest";
 import GenerateDemo from "./GenerateDemo/GenerateDemo";
-import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../../../selectors/workspaces";
+import { isAnySyncing } from "../../../selectors/syncableStorage";
+import { workspaceIdSelector } from "../../../selectors/workspaces";
+import { logSelector } from "../../../selectors/log";
+import { tagsSelector } from "../../../selectors/tags";
+import { projectsSelector } from "../../../selectors/projects";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -32,14 +34,38 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const Log = ({
-  isSyncing,
-  logItems,
-  tagItems,
-  projectItems,
-  deleteItem,
-  saveItem
-}) => {
+const isSyncingSelector = state =>
+  isAnySyncing(state, ["Log", "Tags", "Projects"]);
+
+const Log = memo(() => {
+  const logItems = useSelector(logSelector, shallowEqual).sort(
+    (a, b) =>
+      DateTime.fromJSDate(new Date(b.endTimeString)) -
+      DateTime.fromJSDate(new Date(a.endTimeString))
+  );
+  const tagItems = useSelector(tagsSelector, shallowEqual);
+  const projectItems = useSelector(projectsSelector, shallowEqual);
+  const isSyncing = useSelector(isSyncingSelector, shallowEqual);
+  const workspaceId = useSelector(workspaceIdSelector);
+  const dispatch = useDispatch();
+  const deleteItem = useCallback(
+    uuid => {
+      dispatch(deleteLocal(workspaceId, "Log", uuid));
+      dispatch(sync(["Log"]));
+    },
+    [dispatch, workspaceId]
+  );
+  const saveItem = useCallback(
+    (data, tags = [], project) => {
+      dispatch(upsertLocal(workspaceId, "Log", data));
+      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
+      dispatch(sync(["Log", "Projects", "Tags"]));
+    },
+    [dispatch, workspaceId]
+  );
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
@@ -867,37 +893,8 @@ const Log = ({
       </div>
     </div>
   );
-};
+});
 
 export { Log };
 
-export default connect(
-  state => ({
-    isSyncing: isAnySyncing(state, ["Log", "Tags", "Projects"]),
-    logItems: findMany(state, "Log").sort(
-      (a, b) =>
-        DateTime.fromJSDate(new Date(b.endTimeString)) -
-        DateTime.fromJSDate(new Date(a.endTimeString))
-    ),
-    tagItems: findMany(state, "Tags"),
-    projectItems: findMany(state, "Projects"),
-    workspaceId: getCurrentWorkspaceId(state)
-  }),
-  null,
-  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
-    ...ownProps,
-    ...rest,
-    deleteItem: uuid => {
-      dispatch(deleteLocal(workspaceId, "Log", uuid));
-      dispatch(sync(["Log"]));
-    },
-    saveItem: (data, tags = [], project) => {
-      dispatch(upsertLocal(workspaceId, "Log", data));
-      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
-      if (project) {
-        dispatch(upsertLocal(workspaceId, "Projects", project));
-      }
-      dispatch(sync(["Log", "Projects", "Tags"]));
-    }
-  })
-)(Log);
+export default Log;

@@ -1,26 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useState, memo } from "react";
+import { useSelector } from "react-redux";
 import { DateTime, Duration } from "luxon";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
 import "./CalendarReportPage.scss";
 import stringifyError from "../../../utils/stringifyError";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
-import { filterFunction } from "../../../utils/logFilters";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask, { CONCURRENCY_STRATEGY_RESTART } from "../../../hooks/useTask";
-import { findMany, isSyncing } from "../../../selectors/syncableStorage";
 import i18n from "../../../utils/i18n";
 import en from "./CalendarReportPage.en";
 import ru from "./CalendarReportPage.ru";
 import uuidv4 from "uuid/v4";
+import useRenderCounter from "../../../hooks/useRenderCounter";
+import useFilteredLog from "../../../hooks/useFilteredLog";
+import { isLogSyncingSelector } from "../../../selectors/log";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const CalendarReportPage = ({ isSyncing, logItems }) => {
+const CalendarReportPage = memo(() => {
+  useRenderCounter("CalendarReportPage");
+  const logItems = useFilteredLog();
+  const isSyncing = useSelector(isLogSyncingSelector);
   const { i18n } = useTranslation();
   const { t } = useTranslation(ns);
   const [year, setYear] = useState();
@@ -238,11 +242,6 @@ const CalendarReportPage = ({ isSyncing, logItems }) => {
       ) : null}
     </div>
   );
-};
+});
 
-export { CalendarReportPage };
-
-export default connect((state, { filters = [] }) => ({
-  isSyncing: isSyncing(state, "Log"),
-  logItems: findMany(state, "Log").filter(filterFunction(filters))
-}))(CalendarReportPage);
+export default CalendarReportPage;

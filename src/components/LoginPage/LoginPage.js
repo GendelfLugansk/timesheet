@@ -1,7 +1,13 @@
-import React from "react";
-import { connect } from "react-redux";
-import { signIn, signInClearError } from "../../actions/signIn";
-import { signOut, signOutClearError } from "../../actions/signOut";
+import React, { memo, useCallback } from "react";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import {
+  signIn as signInAction,
+  signInClearError as signInClearErrorAction
+} from "../../actions/signIn";
+import {
+  signOut,
+  signOutClearError as signOutClearErrorAction
+} from "../../actions/signOut";
 import { useHistory, useLocation } from "react-router-dom";
 import "./LoginPage.scss";
 import DocumentTitle from "../DocumentTitle/DocumentTitle";
@@ -17,17 +23,36 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const LoginPage = ({
-  isAuthenticated,
-  isLoading,
-  currentUser,
-  signInError,
-  signOutError,
-  signInButtonClick,
-  signInClearError,
-  signOutButtonClick,
-  signOutClearError
-}) => {
+const selector = state => ({
+  isAuthenticated: state.auth.isAuthenticated,
+  isLoading:
+    state.auth.isLoading || state.signIn.isLoading || state.signOut.isLoading,
+  currentUser: state.auth.currentUser,
+  signInError: state.signIn.error,
+  signOutError: state.signOut.error
+});
+
+const LoginPage = memo(() => {
+  const {
+    isAuthenticated,
+    isLoading,
+    currentUser,
+    signInError,
+    signOutError
+  } = useSelector(selector, shallowEqual);
+  const dispatch = useDispatch();
+  const signInButtonClick = useCallback(async () => {
+    await dispatch(signInAction());
+  }, [dispatch]);
+  const signInClearError = useCallback(() => {
+    dispatch(signInClearErrorAction());
+  }, [dispatch]);
+  const signOutButtonClick = useCallback(() => {
+    dispatch(signOut());
+  }, [dispatch]);
+  const signOutClearError = useCallback(() => {
+    dispatch(signOutClearErrorAction());
+  }, [dispatch]);
   const { t } = useTranslation(ns);
 
   let history = useHistory();
@@ -124,31 +149,8 @@ const LoginPage = ({
       </div>
     </>
   );
-};
+});
 
 export { LoginPage };
 
-export default connect(
-  state => ({
-    isAuthenticated: state.auth.isAuthenticated,
-    isLoading:
-      state.auth.isLoading || state.signIn.isLoading || state.signOut.isLoading,
-    currentUser: state.auth.currentUser,
-    signInError: state.signIn.error,
-    signOutError: state.signOut.error
-  }),
-  dispatch => ({
-    signInButtonClick: async () => {
-      await dispatch(signIn());
-    },
-    signInClearError: () => {
-      dispatch(signInClearError());
-    },
-    signOutButtonClick: () => {
-      dispatch(signOut());
-    },
-    signOutClearError: () => {
-      dispatch(signOutClearError());
-    }
-  })
-)(LoginPage);
+export default LoginPage;

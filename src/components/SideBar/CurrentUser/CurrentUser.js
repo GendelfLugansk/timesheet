@@ -1,6 +1,9 @@
-import React from "react";
-import { connect } from "react-redux";
-import { signOut, signOutClearError } from "../../../actions/signOut";
+import React, { memo, useCallback } from "react";
+import { shallowEqual, useSelector, useDispatch } from "react-redux";
+import {
+  signOut,
+  signOutClearError as signOutClearErrorAction
+} from "../../../actions/signOut";
 import "./CurrentUser.scss";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
@@ -13,13 +16,24 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const CurrentUser = ({
-  isAuthenticated,
-  currentUser,
-  signOutError,
-  signOutButtonClick,
-  signOutClearError
-}) => {
+const selector = state => ({
+  isAuthenticated: state.auth.isAuthenticated,
+  currentUser: state.auth.currentUser,
+  signOutError: state.signOut.error
+});
+
+const CurrentUser = memo(() => {
+  const { isAuthenticated, currentUser, signOutError } = useSelector(
+    selector,
+    shallowEqual
+  );
+  const dispatch = useDispatch();
+  const signOutButtonClick = useCallback(() => {
+    dispatch(signOut());
+  }, [dispatch]);
+  const signOutClearError = useCallback(() => {
+    dispatch(signOutClearErrorAction());
+  }, [dispatch]);
   const { t } = useTranslation(ns);
 
   if (isAuthenticated) {
@@ -62,22 +76,8 @@ const CurrentUser = ({
   }
 
   return null;
-};
+});
 
 export { CurrentUser };
 
-export default connect(
-  state => ({
-    isAuthenticated: state.auth.isAuthenticated,
-    currentUser: state.auth.currentUser,
-    signOutError: state.signOut.error
-  }),
-  dispatch => ({
-    signOutButtonClick: () => {
-      dispatch(signOut());
-    },
-    signOutClearError: () => {
-      dispatch(signOutClearError());
-    }
-  })
-)(CurrentUser);
+export default CurrentUser;

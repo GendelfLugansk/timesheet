@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import Plot, { defaultConfig, defaultLayout } from "../../../Plot/Plot";
 import en from "./TagsPie.en";
 import ru from "./TagsPie.ru";
@@ -6,25 +6,24 @@ import i18n from "../../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import chartColors from "../../../../utils/chartColors";
 import { Duration } from "luxon";
-import { connect } from "react-redux";
-import ReactResizeDetector from "react-resize-detector";
+import { shallowEqual, useSelector } from "react-redux";
+import { withResizeDetector } from "react-resize-detector";
 import "./TagsPie.scss";
 import uuidv4 from "uuid/v4";
-import { findMany } from "../../../../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
+import { workspaceIdSelector } from "../../../../selectors/workspaces";
+import useRenderCounter from "../../../../hooks/useRenderCounter";
+import useFilteredLog from "../../../../hooks/useFilteredLog";
+import { tagsSelector } from "../../../../selectors/tags";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const TagsPie = ({
-  workspaceId,
-  logItems,
-  definedTags = [],
-  responsiveLegend = true,
-  width,
-  height
-}) => {
+const TagsPie = memo(({ responsiveLegend = true, width, height }) => {
+  useRenderCounter("TagsPie");
+  const logItems = useFilteredLog();
+  const definedTags = useSelector(tagsSelector, shallowEqual);
+  const workspaceId = useSelector(workspaceIdSelector, shallowEqual);
   const { t } = useTranslation(ns);
 
   //These weird calculations below try to detect best parameters for legend display
@@ -247,17 +246,8 @@ const TagsPie = ({
       className="Plot TagsPie"
     />
   );
-};
+});
 
 export { TagsPie };
 
-export default connect(state => ({
-  definedTags: findMany(state, "Tags"),
-  workspaceId: getCurrentWorkspaceId(state)
-}))(({ workspaceId, ...rest }) => {
-  return (
-    <ReactResizeDetector handleWidth handleHeight>
-      <TagsPie workspaceId={workspaceId} {...rest} />
-    </ReactResizeDetector>
-  );
-});
+export default memo(withResizeDetector(TagsPie));

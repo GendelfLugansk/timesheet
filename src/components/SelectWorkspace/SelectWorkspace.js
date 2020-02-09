@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import i18n from "../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./SelectWorkspace.en";
 import ru from "./SelectWorkspace.ru";
 import Joi from "joi";
 import groupJoiErrors from "../../utils/groupJoiErrors";
-import { connect } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
-import { selectWorkspace } from "../../actions/workspaces";
+import { selectWorkspace as selectWorkspaceAction } from "../../actions/workspaces";
 import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
 
@@ -15,7 +15,20 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const SelectWorkspace = ({ isLoading, workspaces, selectWorkspace }) => {
+const selector = state => ({
+  isLoading: state.workspaces.isLoading,
+  workspaces: state.workspaces.list
+});
+
+const SelectWorkspace = memo(() => {
+  const { isLoading, workspaces } = useSelector(selector, shallowEqual);
+  const dispatch = useDispatch();
+  const selectWorkspace = useCallback(
+    workspace => {
+      dispatch(selectWorkspaceAction(workspace));
+    },
+    [dispatch]
+  );
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
@@ -153,18 +166,8 @@ const SelectWorkspace = ({ isLoading, workspaces, selectWorkspace }) => {
       </div>
     </div>
   );
-};
+});
 
 export { SelectWorkspace };
 
-export default connect(
-  state => ({
-    isLoading: state.workspaces.isLoading,
-    workspaces: state.workspaces.list
-  }),
-  dispatch => ({
-    selectWorkspace: workspace => {
-      dispatch(selectWorkspace(workspace));
-    }
-  })
-)(SelectWorkspace);
+export default SelectWorkspace;

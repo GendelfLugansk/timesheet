@@ -1,15 +1,14 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import { Route, Redirect } from "react-router-dom";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
 
-const AuthenticatedRoute = ({
-  isAuthenticated,
-  isLoading,
-  redirectTo = "/login",
-  children,
-  ...rest
-}) => {
+const isAuthenticatedSelector = state => state.auth.isAuthenticated;
+const isLoadingSelector = state => state.auth.isLoading;
+
+const AuthenticatedRoute = ({ redirectTo = "/login", children, ...rest }) => {
+  const isAuthenticated = useSelector(isAuthenticatedSelector);
+  const isLoading = useSelector(isLoadingSelector);
   if (isAuthenticated === true) {
     return <Route {...rest} render={() => children} />;
   }
@@ -35,7 +34,4 @@ const AuthenticatedRoute = ({
 
 export { AuthenticatedRoute };
 
-export default connect(state => ({
-  isAuthenticated: state.auth.isAuthenticated,
-  isLoading: state.auth.isLoading
-}))(AuthenticatedRoute);
+export default AuthenticatedRoute;

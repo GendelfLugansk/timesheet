@@ -1,15 +1,20 @@
 import React from "react";
-import { connect } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
 import CreateFirstWorkspace from "../CreateFirstWorkspace/CreateFirstWorkspace";
 import SelectWorkspace from "../SelectWorkspace/SelectWorkspace";
 
-const WithWorkspace = ({
-  isLoading,
-  workspaces,
-  currentWorkspace,
-  children
-}) => {
+const selector = state => ({
+  isLoading: state.workspaces.isLoading,
+  workspaces: state.workspaces.list,
+  currentWorkspace: state.workspaces.currentWorkspace
+});
+
+const WithWorkspace = ({ children }) => {
+  const { isLoading, workspaces, currentWorkspace } = useSelector(
+    selector,
+    shallowEqual
+  );
   if (isLoading) {
     return <LoaderFullPage />;
   }
@@ -27,8 +32,4 @@ const WithWorkspace = ({
 
 export { WithWorkspace };
 
-export default connect(state => ({
-  isLoading: state.workspaces.isLoading,
-  workspaces: state.workspaces.list,
-  currentWorkspace: state.workspaces.currentWorkspace
-}))(WithWorkspace);
+export default WithWorkspace;

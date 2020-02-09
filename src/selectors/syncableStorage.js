@@ -1,5 +1,5 @@
 import objectPath from "object-path";
-import { getCurrentWorkspaceId } from "./workspaces";
+import { workspaceIdSelector } from "./workspaces";
 
 const findManyInWorkspace = (
   state,
@@ -12,17 +12,12 @@ const findManyInWorkspace = (
   ).filter(({ _deleted }) => includeDeleted || !_deleted);
 
 const findMany = (state, table, includeDeleted = false) =>
-  findManyInWorkspace(
-    state,
-    getCurrentWorkspaceId(state),
-    table,
-    includeDeleted
-  );
+  findManyInWorkspace(state, workspaceIdSelector(state), table, includeDeleted);
 
 const isSyncing = (state, table) =>
   objectPath.get(
     state.syncableStorage,
-    `${getCurrentWorkspaceId(state)}.${table}.isSyncing`,
+    `${workspaceIdSelector(state)}.${table}.isSyncing`,
     false
   );
 
@@ -32,7 +27,7 @@ const isAnySyncing = (state, tables) =>
 const getError = (state, table) =>
   objectPath.get(
     state.syncableStorage,
-    `${getCurrentWorkspaceId(state)}.${table}.error`,
+    `${workspaceIdSelector(state)}.${table}.error`,
     null
   );
 

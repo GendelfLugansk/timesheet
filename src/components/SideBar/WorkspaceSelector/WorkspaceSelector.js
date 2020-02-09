@@ -1,10 +1,10 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./WorkspaceSelector.en";
 import ru from "./WorkspaceSelector.ru";
-import { connect } from "react-redux";
-import { selectWorkspace } from "../../../actions/workspaces";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
+import { selectWorkspace as selectWorkspaceAction } from "../../../actions/workspaces";
 import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
 
@@ -12,11 +12,20 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const WorkspaceSelector = ({
-  workspaces,
-  currentWorkspace,
-  selectWorkspace
-}) => {
+const selector = state => ({
+  workspaces: state.workspaces.list,
+  currentWorkspace: state.workspaces.currentWorkspace
+});
+
+const WorkspaceSelector = memo(() => {
+  const { workspaces, currentWorkspace } = useSelector(selector, shallowEqual);
+  const dispatch = useDispatch();
+  const selectWorkspace = useCallback(
+    workspace => {
+      dispatch(selectWorkspaceAction(workspace));
+    },
+    [dispatch]
+  );
   const { t } = useTranslation(ns);
 
   if (workspaces.length === 0) {
@@ -74,18 +83,8 @@ const WorkspaceSelector = ({
       </div>
     </div>
   );
-};
+});
 
 export { WorkspaceSelector };
 
-export default connect(
-  state => ({
-    workspaces: state.workspaces.list,
-    currentWorkspace: state.workspaces.currentWorkspace
-  }),
-  dispatch => ({
-    selectWorkspace: workspace => {
-      dispatch(selectWorkspace(workspace));
-    }
-  })
-)(WorkspaceSelector);
+export default WorkspaceSelector;

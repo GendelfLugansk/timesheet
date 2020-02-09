@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { connect } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { fetchAuthStatus } from "../../actions/auth";
 import { fetchWorkspaces } from "../../actions/workspaces";
 import objectPath from "object-path";
@@ -16,19 +16,18 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const FetchAuth = connect(
-  state => ({
-    isLoading: state.auth.isLoading,
-    error: state.auth.error,
-    currentUserId: objectPath.get(state, "auth.currentUser.id")
-  }),
-  dispatch => ({
-    fetchState: () => {
-      dispatch(fetchAuthStatus());
-    }
-  })
-)(({ currentUserId, isLoading, error, fetchState, children }) => {
+const authStateSelector = state => ({
+  isLoading: state.auth.isLoading,
+  error: state.auth.error
+});
+
+const FetchAuth = ({ children }) => {
+  const { isLoading, error } = useSelector(authStateSelector, shallowEqual);
+  const dispatch = useDispatch();
   const { t } = useTranslation(ns);
+  const fetchState = () => {
+    dispatch(fetchAuthStatus());
+  };
   useEffect(fetchState, []);
 
   return (
@@ -48,29 +47,28 @@ const FetchAuth = connect(
           </button>
         </div>
       ) : null}
-      {React.Children.map(children, child => {
-        return React.cloneElement(child, {
-          currentUserId
-        });
-      })}
+      {children}
     </>
   );
+};
+
+const workspacesSelector = state => ({
+  currentUserId: objectPath.get(state, "auth.currentUser.id"),
+  isLoading: state.workspaces.isLoading,
+  error: state.workspaces.error
 });
 
-const FetchWorkspaces = connect(
-  state => ({
-    isLoading: state.workspaces.isLoading,
-    error: state.workspaces.error,
-    workspaceId: objectPath.get(state, "workspaces.currentWorkspace.id")
-  }),
-  (dispatch, { currentUserId }) => ({
-    fetchState: () => {
-      if (typeof currentUserId === "string" && currentUserId.length > 0) {
-        dispatch(fetchWorkspaces());
-      }
+const FetchWorkspaces = ({ children }) => {
+  const { currentUserId, isLoading, error } = useSelector(
+    workspacesSelector,
+    shallowEqual
+  );
+  const dispatch = useDispatch();
+  const fetchState = () => {
+    if (typeof currentUserId === "string" && currentUserId.length > 0) {
+      dispatch(fetchWorkspaces());
     }
-  })
-)(({ currentUserId, workspaceId, isLoading, error, fetchState, children }) => {
+  };
   const { t } = useTranslation(ns);
   useEffect(fetchState, [currentUserId]);
 
@@ -91,48 +89,48 @@ const FetchWorkspaces = connect(
           </button>
         </div>
       ) : null}
-      {React.Children.map(children, child => {
-        return React.cloneElement(child, {
-          workspaceId
-        });
-      })}
+      {children}
     </>
   );
+};
+
+const fetchDataSelector = state => ({
+  isLoading: isAnySyncing(state, [
+    "Log",
+    "Progress",
+    "Projects",
+    "Tags",
+    "Config"
+  ]),
+  error: getFirstError(state, [
+    "Log",
+    "Progress",
+    "Projects",
+    "Tags",
+    "Config"
+  ]),
+  workspaceId: objectPath.get(state, "workspaces.currentWorkspace.id")
 });
 
-const FetchData = connect(
-  (state, { workspaceId }) => ({
-    isLoading: isAnySyncing(state, [
-      "Log",
-      "Progress",
-      "Projects",
-      "Tags",
-      "Config"
-    ]),
-    error: getFirstError(state, [
-      "Log",
-      "Progress",
-      "Projects",
-      "Tags",
-      "Config"
-    ])
-  }),
-  (dispatch, { workspaceId }) => ({
-    fetchState: () => {
-      if (typeof workspaceId === "string" && workspaceId.length > 0) {
-        dispatch(
-          syncInWorkspace(workspaceId, [
-            "Log",
-            "Progress",
-            "Projects",
-            "Tags",
-            "Config"
-          ])
-        );
-      }
+const FetchData = ({ children }) => {
+  const { workspaceId, isLoading, error } = useSelector(
+    fetchDataSelector,
+    shallowEqual
+  );
+  const dispatch = useDispatch();
+  const fetchState = () => {
+    if (typeof workspaceId === "string" && workspaceId.length > 0) {
+      dispatch(
+        syncInWorkspace(workspaceId, [
+          "Log",
+          "Progress",
+          "Projects",
+          "Tags",
+          "Config"
+        ])
+      );
     }
-  })
-)(({ workspaceId, isLoading, error, fetchState, children }) => {
+  };
   const { t } = useTranslation(ns);
   useEffect(fetchState, [workspaceId]);
 
@@ -156,7 +154,7 @@ const FetchData = connect(
       {children}
     </>
   );
-});
+};
 
 const FetchAll = ({ children }) => {
   return (

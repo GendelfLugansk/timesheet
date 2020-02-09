@@ -1,16 +1,18 @@
 import React from "react";
 import { Route } from "react-router-dom";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
+
+const selector = state => state.auth.isAuthenticated;
 
 const LinkWrapper = ({
   to,
   activeClassName,
   className,
   authenticated = null,
-  isAuthenticated,
   children,
   ...rest
 }) => {
+  const isAuthenticated = useSelector(selector);
   const path = typeof to === "string" ? to : to.pathname;
 
   if (authenticated === true && !isAuthenticated) {
@@ -36,6 +38,4 @@ const LinkWrapper = ({
 
 export { LinkWrapper };
 
-export default connect(state => ({
-  isAuthenticated: state.auth.isAuthenticated
-}))(LinkWrapper);
+export default LinkWrapper;

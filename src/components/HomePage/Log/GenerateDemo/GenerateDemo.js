@@ -1,34 +1,50 @@
-import React from "react";
+import React, { memo, useCallback } from "react";
 import i18n from "../../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./GenerateDemo.en";
 import ru from "./GenerateDemo.ru";
-import { connect } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import uuidv4 from "uuid/v4";
 import Loader from "../../../Loader/Loader";
-import {
-  syncInWorkspace,
-  replaceAllLocal,
-  sync
-} from "../../../../actions/syncableStorage";
+import { replaceAllLocal, sync } from "../../../../actions/syncableStorage";
 //eslint-disable-next-line import/no-webpack-loader-syntax
 import worker from "workerize-loader!./worker";
 import useTask from "../../../../hooks/useTask";
-import { isSyncing } from "../../../../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../../../../selectors/workspaces";
+import { workspaceIdSelector } from "../../../../selectors/workspaces";
+import { isLogSyncingSelector } from "../../../../selectors/log";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const GenerateDemo = ({
-  isLoading,
-  sync,
-  save,
-  userId,
-  userDisplayName,
-  userImage
-}) => {
+const selector = state => ({
+  isLoading: isLogSyncingSelector(state),
+  userId: state.auth.currentUser.id,
+  userDisplayName: state.auth.currentUser.name,
+  userImage: state.auth.currentUser.image,
+  workspaceId: workspaceIdSelector(state)
+});
+
+const GenerateDemo = memo(() => {
+  const {
+    isLoading,
+    userId,
+    userDisplayName,
+    userImage,
+    workspaceId
+  } = useSelector(selector, shallowEqual);
+  const dispatch = useDispatch();
+  const syncData = useCallback(async () => {
+    await dispatch(sync(["Log", "Projects", "Tags"]));
+  }, [dispatch]);
+  const saveData = useCallback(
+    ({ log, projects, tags }) => {
+      dispatch(replaceAllLocal(workspaceId, "Log", log));
+      dispatch(replaceAllLocal(workspaceId, "Projects", projects));
+      dispatch(replaceAllLocal(workspaceId, "Tags", tags));
+    },
+    [dispatch, workspaceId]
+  );
   const { t } = useTranslation(ns);
 
   const generateDemo = useTask(async () => {
@@ -39,8 +55,8 @@ const GenerateDemo = ({
       userImage
     );
     workerInstance.terminate();
-    save(data);
-    await sync();
+    saveData(data);
+    await syncData();
   });
 
   const buttonClick = () => {
@@ -71,29 +87,8 @@ const GenerateDemo = ({
       </div>
     </div>
   );
-};
+});
 
 export { GenerateDemo };
 
-export default connect(
-  state => ({
-    isLoading: isSyncing(state, "Log"),
-    userId: state.auth.currentUser.id,
-    userDisplayName: state.auth.currentUser.name,
-    userImage: state.auth.currentUser.image,
-    workspaceId: getCurrentWorkspaceId(state)
-  }),
-  null,
-  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
-    ...ownProps,
-    ...rest,
-    sync: async () => {
-      await dispatch(sync(["Log", "Projects", "Tags"]));
-    },
-    save: ({ log, projects, tags }) => {
-      dispatch(replaceAllLocal(workspaceId, "Log", log));
-      dispatch(replaceAllLocal(workspaceId, "Projects", projects));
-      dispatch(replaceAllLocal(workspaceId, "Tags", tags));
-    }
-  })
-)(GenerateDemo);
+export default GenerateDemo;

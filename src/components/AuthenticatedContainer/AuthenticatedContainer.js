@@ -1,7 +1,10 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 
-const AuthenticatedContainer = ({ isAuthenticated, children }) => {
+const selector = state => state.auth.isAuthenticated;
+
+const AuthenticatedContainer = ({ children }) => {
+  const isAuthenticated = useSelector(selector);
   if (isAuthenticated === true) {
     return <>{children}</>;
   }
@@ -11,6 +14,4 @@ const AuthenticatedContainer = ({ isAuthenticated, children }) => {
 
 export { AuthenticatedContainer };
 
-export default connect(state => ({
-  isAuthenticated: state.auth.isAuthenticated
-}))(AuthenticatedContainer);
+export default AuthenticatedContainer;

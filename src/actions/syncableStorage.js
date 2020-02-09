@@ -1,8 +1,8 @@
 import objectPath from "object-path";
 import loadGAPI from "../utils/googleapi";
 import { DateTime } from "luxon";
-import { findMany, findManyInWorkspace } from "../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../selectors/workspaces";
+import { findManyInWorkspace } from "../selectors/syncableStorage";
+import { workspaceIdSelector } from "../selectors/workspaces";
 
 export const TYPE_STRING = "String";
 export const TYPE_NUMBER = "Number";
@@ -250,7 +250,7 @@ const syncFailure = (workspaceId, table, error) => ({
 
 const sync = tables => async (dispatch, getState) => {
   const state = getState();
-  await dispatch(syncInWorkspace(getCurrentWorkspaceId(state), tables));
+  await dispatch(syncInWorkspace(workspaceIdSelector(state), tables));
 };
 
 const syncInWorkspace = (workspaceId, tables) => async (dispatch, getState) => {

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import i18n from "../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./CreateFirstWorkspace.en";
 import ru from "./CreateFirstWorkspace.ru";
 import Joi from "joi";
 import groupJoiErrors from "../../utils/groupJoiErrors";
-import { connect } from "react-redux";
+import { useDispatch } from "react-redux";
 import { createWorkspace } from "../../actions/workspaces";
 import stringifyError from "../../utils/stringifyError";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
@@ -16,7 +16,8 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const CreateFirstWorkspace = ({ createWorkspace }) => {
+const CreateFirstWorkspace = memo(() => {
+  const dispatch = useDispatch();
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
@@ -25,7 +26,9 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
     sortOrder: 0
   });
   const [validationErrors, setValidationErrors] = useState({});
-  const create = useTask(createWorkspace);
+  const create = useTask(async data => {
+    await dispatch(createWorkspace(data));
+  });
 
   const validate = formData => {
     const rules = Joi.object({
@@ -161,15 +164,8 @@ const CreateFirstWorkspace = ({ createWorkspace }) => {
       </div>
     </div>
   );
-};
+});
 
 export { CreateFirstWorkspace };
 
-export default connect(
-  state => ({}),
-  dispatch => ({
-    createWorkspace: async data => {
-      await dispatch(createWorkspace(data));
-    }
-  })
-)(CreateFirstWorkspace);
+export default CreateFirstWorkspace;

@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useState, useRef, memo, useCallback } from "react";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
-  syncInWorkspace,
   upsertLocal,
   deleteLocal,
   sync
@@ -18,7 +17,7 @@ import Autosuggest from "react-autosuggest";
 import theme from "../../../styles/autosuggestTheme";
 import { stringArray } from "../../../utils/joiExtensions";
 import { findMany, isAnySyncing } from "../../../selectors/syncableStorage";
-import { getCurrentWorkspaceId } from "../../../selectors/workspaces";
+import { workspaceIdSelector } from "../../../selectors/workspaces";
 
 const Joi = JoiBase.extend(stringArray(JoiBase));
 
@@ -26,20 +25,103 @@ const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const Timer = ({
-  isSyncing,
-  timerInProgress,
-  tagItems,
-  projectItems,
-  updateTimer,
-  updateTags,
-  updateProject,
-  startTimer,
-  stopTimer,
-  syncProgress,
-  syncTags,
-  syncProjects
-}) => {
+const selector = state => ({
+  isSyncing: isAnySyncing(state, ["Progress", "Tags", "Projects"]),
+  timerInProgress: {
+    uuid: uuidv4(),
+    taskDescription: "",
+    project: "",
+    tags: "",
+    ...(findMany(state, "Progress").filter(
+      row => row.userId === state.auth.currentUser.id
+    )[0] || {}),
+    userId: state.auth.currentUser.id,
+    userDisplayName: state.auth.currentUser.name,
+    userImage: state.auth.currentUser.image
+  },
+  tagItems: findMany(state, "Tags"),
+  projectItems: findMany(state, "Projects"),
+  workspaceId: workspaceIdSelector(state)
+});
+
+const Timer = memo(() => {
+  const {
+    isSyncing,
+    timerInProgress,
+    tagItems,
+    projectItems,
+    workspaceId
+  } = useSelector(selector, shallowEqual);
+  const dispatch = useDispatch();
+  const updateTimer = useCallback(
+    timerInProgress => {
+      dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
+    },
+    [dispatch, workspaceId]
+  );
+  const updateTags = useCallback(
+    tags => {
+      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+    },
+    [dispatch, workspaceId]
+  );
+  const updateProject = useCallback(
+    project => {
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
+    },
+    [dispatch, workspaceId]
+  );
+  const startTimer = useCallback(
+    (timerInProgress, tags = [], project) => {
+      dispatch(
+        upsertLocal(workspaceId, "Progress", {
+          ...timerInProgress,
+          startTimeString: DateTime.local().toISO()
+        })
+      );
+      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
+      if (project) {
+        dispatch(upsertLocal(workspaceId, "Projects", project));
+      }
+      dispatch(sync(["Progress", "Projects", "Tags"]));
+    },
+    [dispatch, workspaceId]
+  );
+  const stopTimer = useCallback(
+    timerInProgress => {
+      const endTimeString = DateTime.local().toISO();
+      const durationHours = DateTime.fromISO(endTimeString)
+        .diff(DateTime.fromISO(timerInProgress.startTimeString))
+        .as("hours");
+      const logEntry = {
+        ...timerInProgress,
+        endTimeString: endTimeString,
+        durationHours: durationHours,
+        sum:
+          typeof durationHours === "number" &&
+          typeof timerInProgress.hourlyRate === "number" &&
+          durationHours > 0 &&
+          timerInProgress.hourlyRate > 0
+            ? durationHours * timerInProgress.hourlyRate
+            : undefined
+      };
+      dispatch(upsertLocal(workspaceId, "Log", logEntry));
+      dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
+      dispatch(sync(["Log", "Progress"]));
+    },
+    [dispatch, workspaceId]
+  );
+  const syncProgress = useCallback(() => {
+    dispatch(sync(["Progress"]));
+  }, [dispatch]);
+  const syncTags = useCallback(() => {
+    dispatch(sync(["Tags"]));
+  }, [dispatch]);
+  const syncProjects = useCallback(() => {
+    dispatch(sync(["Projects"]));
+  }, [dispatch]);
   const { t } = useTranslation(ns);
   const { t: tj } = useTranslation("joi");
 
@@ -441,86 +523,8 @@ const Timer = ({
       </div>
     </div>
   );
-};
+});
 
 export { Timer };
 
-export default connect(
-  state => ({
-    isSyncing: isAnySyncing(state, ["Progress", "Tags", "Projects"]),
-    timerInProgress: {
-      uuid: uuidv4(),
-      taskDescription: "",
-      project: "",
-      tags: "",
-      ...(findMany(state, "Progress").filter(
-        row => row.userId === state.auth.currentUser.id
-      )[0] || {}),
-      userId: state.auth.currentUser.id,
-      userDisplayName: state.auth.currentUser.name,
-      userImage: state.auth.currentUser.image
-    },
-    tagItems: findMany(state, "Tags"),
-    projectItems: findMany(state, "Projects"),
-    workspaceId: getCurrentWorkspaceId(state)
-  }),
-  null,
-  ({ workspaceId, ...rest }, { dispatch }, ownProps) => ({
-    ...ownProps,
-    ...rest,
-    updateTimer: timerInProgress => {
-      dispatch(upsertLocal(workspaceId, "Progress", timerInProgress));
-    },
-    updateTags: tags => {
-      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
-    },
-    updateProject: project => {
-      if (project) {
-        dispatch(upsertLocal(workspaceId, "Projects", project));
-      }
-    },
-    startTimer: (timerInProgress, tags = [], project) => {
-      dispatch(
-        upsertLocal(workspaceId, "Progress", {
-          ...timerInProgress,
-          startTimeString: DateTime.local().toISO()
-        })
-      );
-      tags.forEach(tag => dispatch(upsertLocal(workspaceId, "Tags", tag)));
-      if (project) {
-        dispatch(upsertLocal(workspaceId, "Projects", project));
-      }
-      dispatch(sync(["Progress", "Projects", "Tags"]));
-    },
-    stopTimer: timerInProgress => {
-      const endTimeString = DateTime.local().toISO();
-      const durationHours = DateTime.fromISO(endTimeString)
-        .diff(DateTime.fromISO(timerInProgress.startTimeString))
-        .as("hours");
-      const logEntry = {
-        ...timerInProgress,
-        endTimeString: endTimeString,
-        durationHours: durationHours,
-        sum:
-          typeof durationHours === "number" &&
-          typeof timerInProgress.hourlyRate === "number" &&
-          durationHours > 0 &&
-          timerInProgress.hourlyRate > 0
-            ? durationHours * timerInProgress.hourlyRate
-            : undefined
-      };
-      dispatch(upsertLocal(workspaceId, "Log", logEntry));
-      dispatch(deleteLocal(workspaceId, "Progress", timerInProgress.uuid));
-      dispatch(sync(["Log", "Progress"]));
-    },
-    syncProgress: () => {
-      dispatch(sync(["Progress"]));
-    },
-    syncTags: () => {
-      dispatch(sync(["Tags"]));
-    },
-    syncProjects: () => {
-      dispatch(sync(["Projects"]));
-    }
-  })
-)(Timer);
+export default Timer;

@@ -12,18 +12,36 @@
   }
 
   .PiesContainer {
+    .PieContainer {
+      height: 260px;
+      width: 260px;
+
+      @media (min-width: 1600px) {
+        height: 350px;
+        width: 350px;
+      }
+
+      @media print {
+        height: auto;
+      }
+
+      + .PieContainer {
+        margin-top: 2em;
+      }
+    }
+
     .Plot {
       @media print {
         page-break-inside: avoid;
       }
 
       .PlotContainer {
-        height: 280px;
-        width: 280px;
+        height: 260px;
+        width: 260px;
 
         @media (min-width: 1600px) {
-          height: 370px;
-          width: 370px;
+          height: 350px;
+          width: 350px;
         }
 
         @media print {

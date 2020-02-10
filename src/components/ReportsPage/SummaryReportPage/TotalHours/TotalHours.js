@@ -1,11 +1,7 @@
 import React, { memo } from "react";
 import { Duration } from "luxon";
-import useRenderCounter from "../../../../hooks/useRenderCounter";
-import useFilteredLog from "../../../../hooks/useFilteredLog";
 
-const TotalHours = memo(() => {
-  useRenderCounter("TotalHours");
-  const logItems = useFilteredLog();
+const TotalHours = memo(({ logItems, isSyncing }) => {
   const totalHours = Duration.fromObject({
     hours: logItems
       .filter(({ durationHours }) => typeof durationHours === "number")

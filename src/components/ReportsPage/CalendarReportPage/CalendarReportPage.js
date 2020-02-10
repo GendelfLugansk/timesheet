@@ -1,5 +1,4 @@
 import React, { useEffect, useState, memo } from "react";
-import { useSelector } from "react-redux";
 import { DateTime, Duration } from "luxon";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
@@ -13,18 +12,14 @@ import i18n from "../../../utils/i18n";
 import en from "./CalendarReportPage.en";
 import ru from "./CalendarReportPage.ru";
 import uuidv4 from "uuid/v4";
-import useRenderCounter from "../../../hooks/useRenderCounter";
 import useFilteredLog from "../../../hooks/useFilteredLog";
-import { isLogSyncingSelector } from "../../../selectors/log";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
 const CalendarReportPage = memo(() => {
-  useRenderCounter("CalendarReportPage");
-  const logItems = useFilteredLog();
-  const isSyncing = useSelector(isLogSyncingSelector);
+  const { logItems, isSyncing } = useFilteredLog();
   const { i18n } = useTranslation();
   const { t } = useTranslation(ns);
   const [year, setYear] = useState();
@@ -51,7 +46,6 @@ const CalendarReportPage = memo(() => {
 
   const generateCalendar = useTask(
     async (logItems, fullDayHours, yearToDisplay, language, workerInstance) => {
-      const start = new Date();
       const calendar = await workerInstance.generateCalendarData(
         logItems.filter(
           ({ startTimeString }) =>
@@ -62,7 +56,6 @@ const CalendarReportPage = memo(() => {
         language
       );
       workerInstance.terminate();
-      console.log(new Date().valueOf() - start.valueOf());
       return calendar.sort((a, b) => b.startOfMonth - a.startOfMonth);
     },
     false,

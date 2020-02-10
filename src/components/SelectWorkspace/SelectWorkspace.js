@@ -80,7 +80,6 @@ const SelectWorkspace = memo(() => {
       setValidationErrors({});
       cleanData = validate(formData);
     } catch (e) {
-      console.log(e.groupedDetails);
       setValidationErrors(e.groupedDetails);
       return;
     }

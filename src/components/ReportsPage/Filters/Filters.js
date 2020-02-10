@@ -1,6 +1,10 @@
 import React, { useEffect, useState, memo } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { getAvailableFilters, serialize } from "../../../utils/logFilters";
+import {
+  deserialize,
+  getAvailableFilters,
+  serialize
+} from "../../../utils/logFilters";
 import {
   sync,
   TYPE_ISO_DATE,
@@ -21,12 +25,11 @@ import uuidv4 from "uuid/v4";
 import { isLogSyncingSelector, logSelector } from "../../../selectors/log";
 import {
   filtersRowUUIDSelector,
-  filtersSelector,
+  serializedFiltersSelector,
   isFiltersSyncingSelector
 } from "../../../selectors/filters";
 import { useDebouncedCallback } from "use-debounce";
 import { workspaceIdSelector } from "../../../selectors/workspaces";
-import useRenderCounter from "../../../hooks/useRenderCounter";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -312,10 +315,11 @@ const FilterBetweenDates = ({
 };
 
 const Filters = memo(() => {
-  useRenderCounter("Filters");
   const logItems = useSelector(logSelector, shallowEqual);
   const availableFilters = getAvailableFilters(logItems);
-  const appliedFilters = useSelector(filtersSelector, shallowEqual);
+  const appliedFilters = deserialize(
+    useSelector(serializedFiltersSelector, shallowEqual)
+  );
   const isLogSyncing = useSelector(isLogSyncingSelector, shallowEqual);
   const isFiltersSyncing = useSelector(isFiltersSyncingSelector, shallowEqual);
   const isSyncing = isLogSyncing || isFiltersSyncing;
@@ -372,12 +376,18 @@ const Filters = memo(() => {
 
   if (isSyncing && availableFilters.length === 0) {
     return (
-      <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
-        <div>
-          <Loader />
+      <div className="uk-padding-small">
+        <div className="uk-flex uk-flex-center uk-flex-middle uk-background-muted">
+          <div className="uk-padding-small">
+            <Loader ratio={1} />
+          </div>
         </div>
       </div>
     );
+  }
+
+  if (availableFilters.length === 0) {
+    return null;
   }
 
   return (

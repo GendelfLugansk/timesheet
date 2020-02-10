@@ -86,8 +86,8 @@ export function generateDemoData(userDisplayName, userId, userImage) {
   ];
 
   const yesterday = DateTime.local().minus({ days: 1 });
-  //Generate log for period of 10 years
-  let date = yesterday.minus({ years: 10 });
+  //Generate log for period of 15 years
+  let date = yesterday.minus({ years: 15 });
   const log = [];
   while (date <= yesterday) {
     //Sunday is a weekend

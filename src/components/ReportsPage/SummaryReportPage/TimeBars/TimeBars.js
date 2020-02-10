@@ -11,16 +11,18 @@ import "./TimeBars.scss";
 import uuidv4 from "uuid/v4";
 import { workspaceIdSelector } from "../../../../selectors/workspaces";
 import { projectsSelector } from "../../../../selectors/projects";
-import useRenderCounter from "../../../../hooks/useRenderCounter";
-import useFilteredLog from "../../../../hooks/useFilteredLog";
+//eslint-disable-next-line import/no-webpack-loader-syntax
+import worker from "workerize-loader!./worker";
+import useTask, {
+  CONCURRENCY_STRATEGY_RESTART
+} from "../../../../hooks/useTask";
+import Loader from "../../../Loader/Loader";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
 i18n.addResourceBundle("ru", ns, ru);
 
-const TimeBars = memo(() => {
-  useRenderCounter("TimeBars");
-  const logItems = useFilteredLog();
+const TimeBars = memo(({ logItems, isSyncing }) => {
   const definedProjects = useSelector(projectsSelector, shallowEqual);
   const workspaceId = useSelector(workspaceIdSelector, shallowEqual);
   const { t } = useTranslation(ns);
@@ -60,42 +62,27 @@ const TimeBars = memo(() => {
       timeframe = TIMEFRAME_YEAR;
     }
   }
-  console.log(timeframe);
-  const start = new Date();
-  let rawData = Object.values(
-    logItems
-      .filter(({ durationHours }) => typeof durationHours === "number")
-      .map(({ project, startTimeString, durationHours }) => ({
-        project,
-        date: DateTime.fromJSDate(new Date(startTimeString))
-          .toLocal()
-          .startOf(timeframe),
-        durationHours
-      }))
-      .reduce((acc, { project, date, durationHours }) => {
-        const mutAcc = { ...acc };
-        const key = date.toISO();
-        if (mutAcc[key] === undefined) {
-          mutAcc[key] = {
-            date,
-            durationHours: 0,
-            projects: {}
-          };
-        }
-        if (mutAcc[key].projects[project] === undefined) {
-          mutAcc[key].projects[project] = {
-            durationHours: 0
-          };
-        }
-        mutAcc[key].durationHours += durationHours;
-        mutAcc[key].projects[project].durationHours += durationHours;
 
-        return mutAcc;
-      }, {})
-  )
-    .sort((a, b) => a.date - b.date)
-    .slice(-14);
-  console.log(new Date().valueOf() - start.valueOf());
+  const generateRawData = useTask(
+    async (logItems, timeframe, workerInstance) => {
+      const rawData = await workerInstance.getRawData(logItems, timeframe);
+      workerInstance.terminate();
+      return rawData;
+    },
+    false,
+    CONCURRENCY_STRATEGY_RESTART,
+    (logItems, timeframe, workerInstance, taskInstance) => {
+      workerInstance.terminate();
+    }
+  );
+
+  useEffect(() => {
+    generateRawData.perform(logItems, timeframe, worker());
+  }, [generateRawData, logItems, timeframe]);
+
+  const rawData = Array.isArray(generateRawData.result)
+    ? generateRawData.result
+    : [];
 
   const projectColorMapper = project => {
     const definedProject =
@@ -115,7 +102,7 @@ const TimeBars = memo(() => {
   const data = [
     {
       name: t("total_" + timeframe),
-      x: rawData.map(({ date }) => date.toJSDate()),
+      x: rawData.map(({ date }) => date),
       y: rawData.map(({ durationHours }) => durationHours),
       text: rawData.map(({ durationHours }) =>
         Duration.fromObject({
@@ -149,7 +136,7 @@ const TimeBars = memo(() => {
 
       return {
         name: project !== "" ? project : t("empty"),
-        x: filteredData.map(({ date }) => date.toJSDate()),
+        x: filteredData.map(({ date }) => date),
         y: filteredData.map(({ projects }) =>
           ((projects[project] || {}).durationHours || 0).toFixed(2)
         ),
@@ -253,6 +240,24 @@ const TimeBars = memo(() => {
     //Stupid Plotly does not render chart properly on first page load
     window.dispatchEvent(new Event("resize"));
   }, []);
+
+  if ((generateRawData.isRunning || isSyncing) && rawData.length === 0) {
+    return (
+      <div className="uk-width-1-1 uk-height-1-1 uk-position-relative uk-flex uk-flex-middle uk-flex-center uk-background-muted">
+        <div>
+          <Loader />
+        </div>
+      </div>
+    );
+  }
+
+  if (rawData.length === 0) {
+    return (
+      <div className="uk-width-1-1 uk-height-1-1 uk-flex uk-flex-middle uk-flex-center uk-background-muted uk-padding-small">
+        <div>{t("noData")}</div>
+      </div>
+    );
+  }
 
   return (
     <Plot

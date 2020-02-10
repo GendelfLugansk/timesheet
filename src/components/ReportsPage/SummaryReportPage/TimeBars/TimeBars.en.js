@@ -13,7 +13,9 @@ const en = {
   total_month: "Total time for a month",
   title_year: "Time distribution by years and projects",
   xTitle_year: "Year",
-  total_year: "Total time for a year"
+  total_year: "Total time for a year",
+  noData:
+    'You don\'t have enough data to display "Time distribution by days and projects" chart'
 };
 
 export default en;

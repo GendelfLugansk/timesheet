@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import deepcopy from "deepcopy";
 import uuidv4 from "uuid/v4";
 import Plotly from "plotly.js";
@@ -29,22 +29,33 @@ const Plot = ({
   config = defaultConfig,
   className = "Plot"
 }) => {
+  const p = useRef(Promise.resolve());
+  const isMounted = useRef(true);
   const { i18n } = useTranslation();
   const [elId] = useState(uuidv4());
 
-  useEffect(() => {
-    const plotlyConfig = deepcopy(config);
-    plotlyConfig.locale = i18n.language;
-
-    Plotly.react(elId, deepcopy(data), deepcopy(layout), plotlyConfig);
-  }, [elId, data, layout, config, i18n.language]);
-
-  useEffect(() => {
-    const onChange = () => {
+  const redraw = () => {
+    p.current = p.current.then(() => {
       const plotlyConfig = deepcopy(config);
       plotlyConfig.locale = i18n.language;
 
-      Plotly.react(elId, deepcopy(data), deepcopy(layout), plotlyConfig);
+      return isMounted.current
+        ? Plotly.react(elId, deepcopy(data), deepcopy(layout), plotlyConfig)
+        : Promise.resolve();
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  useEffect(redraw, [elId, data, layout, config, i18n.language]);
+
+  useEffect(() => {
+    const onChange = () => {
+      redraw();
     };
     const mql = window.matchMedia("print");
     mql.addEventListener("change", onChange);

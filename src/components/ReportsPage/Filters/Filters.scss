@@ -1,7 +1,17 @@
 .Filters {
-  .uk-button-primary {
+  @media print {
+    text-align: center;
+  }
+
+  .uk-button-default {
     @media print {
-      border: 1px solid #000;
+      display: none;
+    }
+  }
+
+  .uk-inline {
+    @media print {
+      display: block;
     }
   }
 }

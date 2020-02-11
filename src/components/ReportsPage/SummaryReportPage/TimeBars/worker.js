@@ -33,5 +33,5 @@ export function getRawData(logItems, timeframe) {
       }, {})
   )
     .sort((a, b) => a.date - b.date)
-    .slice(-15);
+    .slice(-21);
 }

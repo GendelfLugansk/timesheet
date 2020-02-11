@@ -3,6 +3,12 @@
 
   .PlotContainer {
     height: 100%;
+
+    .modebar-container {
+      @media print {
+        display: none;
+      }
+    }
   }
 
   .js-plotly-plot .plotly .modebar .modebar-group {

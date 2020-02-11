@@ -52,13 +52,13 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
     const periodDuration = startTimes[startTimes.length - 1].diff(
       startTimes[0]
     );
-    if (periodDuration.as("days") > 14) {
+    if (periodDuration.as("days") > 21) {
       timeframe = TIMEFRAME_WEEK;
     }
-    if (periodDuration.as("weeks") > 14) {
+    if (periodDuration.as("weeks") > 21) {
       timeframe = TIMEFRAME_MONTH;
     }
-    if (periodDuration.as("months") > 14) {
+    if (periodDuration.as("months") > 21) {
       timeframe = TIMEFRAME_YEAR;
     }
   }
@@ -105,6 +105,15 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
       x: rawData.map(({ date }) => date),
       y: rawData.map(({ durationHours }) => durationHours),
       text: rawData.map(({ durationHours }) =>
+        durationHours > 999
+          ? (durationHours / 1000).toFixed(2) + "k"
+          : durationHours > 99
+          ? durationHours.toFixed(2)
+          : Duration.fromObject({
+              hours: durationHours
+            }).toFormat("hh:mm:ss")
+      ),
+      hovertext: rawData.map(({ durationHours }) =>
         Duration.fromObject({
           hours: durationHours
         }).toFormat("hh:mm:ss")
@@ -112,7 +121,8 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
       type: "scatter",
       mode: "text",
       textposition: "top center",
-      hovertemplate: "%{x}<br>%{fullData.name} \u2014 %{text}<extra></extra>",
+      hovertemplate:
+        "%{x}<br>%{fullData.name} \u2014 %{hovertext}<extra></extra>",
       hoverlabel: {
         bgcolor: "#fff",
         bordercolor: "#000000",
@@ -124,7 +134,8 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
       marker: {
         color: "#000000",
         symbol: "triangle-up"
-      }
+      },
+      showlegend: false
     }
   ].concat(
     allProjects.map(project => {
@@ -148,7 +159,7 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
         type: "bar",
         hoverinfo: "x+name+text",
         hovertemplate: "%{x}<br>%{fullData.name} \u2014 %{text}<extra></extra>",
-        textposition: "inside",
+        textposition: "none",
         insidetextanchor: "middle",
         marker: {
           color: projectColorMapper(project),
@@ -182,7 +193,7 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
       itemclick: false,
       itemdoubleclick: false,
       orientation: "h",
-      y: -0.1,
+      y: -0.2,
       yanchor: "top",
       title: {
         text: t("legendTitle"),
@@ -229,7 +240,8 @@ const TimeBars = memo(({ logItems, isSyncing }) => {
           width: 1
         }
       }
-    ]
+    ],
+    hovermode: "closest"
   };
 
   const config = {

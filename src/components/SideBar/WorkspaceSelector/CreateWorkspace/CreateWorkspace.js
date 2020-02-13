@@ -160,7 +160,7 @@ const CreateWorkspace = memo(
           </div>
         ) : null}
 
-        <div className="uk-margin uk-text-right">
+        <div className="uk-margin uk-text-right uk-margin-remove-bottom">
           <button
             type="button"
             className="uk-button uk-button-default"

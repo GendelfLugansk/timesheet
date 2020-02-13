@@ -214,6 +214,8 @@ const tablesConfig = {
 const SYNCABLE_STORAGE_UPSERT_LOCAL = "SYNCABLE_STORAGE_UPSERT_LOCAL";
 const SYNCABLE_STORAGE_DELETE_LOCAL = "SYNCABLE_STORAGE_DELETE_LOCAL";
 const SYNCABLE_STORAGE_REPLACE_ALL_LOCAL = "SYNCABLE_STORAGE_REPLACE_ALL_LOCAL";
+const SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE =
+  "SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE";
 const SYNCABLE_STORAGE_SYNC_BEGIN = "SYNCABLE_STORAGE_SYNC_BEGIN";
 const SYNCABLE_STORAGE_SYNC_SUCCESS = "SYNCABLE_STORAGE_SYNC_SUCCESS";
 const SYNCABLE_STORAGE_SYNC_FAILURE = "SYNCABLE_STORAGE_SYNC_FAILURE";
@@ -231,6 +233,11 @@ const deleteLocal = (workspaceId, table, uuid, synced = false) => ({
 const replaceAllLocal = (workspaceId, table, rows, synced = false) => ({
   type: SYNCABLE_STORAGE_REPLACE_ALL_LOCAL,
   payload: { workspaceId, table, rows, synced }
+});
+
+const clearLocalWorkspace = workspaceId => ({
+  type: SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
+  payload: { workspaceId }
 });
 
 const syncBegin = (workspaceId, table) => ({
@@ -424,12 +431,14 @@ export {
   SYNCABLE_STORAGE_UPSERT_LOCAL,
   SYNCABLE_STORAGE_DELETE_LOCAL,
   SYNCABLE_STORAGE_REPLACE_ALL_LOCAL,
+  SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
   SYNCABLE_STORAGE_SYNC_BEGIN,
   SYNCABLE_STORAGE_SYNC_SUCCESS,
   SYNCABLE_STORAGE_SYNC_FAILURE,
   upsertLocal,
   replaceAllLocal,
   deleteLocal,
+  clearLocalWorkspace,
   syncInWorkspace,
   sync
 };

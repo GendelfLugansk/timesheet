@@ -2,6 +2,7 @@ import {
   SYNCABLE_STORAGE_UPSERT_LOCAL,
   SYNCABLE_STORAGE_DELETE_LOCAL,
   SYNCABLE_STORAGE_REPLACE_ALL_LOCAL,
+  SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
   SYNCABLE_STORAGE_SYNC_BEGIN,
   SYNCABLE_STORAGE_SYNC_SUCCESS,
   SYNCABLE_STORAGE_SYNC_FAILURE
@@ -12,6 +13,7 @@ const supportedActions = [
   SYNCABLE_STORAGE_UPSERT_LOCAL,
   SYNCABLE_STORAGE_DELETE_LOCAL,
   SYNCABLE_STORAGE_REPLACE_ALL_LOCAL,
+  SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
   SYNCABLE_STORAGE_SYNC_BEGIN,
   SYNCABLE_STORAGE_SYNC_SUCCESS,
   SYNCABLE_STORAGE_SYNC_FAILURE
@@ -97,6 +99,10 @@ const table = (state = initialTableState, action) => {
 const initialWorkspaceState = {};
 
 const workspace = (state = initialWorkspaceState, action) => {
+  if (action.type === SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE) {
+    return { ...initialWorkspaceState };
+  }
+
   if (supportedActions.includes(action.type)) {
     const s = {};
     s[action.payload.table] = table(state[action.payload.table], action);

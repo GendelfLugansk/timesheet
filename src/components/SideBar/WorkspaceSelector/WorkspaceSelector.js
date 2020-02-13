@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./WorkspaceSelector.en";
@@ -7,6 +7,11 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { selectWorkspace as selectWorkspaceAction } from "../../../actions/workspaces";
 import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
+import sheetsIcon from "./sheets_48dp.png";
+import Modal from "../../UIKit/Modal/Modal";
+import CreateWorkspace from "./CreateWorkspace/CreateWorkspace";
+import { isAnySyncing } from "../../../selectors/syncableStorage";
+import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -14,11 +19,17 @@ i18n.addResourceBundle("ru", ns, ru);
 
 const selector = state => ({
   workspaces: state.workspaces.list,
-  currentWorkspace: state.workspaces.currentWorkspace
+  currentWorkspace: state.workspaces.currentWorkspace,
+  isSyncing:
+    state.workspaces.isLoading ||
+    isAnySyncing(state, ["Log", "Progress", "Projects", "Tags", "Config"])
 });
 
 const WorkspaceSelector = memo(() => {
-  const { workspaces, currentWorkspace } = useSelector(selector, shallowEqual);
+  const { workspaces, currentWorkspace, isSyncing } = useSelector(
+    selector,
+    shallowEqual
+  );
   const dispatch = useDispatch();
   const selectWorkspace = useCallback(
     workspace => {
@@ -27,59 +38,105 @@ const WorkspaceSelector = memo(() => {
     [dispatch]
   );
   const { t } = useTranslation(ns);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const startAdding = useCallback(() => {
+    setIsAdding(true);
+  }, []);
+
+  const cancelAdding = useCallback(() => {
+    setIsAdding(false);
+  }, []);
 
   if (workspaces.length === 0) {
     return null;
   }
 
   return (
-    <div className="uk-width-1-1">
-      <div className="uk-inline uk-width-1-1">
-        <button
-          type="button"
-          className="uk-button uk-button-default uk-width-1-1 uk-text-truncate"
-        >
-          {(() => {
-            if (currentWorkspace) {
-              return (
-                currentWorkspace.nameShort +
-                " / " +
-                objectPath.get(currentWorkspace, "owners.0.displayName")
-              );
-            }
+    <div className="uk-position-relative">
+      {isSyncing ? <LoaderOverlay ratio={1.5} /> : null}
+      <div className="uk-width-1-1">
+        <div className="uk-inline uk-width-1-1">
+          <button
+            type="button"
+            className="uk-button uk-button-default uk-width-1-1 uk-text-truncate"
+          >
+            {(() => {
+              if (currentWorkspace) {
+                return (
+                  currentWorkspace.nameShort +
+                  " / " +
+                  objectPath.get(currentWorkspace, "owners.0.displayName")
+                );
+              }
 
-            return t("empty");
-          })()}
-        </button>
-        <div
-          uk-dropdown="mode: click"
-          uk-overflow-auto="true"
-          className="uk-height-max-small"
-        >
-          <ul className="uk-nav uk-dropdown-nav uk-width-1-1">
-            <li className="uk-nav-header">{t("header")}</li>
-            {workspaces.map(workspace => (
-              <li
-                key={workspace.id}
-                className={
-                  workspace.id === objectPath.get(currentWorkspace, "id")
-                    ? "uk-active"
-                    : null
-                }
-              >
-                <button
-                  className="button-link"
-                  onClick={() => {
-                    selectWorkspace(workspace);
-                  }}
+              return t("empty");
+            })()}
+          </button>
+          <div
+            uk-dropdown="mode: click"
+            uk-overflow-auto="true"
+            className="uk-height-max-medium"
+          >
+            <ul className="uk-nav uk-dropdown-nav uk-width-1-1">
+              <li className="uk-nav-header">{t("header")}</li>
+              {workspaces.map(workspace => (
+                <li
+                  key={workspace.id}
+                  className={
+                    workspace.id === objectPath.get(currentWorkspace, "id")
+                      ? "uk-active"
+                      : null
+                  }
                 >
-                  <strong>{workspace.nameShort}</strong> <br />
-                  {objectPath.get(workspace, "owners.0.displayName")}
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <button
+                    className="button-link"
+                    onClick={() => {
+                      selectWorkspace(workspace);
+                    }}
+                  >
+                    <strong>{workspace.nameShort}</strong> <br />
+                    {objectPath.get(workspace, "owners.0.displayName")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
+        {currentWorkspace ? (
+          <div className="uk-width-1-1 uk-padding-small uk-padding-remove-horizontal uk-padding-remove-bottom">
+            <a
+              href={`https://docs.google.com/spreadsheets/d/${currentWorkspace.id}/edit`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={t("actionsPanel.openSpreadsheet")}
+              className="uk-margin-small-right"
+            >
+              <img
+                src={sheetsIcon}
+                style={{ height: "24px" }}
+                alt={t("actionsPanel.openSpreadsheet")}
+              />
+            </a>
+            <span
+              className="uk-margin-small-right uk-icon-link"
+              title={t("actionsPanel.addWorkspace")}
+              uk-icon="icon: plus;"
+              onClick={startAdding}
+            />
+          </div>
+        ) : null}
+      </div>
+      <div>
+        <Modal show={isAdding}>
+          <CreateWorkspace
+            initialSortOrder={
+              Math.max(0, ...workspaces.map(({ sortOrder }) => sortOrder)) + 1
+            }
+            onCancel={cancelAdding}
+            onCreate={cancelAdding}
+          />
+        </Modal>
       </div>
     </div>
   );

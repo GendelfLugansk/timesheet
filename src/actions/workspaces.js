@@ -1,4 +1,5 @@
 import loadGAPI from "../utils/googleapi";
+import { get } from "deepcopy/src/collection";
 
 const workspaceKey = `__timesheet_workspace`;
 
@@ -24,7 +25,7 @@ const selectWorkspace = workspace => ({
   payload: { workspace }
 });
 
-const fetchWorkspaces = (allowConcurrency = false) => async (
+const fetchWorkspaces = (allowConcurrency = false, autoselect = true) => async (
   dispatch,
   getState
 ) => {
@@ -69,7 +70,7 @@ const fetchWorkspaces = (allowConcurrency = false) => async (
     }
     workspaces.sort((a, b) => a.sortOrder - b.sortOrder);
     dispatch(fetchWorkspacesSuccess(workspaces));
-    if (workspaces.length > 0) {
+    if (autoselect && workspaces.length > 0) {
       dispatch(selectWorkspace(workspaces[0]));
     }
   } catch (e) {
@@ -77,10 +78,15 @@ const fetchWorkspaces = (allowConcurrency = false) => async (
   }
 };
 
-const createWorkspace = ({ name, sortOrder }) => async dispatch => {
+const createWorkspace = (
+  { name, sortOrder },
+  selectCreatedWorkspace = false
+) => async (dispatch, getState) => {
   try {
     const gapi = await loadGAPI();
-    await gapi.client.sheets.spreadsheets.create({
+    const {
+      result: { spreadsheetId }
+    } = await gapi.client.sheets.spreadsheets.create({
       properties: {
         title: [
           workspaceKey,
@@ -98,7 +104,32 @@ const createWorkspace = ({ name, sortOrder }) => async dispatch => {
         { properties: { title: "Config", gridProperties: { rowCount: 1 } } }
       ]
     });
-    await dispatch(fetchWorkspaces(true));
+    await dispatch(fetchWorkspaces(true, !selectCreatedWorkspace));
+    if (selectCreatedWorkspace) {
+      const {
+        workspaces: { list }
+      } = getState();
+      for (const item of list) {
+        if (item.id === spreadsheetId) {
+          dispatch(selectWorkspace(item));
+          break;
+        }
+      }
+    }
+    return spreadsheetId;
+  } catch (e) {
+    throw e;
+  }
+};
+
+const removeWorkspace = id => async dispatch => {
+  try {
+    const gapi = await loadGAPI();
+    await gapi.client.drive.files.update({
+      fileId: id,
+      trashed: true
+    });
+    await dispatch(fetchWorkspaces(true, false));
   } catch (e) {
     throw e;
   }
@@ -111,5 +142,6 @@ export {
   SELECT_WORKSPACE,
   fetchWorkspaces,
   createWorkspace,
-  selectWorkspace
+  selectWorkspace,
+  removeWorkspace
 };

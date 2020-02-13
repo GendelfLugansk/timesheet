@@ -1,8 +1,8 @@
 import React from "react";
 import { shallowEqual, useSelector } from "react-redux";
 import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
-import CreateFirstWorkspace from "../CreateFirstWorkspace/CreateFirstWorkspace";
-import SelectWorkspace from "../SelectWorkspace/SelectWorkspace";
+import CreateFirstWorkspace from "./CreateFirstWorkspace/CreateFirstWorkspace";
+import SelectWorkspace from "./SelectWorkspace/SelectWorkspace";
 
 const selector = state => ({
   isLoading: state.workspaces.isLoading,

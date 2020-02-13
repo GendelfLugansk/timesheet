@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
-import i18n from "../../utils/i18n";
+import i18n from "../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./SelectWorkspace.en";
 import ru from "./SelectWorkspace.ru";
 import Joi from "joi";
-import groupJoiErrors from "../../utils/groupJoiErrors";
+import groupJoiErrors from "../../../utils/groupJoiErrors";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import LoaderFullPage from "../Loader/LoaderFullPage/LoaderFullPage";
-import { selectWorkspace as selectWorkspaceAction } from "../../actions/workspaces";
+import LoaderFullPage from "../../Loader/LoaderFullPage/LoaderFullPage";
+import { selectWorkspace as selectWorkspaceAction } from "../../../actions/workspaces";
 import objectPath from "object-path";
 import uuidv4 from "uuid/v4";
 

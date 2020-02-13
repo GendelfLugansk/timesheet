@@ -137,7 +137,7 @@ const WorkspaceSelector = memo(() => {
               >
                 <img
                   src={sheetsIcon}
-                  style={{ height: "24px" }}
+                  style={{ height: "20px" }}
                   alt={t("actionsPanel.openSpreadsheet")}
                 />
               </a>

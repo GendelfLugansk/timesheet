@@ -1,11 +1,11 @@
 import {
-  SYNCABLE_STORAGE_UPSERT_LOCAL,
+  SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
   SYNCABLE_STORAGE_DELETE_LOCAL,
   SYNCABLE_STORAGE_REPLACE_ALL_LOCAL,
-  SYNCABLE_STORAGE_CLEAR_LOCAL_WORKSPACE,
   SYNCABLE_STORAGE_SYNC_BEGIN,
+  SYNCABLE_STORAGE_SYNC_FAILURE,
   SYNCABLE_STORAGE_SYNC_SUCCESS,
-  SYNCABLE_STORAGE_SYNC_FAILURE
+  SYNCABLE_STORAGE_UPSERT_LOCAL
 } from "../actions/syncableStorage";
 import { DateTime } from "luxon";
 
@@ -124,6 +124,7 @@ const syncableStorage = (state = initialState, action) => {
       state[action.payload.workspaceId],
       action
     );
+
     return {
       ...state,
       ...s

@@ -1,5 +1,4 @@
 import loadGAPI from "../utils/googleapi";
-import { get } from "deepcopy/src/collection";
 
 const workspaceKey = `__timesheet_workspace`;
 

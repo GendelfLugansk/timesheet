@@ -152,7 +152,7 @@ const getEndTimeStringFilter = (logItems = []) => {
         ? [
             Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-          ].map(v => DateTime.fromJSDate(new Date(v)))
+          ].map(v => DateTime.fromJSDate(new Date(v)).toISO())
         : [],
     typeToCoerce: TYPE_ISO_DATE
   };
@@ -170,7 +170,7 @@ const getStartTimeStringFilter = (logItems = []) => {
         ? [
             Math.min(DateTime.fromISO("1970-01-01T00:00:00+00:00"), ...times),
             Math.max(DateTime.fromISO("2970-01-01T00:00:00+00:00"), ...times)
-          ].map(v => DateTime.fromJSDate(new Date(v)))
+          ].map(v => DateTime.fromJSDate(new Date(v)).toISO())
         : [],
     typeToCoerce: TYPE_ISO_DATE
   };

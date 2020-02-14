@@ -10,32 +10,35 @@ import HomePage from "../HomePage/HomePage";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
 import ReportsPage from "../ReportsPage/ReportsPage";
 import FetchAll from "../FetchAll/FetchAll";
+import { QueryParamProvider } from "use-query-params";
 
 const App = () => (
   <Router>
-    <DocumentTitle title="Timesheet" />
-    <FetchAll>
-      <div className="uk-flex App">
-        <SideBar />
+    <QueryParamProvider ReactRouterRoute={Route}>
+      <DocumentTitle title="Timesheet" />
+      <FetchAll>
+        <div className="uk-flex App">
+          <SideBar />
 
-        <div className="uk-flex-1 uk-padding-small">
-          <Switch>
-            <AuthenticatedRoute exact path="/">
-              <HomePage />
-            </AuthenticatedRoute>
-            <AuthenticatedRoute path="/reports">
-              <ReportsPage />
-            </AuthenticatedRoute>
-            <Route path="/login">
-              <LoginPage />
-            </Route>
-            <Route path="*">
-              <NotFoundPage />
-            </Route>
-          </Switch>
+          <div className="uk-flex-1 uk-padding-small">
+            <Switch>
+              <AuthenticatedRoute exact path="/">
+                <HomePage />
+              </AuthenticatedRoute>
+              <AuthenticatedRoute path="/reports">
+                <ReportsPage />
+              </AuthenticatedRoute>
+              <Route path="/login">
+                <LoginPage />
+              </Route>
+              <Route path="*">
+                <NotFoundPage />
+              </Route>
+            </Switch>
+          </div>
         </div>
-      </div>
-    </FetchAll>
+      </FetchAll>
+    </QueryParamProvider>
   </Router>
 );
 

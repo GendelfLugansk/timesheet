@@ -30,6 +30,7 @@
     "redux-thunk": "2.3.0",
     "uikit": "3.2.6",
     "use-debounce": "3.3.0",
+    "use-query-params": "0.6.0",
     "uuid": "3.3.3",
     "workerize-loader": "1.1.0"
   },

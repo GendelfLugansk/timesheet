@@ -1,15 +1,11 @@
-import React, { memo, useEffect, useState, useCallback } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
   deserialize,
   getAvailableFilters,
   serialize
 } from "../../../utils/logFilters";
-import {
-  sync,
-  TYPE_ISO_DATE,
-  upsertLocal
-} from "../../../actions/syncableStorage";
+import { TYPE_ISO_DATE } from "../../../actions/syncableStorage";
 import Loader from "../../Loader/Loader";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../utils/i18n";
@@ -23,13 +19,8 @@ import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import "./Filters.scss";
 import uuidv4 from "uuid/v4";
 import { isLogSyncingSelector, logSelector } from "../../../selectors/log";
-import {
-  filtersRowUUIDSelector,
-  isFiltersSyncingSelector,
-  serializedFiltersSelector
-} from "../../../selectors/filters";
-import { useDebouncedCallback } from "use-debounce";
-import { workspaceIdSelector } from "../../../selectors/workspaces";
+import { setFilters } from "../../../actions/filters";
+import { filtersSelector } from "../../../selectors/filters";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -100,7 +91,12 @@ const FilterIncludes = memo(
                     } else {
                       valuesCopy.splice(valuesCopy.indexOf(value), 1);
                     }
-                    applyFilter(key, type, valuesCopy);
+
+                    requestAnimationFrame(() => {
+                      requestAnimationFrame(() => {
+                        applyFilter(key, type, valuesCopy);
+                      });
+                    });
                   }}
                 />{" "}
                 {value !== "" ? value : t("filters." + key + ".emptyValue")}
@@ -182,7 +178,12 @@ const FilterBetweenDates = memo(
         if (localState.to) {
           toApply[1] = localState.to;
         }
-        applyFilter(key, type, toApply);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            applyFilter(key, type, toApply);
+          });
+        });
       } else {
         setValidationErrors(
           groupJoiErrors(validationResult.error).groupedDetails
@@ -323,20 +324,9 @@ const availableFiltersSelector = state =>
 
 const Filters = memo(() => {
   const availableFilters = JSON.parse(useSelector(availableFiltersSelector));
-  const appliedFilters = deserialize(
-    useSelector(serializedFiltersSelector, shallowEqual)
-  );
-  const isLogSyncing = useSelector(isLogSyncingSelector, shallowEqual);
-  const isFiltersSyncing = useSelector(isFiltersSyncingSelector, shallowEqual);
-  const isSyncing = isLogSyncing || isFiltersSyncing;
-  const filtersUUID =
-    useSelector(filtersRowUUIDSelector, shallowEqual) || uuidv4();
+  const appliedFilters = deserialize(useSelector(filtersSelector));
+  const isSyncing = useSelector(isLogSyncingSelector, shallowEqual);
   const dispatch = useDispatch();
-  const syncFilters = () => {
-    dispatch(sync(["Config"]));
-  };
-  const [syncDebounced] = useDebouncedCallback(syncFilters, 2500);
-  const workspaceId = useSelector(workspaceIdSelector, shallowEqual);
 
   const filters = availableFilters
     .map(({ key, type, availableValues, typeToCoerce }) => ({
@@ -372,17 +362,9 @@ const Filters = memo(() => {
 
   const setAppliedFilters = useCallback(
     filters => {
-      const value = serialize(filters);
-      dispatch(
-        upsertLocal(workspaceId, "Config", {
-          key: "filters",
-          value: value,
-          uuid: filtersUUID
-        })
-      );
-      syncDebounced();
+      dispatch(setFilters(serialize(filters)));
     },
-    [dispatch, workspaceId, filtersUUID, syncDebounced]
+    [dispatch]
   );
 
   const applyFilterCallback = useCallback(

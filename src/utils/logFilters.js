@@ -186,8 +186,8 @@ const getAvailableFilters = (logItems = []) => {
 };
 
 const serialize = filters => {
-  if (!Array.isArray(filters)) {
-    return undefined;
+  if (!Array.isArray(filters) || filters.length === 0) {
+    return "";
   }
 
   return base64Encode(pako.deflate(JSON.stringify(filters), { to: "string" }));

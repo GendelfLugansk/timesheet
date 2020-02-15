@@ -33,6 +33,22 @@
     height: 25vw;
     min-height: 300px;
 
+    @media screen and (orientation: landscape) {
+      height: 25vw;
+    }
+
+    @media screen and (orientation: portrait) {
+      height: 25vw;
+    }
+
+    @media screen and (max-width: 1024px) and (orientation: landscape) {
+      height: 50vw;
+    }
+
+    @media screen and (max-width: 1024px) and (orientation: portrait) {
+      height: 50vh;
+    }
+
     @media print {
       height: 60vh;
       page-break-after: always;
@@ -46,6 +62,22 @@
       .PlotContainer {
         min-height: 300px;
         height: 25vw;
+
+        @media screen and (orientation: landscape) {
+          height: 25vw;
+        }
+
+        @media screen and (orientation: portrait) {
+          height: 25vw;
+        }
+
+        @media screen and (max-width: 1024px) and (orientation: landscape) {
+          height: 50vw;
+        }
+
+        @media screen and (max-width: 1024px) and (orientation: portrait) {
+          height: 50vh;
+        }
 
         @media print {
           height: 60vh;

@@ -9,7 +9,7 @@ import AuthenticatedContainer from "../AuthenticatedContainer/AuthenticatedConta
 
 const SideBar = () => {
   return (
-    <div className="uk-padding-small uk-light uk-background-secondary uk-flex uk-flex-column SideBar">
+    <div className="uk-padding-small uk-light uk-background-secondary uk-visible@l SideBar">
       <Logo />
       <hr />
       <CurrentUser />

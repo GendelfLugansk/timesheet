@@ -3,16 +3,15 @@ import uuidv4 from "uuid/v4";
 /*global UIkit*/
 
 const defaultOptions = {
-  escClose: false,
-  bgClose: false
+  overlay: true
 };
 
-const Modal = ({ show = false, options = {}, events = {}, children }) => {
+const OffCanvas = ({ show = false, options = {}, events = {}, children }) => {
   const [elId] = useState("__element__" + uuidv4());
   const UIKitComponent = useRef(undefined);
 
   useEffect(() => {
-    UIKitComponent.current = UIkit.modal(document.getElementById(elId));
+    UIKitComponent.current = UIkit.offcanvas(document.getElementById(elId));
 
     return () => {
       if (UIKitComponent.current) {
@@ -44,7 +43,7 @@ const Modal = ({ show = false, options = {}, events = {}, children }) => {
         ...options
       };
 
-      UIKitComponent.current = UIkit.modal(
+      UIKitComponent.current = UIkit.offcanvas(
         document.getElementById(elId),
         mergedOptions
       );
@@ -69,9 +68,9 @@ const Modal = ({ show = false, options = {}, events = {}, children }) => {
 
   return (
     <div id={elId}>
-      <div className="uk-modal-dialog uk-modal-body">{children}</div>
+      <div className="uk-offcanvas-bar">{children}</div>
     </div>
   );
 };
 
-export default Modal;
+export default OffCanvas;

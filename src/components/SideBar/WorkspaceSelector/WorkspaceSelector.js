@@ -26,6 +26,10 @@ const selector = state => ({
     isAnySyncing(state, ["Log", "Progress", "Projects", "Tags", "Config"])
 });
 
+const modalOptions = {
+  stack: true
+};
+
 const WorkspaceSelector = memo(() => {
   const { workspaces, currentWorkspace, isSyncing } = useSelector(
     selector,
@@ -146,7 +150,7 @@ const WorkspaceSelector = memo(() => {
         </div>
       </div>
       <div>
-        <Modal show={isAdding}>
+        <Modal show={isAdding} options={modalOptions}>
           <CreateWorkspace
             initialSortOrder={
               Math.max(0, ...workspaces.map(({ sortOrder }) => sortOrder)) + 1
@@ -157,7 +161,7 @@ const WorkspaceSelector = memo(() => {
         </Modal>
       </div>
       <div>
-        <Modal show={isRemoving}>
+        <Modal show={isRemoving} options={modalOptions}>
           <RemoveCurrentWorkspace
             onCancel={cancelRemoving}
             onRemove={cancelRemoving}

@@ -32,7 +32,7 @@ const Plot = ({
   const p = useRef(Promise.resolve());
   const isMounted = useRef(true);
   const { i18n } = useTranslation();
-  const [elId] = useState(uuidv4());
+  const [elId] = useState("__element__" + uuidv4());
 
   const redraw = () => {
     p.current = p.current.then(() => {

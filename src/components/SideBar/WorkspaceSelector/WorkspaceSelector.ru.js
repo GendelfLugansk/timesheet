@@ -5,7 +5,8 @@ const ru = {
   actionsPanel: {
     openSpreadsheet: "Открыть в Google Docs",
     addWorkspace: "Добавить рабочее пространство...",
-    removeCurrentWorkspace: "Удалить это рабочее пространство..."
+    removeCurrentWorkspace: "Удалить это рабочее пространство...",
+    editCurrentWorkspace: "Изменить это рабочее пространство..."
   }
 };
 

@@ -8,6 +8,7 @@
   z-index: 1;
 }
 
-.uk-background-secondary .LoaderOverlay {
+.uk-background-secondary .LoaderOverlay,
+.uk-offcanvas-bar .LoaderOverlay {
   background: #222;
 }

@@ -13,6 +13,7 @@ import CreateWorkspace from "./CreateWorkspace/CreateWorkspace";
 import { isAnySyncing } from "../../../selectors/syncableStorage";
 import LoaderOverlay from "../../Loader/LoaderOverlay/LoaderOverlay";
 import RemoveCurrentWorkspace from "./RemoveCurrentWorkspace/RemoveCurrentWorkspace";
+import EditCurrentWorkspace from "./EditCurrentWorkspace/EditCurrentWorkspace";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -45,6 +46,7 @@ const WorkspaceSelector = memo(() => {
   const { t } = useTranslation(ns);
   const [isAdding, setIsAdding] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const startAdding = useCallback(() => {
     setIsAdding(true);
@@ -60,6 +62,14 @@ const WorkspaceSelector = memo(() => {
 
   const cancelRemoving = useCallback(() => {
     setIsRemoving(false);
+  }, []);
+
+  const startEditing = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const cancelEditing = useCallback(() => {
+    setIsEditing(false);
   }, []);
 
   return (
@@ -128,6 +138,12 @@ const WorkspaceSelector = memo(() => {
             <>
               <span
                 className="uk-margin-small-right uk-icon-link"
+                title={t("actionsPanel.editCurrentWorkspace")}
+                uk-icon="icon: pencil;"
+                onClick={startEditing}
+              />
+              <span
+                className="uk-margin-small-right uk-icon-link"
                 title={t("actionsPanel.removeCurrentWorkspace")}
                 uk-icon="icon: trash;"
                 onClick={startRemoving}
@@ -165,6 +181,14 @@ const WorkspaceSelector = memo(() => {
           <RemoveCurrentWorkspace
             onCancel={cancelRemoving}
             onRemove={cancelRemoving}
+          />
+        </Modal>
+      </div>
+      <div>
+        <Modal show={isEditing} options={modalOptions}>
+          <EditCurrentWorkspace
+            onCancel={cancelEditing}
+            onEdit={cancelEditing}
           />
         </Modal>
       </div>

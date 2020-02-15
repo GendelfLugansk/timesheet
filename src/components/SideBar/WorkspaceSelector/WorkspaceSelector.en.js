@@ -5,7 +5,8 @@ const en = {
   actionsPanel: {
     openSpreadsheet: "Open in Google Docs",
     addWorkspace: "Add workspace...",
-    removeCurrentWorkspace: "Remove this workspace..."
+    removeCurrentWorkspace: "Remove this workspace...",
+    editCurrentWorkspace: "Edit this workspace..."
   }
 };
 

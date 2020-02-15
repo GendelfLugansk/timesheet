@@ -134,6 +134,37 @@ const removeWorkspace = id => async dispatch => {
   }
 };
 
+const editWorkspace = (id, { name, sortOrder }) => async (
+  dispatch,
+  getState
+) => {
+  try {
+    const gapi = await loadGAPI();
+    await gapi.client.drive.files.update({
+      fileId: id,
+      name: [
+        workspaceKey,
+        typeof sortOrder === "number" ? sortOrder : undefined,
+        name
+      ]
+        .filter(s => ["string", "number"].includes(typeof s))
+        .join("__")
+    });
+    await dispatch(fetchWorkspaces(true, false));
+    const {
+      workspaces: { list }
+    } = getState();
+    for (const item of list) {
+      if (item.id === id) {
+        dispatch(selectWorkspace(item));
+        break;
+      }
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
 export {
   FETCH_WORKSPACES_BEGIN,
   FETCH_WORKSPACES_SUCCESS,
@@ -142,5 +173,6 @@ export {
   fetchWorkspaces,
   createWorkspace,
   selectWorkspace,
-  removeWorkspace
+  removeWorkspace,
+  editWorkspace
 };

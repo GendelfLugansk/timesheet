@@ -120,7 +120,7 @@ const ProjectsPie = memo(({ logItems, isSyncing }) => {
       hole: 0.92,
       direction: "clockwise",
       rotation: -45,
-      textinfo: "label",
+      texttemplate: "%{label} (%{percent})",
       textposition: "outside",
       marker: {
         colors: rawData.map(projectColorMapper),

@@ -331,77 +331,142 @@ const Timer = memo(() => {
   const [tagsAutosuggestId] = useState("autosuggest-" + uuidv4());
 
   return (
-    <div className="uk-padding-small uk-flex uk-flex-center uk-flex-middle">
-      <div className="uk-width-1-1 uk-width-1-2@l">
-        <form className="uk-grid-small" uk-grid="" onSubmit={() => {}}>
-          <div className="uk-width-1-1">
-            <input
-              className="uk-input"
-              type="text"
-              value={
-                typeof timerInProgress.taskDescription === "string"
-                  ? timerInProgress.taskDescription
-                  : ""
-              }
-              placeholder={t("taskDescriptionPlaceholder")}
-              disabled={isSyncing}
-              onChange={({ target: { value } }) => {
-                updateTimer({ ...timerInProgress, taskDescription: value });
-              }}
-              onBlur={inputsBlur}
-            />
-          </div>
-          <div className="uk-width-1-3">
-            <Autosuggest
-              suggestions={projectSuggestions}
-              onSuggestionsFetchRequested={onProjectSuggestionsFetchRequested}
-              onSuggestionsClearRequested={onProjectSuggestionsClearRequested}
-              getSuggestionValue={getProjectSuggestionValue}
-              renderSuggestion={renderSuggestion}
-              shouldRenderSuggestions={shouldRenderSuggestions}
-              inputProps={{
-                placeholder: t("projectPlaceholder"),
-                disabled: isSyncing,
-                value:
-                  typeof timerInProgress.project === "string"
-                    ? timerInProgress.project
-                    : "",
-                onChange: (_, { newValue: value }) => {
-                  updateTimer({ ...timerInProgress, project: value });
-                },
-                onBlur: projectInputBlur
-              }}
-              theme={theme}
-              id={projectAutosuggestId}
-            />
-          </div>
-          <div className="uk-width-1-3">
-            <Autosuggest
-              suggestions={tagsSuggestions}
-              onSuggestionsFetchRequested={onTagsSuggestionsFetchRequested}
-              onSuggestionsClearRequested={onTagsSuggestionsClearRequested}
-              getSuggestionValue={getTagsSuggestionValue}
-              renderSuggestion={renderSuggestion}
-              shouldRenderSuggestions={shouldRenderSuggestions}
-              inputProps={{
-                placeholder: t("tagsPlaceholder"),
-                disabled: isSyncing,
-                value:
-                  typeof timerInProgress.tags === "string"
-                    ? timerInProgress.tags
-                    : "",
-                onChange: (_, { newValue: value }) => {
+    <div className="uk-padding-small">
+      <form
+        className="uk-grid-small uk-flex-center uk-flex-bottom"
+        uk-grid=""
+        onSubmit={() => {}}
+      >
+        <div className="uk-width-1-1 uk-width-expand@l">
+          <div className="uk-grid-small" uk-grid="">
+            <div className="uk-width-1-1">
+              <label className="uk-form-label">
+                {t("taskDescriptionLabel")}
+              </label>
+              <input
+                className="uk-input"
+                type="text"
+                value={
+                  typeof timerInProgress.taskDescription === "string"
+                    ? timerInProgress.taskDescription
+                    : ""
+                }
+                placeholder={t("taskDescriptionPlaceholder")}
+                disabled={isSyncing}
+                onChange={({ target: { value } }) => {
+                  updateTimer({ ...timerInProgress, taskDescription: value });
+                }}
+                onBlur={inputsBlur}
+              />
+            </div>
+            <div className="uk-width-1-3">
+              <label className="uk-form-label">{t("projectLabel")}</label>
+              <Autosuggest
+                suggestions={projectSuggestions}
+                onSuggestionsFetchRequested={onProjectSuggestionsFetchRequested}
+                onSuggestionsClearRequested={onProjectSuggestionsClearRequested}
+                getSuggestionValue={getProjectSuggestionValue}
+                renderSuggestion={renderSuggestion}
+                shouldRenderSuggestions={shouldRenderSuggestions}
+                inputProps={{
+                  placeholder: t("projectPlaceholder"),
+                  disabled: isSyncing,
+                  value:
+                    typeof timerInProgress.project === "string"
+                      ? timerInProgress.project
+                      : "",
+                  onChange: (_, { newValue: value }) => {
+                    updateTimer({ ...timerInProgress, project: value });
+                  },
+                  onBlur: projectInputBlur
+                }}
+                theme={theme}
+                id={projectAutosuggestId}
+              />
+            </div>
+            <div className="uk-width-1-3">
+              <label className="uk-form-label">{t("tagsLabel")}</label>
+              <Autosuggest
+                suggestions={tagsSuggestions}
+                onSuggestionsFetchRequested={onTagsSuggestionsFetchRequested}
+                onSuggestionsClearRequested={onTagsSuggestionsClearRequested}
+                getSuggestionValue={getTagsSuggestionValue}
+                renderSuggestion={renderSuggestion}
+                shouldRenderSuggestions={shouldRenderSuggestions}
+                inputProps={{
+                  placeholder: t("tagsPlaceholder"),
+                  disabled: isSyncing,
+                  value:
+                    typeof timerInProgress.tags === "string"
+                      ? timerInProgress.tags
+                      : "",
+                  onChange: (_, { newValue: value }) => {
+                    const validationResult = Joi.validate(
+                      value,
+                      Joi.stringArray()
+                        .items(Joi.string().trim())
+                        .unique()
+                        .label("tagsJoi"),
+                      { abortEarly: false }
+                    );
+                    setValidationErrors({
+                      ...validationErrors,
+                      tags: validationResult.error
+                        ? validationResult.error.details.map(
+                            ({ type, context }) => ({
+                              type,
+                              context
+                            })
+                          )
+                        : []
+                    });
+                    updateTimer({ ...timerInProgress, tags: value });
+                  },
+                  onBlur: tagsInputBlur
+                }}
+                theme={{
+                  ...theme,
+                  input:
+                    theme.input +
+                    (Array.isArray(validationErrors.tags) &&
+                    validationErrors.tags.length > 0
+                      ? " uk-form-danger"
+                      : "")
+                }}
+                id={tagsAutosuggestId}
+              />
+            </div>
+            <div className="uk-width-1-3">
+              <label className="uk-form-label">{t("hourlyRateLabel")}</label>
+              <input
+                className={`uk-input ${
+                  Array.isArray(validationErrors.hourlyRate) &&
+                  validationErrors.hourlyRate.length > 0
+                    ? "uk-form-danger"
+                    : ""
+                }`}
+                type="text"
+                value={
+                  ["string", "number"].includes(
+                    typeof timerInProgress.hourlyRate
+                  )
+                    ? timerInProgress.hourlyRate
+                    : ""
+                }
+                placeholder={t("hourlyRatePlaceholder")}
+                disabled={isSyncing}
+                onChange={({ target: { value } }) => {
                   const validationResult = Joi.validate(
                     value,
-                    Joi.stringArray()
-                      .items(Joi.string().trim())
-                      .unique()
-                      .label("tags"),
+                    Joi.number()
+                      .min(0)
+                      .allow("")
+                      .label("hourlyRate"),
                     { abortEarly: false }
                   );
                   setValidationErrors({
                     ...validationErrors,
-                    tags: validationResult.error
+                    hourlyRate: validationResult.error
                       ? validationResult.error.details.map(
                           ({ type, context }) => ({
                             type,
@@ -410,98 +475,31 @@ const Timer = memo(() => {
                         )
                       : []
                   });
-                  updateTimer({ ...timerInProgress, tags: value });
-                },
-                onBlur: tagsInputBlur
-              }}
-              theme={{
-                ...theme,
-                input:
-                  theme.input +
-                  (Array.isArray(validationErrors.tags) &&
-                  validationErrors.tags.length > 0
-                    ? " uk-form-danger"
-                    : "")
-              }}
-              id={tagsAutosuggestId}
-            />
-          </div>
-          <div className="uk-width-1-3">
-            <input
-              className={`uk-input ${
-                Array.isArray(validationErrors.hourlyRate) &&
-                validationErrors.hourlyRate.length > 0
-                  ? "uk-form-danger"
-                  : ""
-              }`}
-              type="text"
-              value={
-                ["string", "number"].includes(typeof timerInProgress.hourlyRate)
-                  ? timerInProgress.hourlyRate
-                  : ""
-              }
-              placeholder={t("hourlyRatePlaceholder")}
-              disabled={isSyncing}
-              onChange={({ target: { value } }) => {
-                const validationResult = Joi.validate(
-                  value,
-                  Joi.number()
-                    .min(0)
-                    .allow("")
-                    .label("hourlyRate"),
-                  { abortEarly: false }
-                );
-                setValidationErrors({
-                  ...validationErrors,
-                  hourlyRate: validationResult.error
-                    ? validationResult.error.details.map(
-                        ({ type, context }) => ({
-                          type,
-                          context
-                        })
-                      )
-                    : []
-                });
-                updateTimer({
-                  ...timerInProgress,
-                  hourlyRate: !validationResult.error
-                    ? validationResult.value
-                    : value
-                });
-              }}
-              onBlur={inputsBlur}
-            />
-          </div>
-          {Math.max(
-            ...Object.values(validationErrors).map(({ length }) => length)
-          ) > 0 ? (
-            <div className="uk-width-1-1">
-              <div className="uk-alert-danger" uk-alert="true">
-                <ul>
-                  {[]
-                    .concat(...Object.values(validationErrors))
-                    .map(({ type, context }) => (
-                      <li key={type}>
-                        {tj(type, {
-                          ...context,
-                          label: t(`${context.label}Label`)
-                        })}
-                      </li>
-                    ))}
-                </ul>
-              </div>
+                  updateTimer({
+                    ...timerInProgress,
+                    hourlyRate: !validationResult.error
+                      ? validationResult.value
+                      : value
+                  });
+                }}
+                onBlur={inputsBlur}
+              />
             </div>
-          ) : null}
-          <div className="uk-width-1-1 uk-text-center">
-            <span className="uk-heading-large">{spentTime}</span>
-            {spentSum ? (
-              <span className="uk-heading-small">{" / $" + spentSum}</span>
-            ) : null}
           </div>
+        </div>
+        <div className="uk-width-1-1 uk-width-auto@l uk-flex-last">
           <div className="uk-width-1-1 uk-text-center">
+            <div className="uk-heading-small uk-margin-remove">{spentTime}</div>
+          </div>
+          <div className="uk-width-1-1 uk-text-center uk-text-right@l">
+            <div className="uk-text-lead">
+              {spentSum ? "$" + spentSum : <>$0.00</>}
+            </div>
+          </div>
+          <div className="uk-width-1-1">
             {timerInProgress.startTimeString && timerInProgress.uuid ? (
               <button
-                className="uk-button uk-button-large uk-button-danger"
+                className="uk-button uk-button-danger uk-width-expand"
                 type="button"
                 disabled={isSyncing}
                 onClick={stop}
@@ -510,7 +508,7 @@ const Timer = memo(() => {
               </button>
             ) : (
               <button
-                className="uk-button uk-button-large uk-button-primary"
+                className="uk-button uk-button-primary uk-width-expand"
                 type="button"
                 disabled={isSyncing}
                 onClick={start}
@@ -519,8 +517,28 @@ const Timer = memo(() => {
               </button>
             )}
           </div>
-        </form>
-      </div>
+        </div>
+        {Math.max(
+          ...Object.values(validationErrors).map(({ length }) => length)
+        ) > 0 ? (
+          <div className="uk-width-1-1 uk-flex-last@l">
+            <div className="uk-alert-danger" uk-alert="true">
+              <ul>
+                {[]
+                  .concat(...Object.values(validationErrors))
+                  .map(({ type, context }) => (
+                    <li key={type}>
+                      {tj(type, {
+                        ...context,
+                        label: t(`${context.label}Label`)
+                      })}
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        ) : null}
+      </form>
     </div>
   );
 });

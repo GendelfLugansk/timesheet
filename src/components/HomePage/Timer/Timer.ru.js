@@ -1,11 +1,13 @@
 const ru = {
-  taskDescriptionPlaceholder:
-    "Что вы собираетесь делать? (Введите краткое описание задачи)",
-  projectPlaceholder: "Проект",
-  tagsPlaceholder: "Теги, через запятую",
-  hourlyRatePlaceholder: "Почасовой рейт",
+  taskDescriptionLabel: "Описание задачи",
+  taskDescriptionPlaceholder: "Укажите что вы собираетесь делать",
+  projectLabel: "Проект",
+  projectPlaceholder: "",
+  tagsLabel: "Теги, через запятую",
+  tagsJoiLabel: "Теги",
+  tagsPlaceholder: "Напр.: UI, API, DB, Совещание",
   hourlyRateLabel: "Почасовой рейт",
-  tagsLabel: "Теги",
+  hourlyRatePlaceholder: "",
   startButton: "Старт",
   stopButton: "Стоп"
 };

@@ -1,11 +1,13 @@
 const en = {
-  taskDescriptionPlaceholder:
-    "What are you going to do? (Type in short task description)",
-  projectPlaceholder: "Project",
-  tagsPlaceholder: "Tags, comma-separated",
-  hourlyRatePlaceholder: "Hourly rate",
+  taskDescriptionLabel: "Task description",
+  taskDescriptionPlaceholder: "Describe what are you going to do",
+  projectLabel: "Project",
+  projectPlaceholder: "",
+  tagsLabel: "Tags, comma-separated",
+  tagsJoiLabel: "Tags",
+  tagsPlaceholder: "i.e: UI, API, DB, Meeting",
   hourlyRateLabel: "Hourly rate",
-  tagsLabel: "Tags",
+  hourlyRatePlaceholder: "",
   startButton: "Start",
   stopButton: "Stop"
 };

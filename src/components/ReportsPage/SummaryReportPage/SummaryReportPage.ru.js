@@ -1,5 +1,6 @@
 const ru = {
-  printedTitle: "Сводный отчёт"
+  printedTitle: "Сводный отчёт",
+  documentTitle: "Сводный"
 };
 
 export default ru;

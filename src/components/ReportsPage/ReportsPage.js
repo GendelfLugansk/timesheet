@@ -9,8 +9,19 @@ import { useQueryParam, StringParam } from "use-query-params";
 import { useDispatch, useSelector } from "react-redux";
 import { filtersSelector } from "../../selectors/filters";
 import { setFilters } from "../../actions/filters";
+import DocumentTitle from "../DocumentTitle/DocumentTitle";
+import { useTranslation } from "react-i18next";
+import i18n from "../../utils/i18n";
+import en from "./ReportsPage.en";
+import ru from "./ReportsPage.ru";
+import uuidv4 from "uuid/v4";
+
+const ns = uuidv4();
+i18n.addResourceBundle("en", ns, en);
+i18n.addResourceBundle("ru", ns, ru);
 
 const ReportsPage = () => {
+  const { t } = useTranslation(ns);
   const [filtersFromQueryParams = "", setFiltersQueryParam] = useQueryParam(
     "filters",
     StringParam
@@ -43,22 +54,25 @@ const ReportsPage = () => {
   });
 
   return (
-    <WithWorkspace>
-      <div className="uk-width-1-1 uk-position-relative">
-        <Filters />
-        <Switch>
-          <AuthenticatedRoute exact path="/reports">
-            <Redirect to="/reports/summary" />
-          </AuthenticatedRoute>
-          <AuthenticatedRoute exact path="/reports/summary">
-            <SummaryReportPage />
-          </AuthenticatedRoute>
-          <AuthenticatedRoute exact path="/reports/calendar">
-            <CalendarReportsPage />
-          </AuthenticatedRoute>
-        </Switch>
-      </div>
-    </WithWorkspace>
+    <>
+      <DocumentTitle title={t("documentTitle")} />
+      <WithWorkspace>
+        <div className="uk-width-1-1 uk-position-relative">
+          <Filters />
+          <Switch>
+            <AuthenticatedRoute exact path="/reports">
+              <Redirect to="/reports/summary" />
+            </AuthenticatedRoute>
+            <AuthenticatedRoute exact path="/reports/summary">
+              <SummaryReportPage />
+            </AuthenticatedRoute>
+            <AuthenticatedRoute exact path="/reports/calendar">
+              <CalendarReportsPage />
+            </AuthenticatedRoute>
+          </Switch>
+        </div>
+      </WithWorkspace>
+    </>
   );
 };
 

@@ -21,6 +21,12 @@ const authStateSelector = state => ({
   error: state.auth.error
 });
 
+const messageStyle = {
+  background: "rgba(255, 255, 255, 0.9)",
+  padding: "0.2em",
+  borderTopRightRadius: "0.2em"
+};
+
 const FetchAuth = ({ children }) => {
   const { isLoading, error } = useSelector(authStateSelector, shallowEqual);
   const dispatch = useDispatch();
@@ -48,6 +54,14 @@ const FetchAuth = ({ children }) => {
         </div>
       ) : null}
       {children}
+      {isLoading ? (
+        <div
+          className="uk-position-fixed uk-position-bottom-left uk-background-default"
+          style={messageStyle}
+        >
+          {t("checkingAuthStatus")}
+        </div>
+      ) : null}
     </>
   );
 };
@@ -90,6 +104,14 @@ const FetchWorkspaces = ({ children }) => {
         </div>
       ) : null}
       {children}
+      {isLoading ? (
+        <div
+          className="uk-position-fixed uk-position-bottom-left uk-background-default"
+          style={messageStyle}
+        >
+          {t("fetchingWorkspaces")}
+        </div>
+      ) : null}
     </>
   );
 };
@@ -152,6 +174,14 @@ const FetchData = ({ children }) => {
         </div>
       ) : null}
       {children}
+      {isLoading ? (
+        <div
+          className="uk-position-fixed uk-position-bottom-left uk-background-default"
+          style={messageStyle}
+        >
+          {t("synchronizingData")}
+        </div>
+      ) : null}
     </>
   );
 };

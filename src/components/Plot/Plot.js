@@ -58,10 +58,10 @@ const Plot = ({
       redraw();
     };
     const mql = window.matchMedia("print");
-    mql.addListener("change", onChange);
+    mql.addListener(onChange);
 
     return () => {
-      mql.removeListener("change", onChange);
+      mql.removeListener(onChange);
     };
   });
 

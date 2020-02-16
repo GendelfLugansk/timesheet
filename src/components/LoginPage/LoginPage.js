@@ -18,6 +18,7 @@ import ru from "./LoginPage.ru";
 import Loader from "../Loader/Loader";
 import stringifyError from "../../utils/stringifyError";
 import uuidv4 from "uuid/v4";
+import googleLogo from "./google_g_logo.svg";
 
 const ns = uuidv4();
 i18n.addResourceBundle("en", ns, en);
@@ -129,9 +130,15 @@ const LoginPage = memo(() => {
         ) : null}
         <div className="uk-text-center uk-padding-small uk-padding-remove-top">
           <button
-            className="uk-button uk-button-primary uk-button-large"
+            className="uk-button uk-button-default uk-button-large"
             onClick={signIn}
           >
+            <img
+              src={googleLogo}
+              style={{ height: "2em" }}
+              className="uk-margin-small-right"
+              alt="Google icon"
+            />{" "}
             {t("signInButton")}
           </button>
         </div>

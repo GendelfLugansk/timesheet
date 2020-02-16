@@ -1,9 +1,8 @@
 const en = {
   unauthenticatedIntro:
-    "Timesheet utilizes Google Spreadsheets and Google Drive API. In order " +
-    "to use Timesheet, you need to sign in using your Google account",
+    "Timesheet utilizes Google Spreadsheets API and Google Drive API. Sign in with Google account to continue",
   authenticatedIntro: "You signed in as {{name}}",
-  signInButton: "Sign in",
+  signInButton: "Sign in with Google account",
   signOutButton: "Sign out"
 };
 

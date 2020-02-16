@@ -1,5 +1,3 @@
-import "react-app-polyfill/ie11";
-import "react-app-polyfill/stable";
 import "./polyfills";
 import "uikit/dist/css/uikit.css";
 import "./styles/index.scss";

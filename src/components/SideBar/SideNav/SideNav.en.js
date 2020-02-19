@@ -6,6 +6,7 @@ const en = {
     summary: "Summary",
     calendar: "Calendar"
   },
+  about: "About Timesheet",
   privacy: "Privacy policy",
   tos: "Terms of service"
 };

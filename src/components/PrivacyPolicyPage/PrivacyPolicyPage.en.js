@@ -1,4 +1,5 @@
 const en = {
+  documentTitle: "Privacy policy",
   text:
     "<h2 class='uk-heading-small uk-text-center'>Privacy policy</h2>" +
     "<p class='uk-text-center'>Last updated: February, 19, 2020</p>" +

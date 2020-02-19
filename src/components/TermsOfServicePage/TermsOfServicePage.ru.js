@@ -1,4 +1,5 @@
 const ru = {
+  documentTitle: "Условия использования",
   text:
     "<h2 class='uk-heading-small uk-text-center'>Условия использования</h2>" +
     "<p class='uk-text-center'>Последнее обновление: 19 февраля, 2020</p>" +

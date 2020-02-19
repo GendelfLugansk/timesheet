@@ -4,7 +4,8 @@ const en = {
   authenticatedIntro: "You signed in as {{name}}",
   signInButton: "Sign in with Google account",
   signOutButton: "Sign out",
-  tosCheck: "I've read and agree with Privacy policy and Terms of service"
+  tosCheck: "I've read and agree with Privacy policy and Terms of service",
+  documentTitle: "Sign In"
 };
 
 export default en;

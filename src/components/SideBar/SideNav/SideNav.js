@@ -48,6 +48,9 @@ const SideNav = () => {
           </LinkWrapper>
         </ul>
       </LinkWrapper>
+      <LinkWrapper to="/about" activeClassName="uk-active">
+        <Link to="/about">{t("about")}</Link>
+      </LinkWrapper>
       <LinkWrapper to="/privacy" activeClassName="uk-active">
         <Link to="/privacy">{t("privacy")}</Link>
       </LinkWrapper>

@@ -14,6 +14,7 @@ import { QueryParamProvider } from "use-query-params";
 import MobileSideBar from "../SideBar/MobileSideBar/MobileSideBar";
 import PrivacyPolicyPage from "../PrivacyPolicyPage/PrivacyPolicyPage";
 import TermsOfServicePage from "../TermsOfServicePage/TermsOfServicePage";
+import AboutPage from "../AboutPage/AboutPage";
 
 const App = () => (
   <Router>
@@ -33,6 +34,9 @@ const App = () => (
                 <AuthenticatedRoute path="/reports">
                   <ReportsPage />
                 </AuthenticatedRoute>
+                <Route path="/about">
+                  <AboutPage />
+                </Route>
                 <Route path="/privacy">
                   <PrivacyPolicyPage />
                 </Route>

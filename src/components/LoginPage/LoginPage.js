@@ -164,7 +164,7 @@ const LoginPage = memo(() => {
 
   return (
     <>
-      <DocumentTitle title="Sign In" />
+      <DocumentTitle title={t("documentTitle")} />
       <div className="uk-flex uk-flex-center uk-flex-middle min-height-100 LoginPage">
         <div>
           <Content />

@@ -26,7 +26,7 @@ const App = () => (
           <div className="uk-flex uk-flex-1">
             <SideBar addClassName="uk-visible@l" />
 
-            <div className="uk-flex-1 uk-padding-small">
+            <div className="uk-flex-1 uk-padding-small uk-position-relative">
               <Switch>
                 <AuthenticatedRoute exact path="/">
                   <HomePage />
@@ -50,6 +50,26 @@ const App = () => (
                   <NotFoundPage />
                 </Route>
               </Switch>
+
+              <div className="uk-margin-top" />
+              <div className="uk-position-absolute uk-position-bottom-center unprintable uk-text-small uk-padding-small">
+                &copy; {new Date().getFullYear()},{" "}
+                <a
+                  href="https://gennady.pp.ua/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Gennady Dogaev
+                </a>{" "}
+                Source code of this app is available{" "}
+                <a
+                  href="https://github.com/GendelfLugansk/timesheet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  on GitHub
+                </a>
+              </div>
             </div>
           </div>
         </div>

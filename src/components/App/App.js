@@ -12,6 +12,8 @@ import ReportsPage from "../ReportsPage/ReportsPage";
 import FetchAll from "../FetchAll/FetchAll";
 import { QueryParamProvider } from "use-query-params";
 import MobileSideBar from "../SideBar/MobileSideBar/MobileSideBar";
+import PrivacyPolicyPage from "../PrivacyPolicyPage/PrivacyPolicyPage";
+import TermsOfServicePage from "../TermsOfServicePage/TermsOfServicePage";
 
 const App = () => (
   <Router>
@@ -31,6 +33,12 @@ const App = () => (
                 <AuthenticatedRoute path="/reports">
                   <ReportsPage />
                 </AuthenticatedRoute>
+                <Route path="/privacy">
+                  <PrivacyPolicyPage />
+                </Route>
+                <Route path="/tos">
+                  <TermsOfServicePage />
+                </Route>
                 <Route path="/login">
                   <LoginPage />
                 </Route>

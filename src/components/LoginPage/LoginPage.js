@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
   signIn as signInAction,
@@ -60,6 +60,8 @@ const LoginPage = memo(() => {
   let location = useLocation();
 
   let { from } = location.state || { from: { pathname: "/" } };
+
+  const [tosCheck, setTosCheck] = useState(false);
 
   const signIn = async () => {
     await signInButtonClick();
@@ -129,7 +131,21 @@ const LoginPage = memo(() => {
           </div>
         ) : null}
         <div className="uk-text-center uk-padding-small uk-padding-remove-top">
+          <label>
+            <input
+              type="checkbox"
+              className="uk-checkbox"
+              checked={tosCheck}
+              onChange={({ target: { checked } }) => {
+                setTosCheck(checked);
+              }}
+            />{" "}
+            {t("tosCheck")}
+          </label>
+        </div>
+        <div className="uk-text-center uk-padding-small uk-padding-remove-top">
           <button
+            disabled={!tosCheck}
             className="uk-button uk-button-default uk-button-large"
             onClick={signIn}
           >

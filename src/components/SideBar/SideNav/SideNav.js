@@ -48,6 +48,12 @@ const SideNav = () => {
           </LinkWrapper>
         </ul>
       </LinkWrapper>
+      <LinkWrapper to="/privacy" activeClassName="uk-active">
+        <Link to="/privacy">{t("privacy")}</Link>
+      </LinkWrapper>
+      <LinkWrapper to="/tos" activeClassName="uk-active">
+        <Link to="/tos">{t("tos")}</Link>
+      </LinkWrapper>
       <LinkWrapper
         authenticated={false}
         to="/login"

@@ -5,7 +5,9 @@ const en = {
     index: "Reports",
     summary: "Summary",
     calendar: "Calendar"
-  }
+  },
+  privacy: "Privacy policy",
+  tos: "Terms of service"
 };
 
 export default en;

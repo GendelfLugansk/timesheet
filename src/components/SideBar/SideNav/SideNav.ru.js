@@ -4,6 +4,7 @@ const ru = {
   reports: {
     index: "Отчеты",
     summary: "Сводный",
+    summaryEarnings: "Сводный (доходы)",
     calendar: "Календарь"
   },
   about: "О программе",

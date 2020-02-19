@@ -1,0 +1,99 @@
+.SummaryReportPage {
+  .BarsContainer {
+    height: 40vw;
+    min-height: 500px;
+
+    @media print {
+      page-break-after: always;
+    }
+
+    .Plot {
+      @media print {
+        page-break-inside: avoid;
+      }
+
+      .PlotContainer {
+        height: 40vw;
+        min-height: 500px;
+
+        @media print {
+          page-break-inside: avoid;
+        }
+
+        .scatterlayer .text .textpoint {
+          @media print {
+            //display: none;
+          }
+        }
+      }
+    }
+  }
+
+  .PieContainer {
+    height: 25vw;
+    min-height: 300px;
+
+    @media screen and (orientation: landscape) {
+      height: 25vw;
+    }
+
+    @media screen and (orientation: portrait) {
+      height: 25vw;
+    }
+
+    @media screen and (max-width: 1024px) and (orientation: landscape) {
+      height: 50vw;
+    }
+
+    @media screen and (max-width: 1024px) and (orientation: portrait) {
+      height: 50vh;
+    }
+
+    @media print {
+      height: 60vh;
+      page-break-after: always;
+    }
+
+    .Plot {
+      @media print {
+        page-break-inside: avoid;
+      }
+
+      .PlotContainer {
+        min-height: 300px;
+        height: 25vw;
+
+        @media screen and (orientation: landscape) {
+          height: 25vw;
+        }
+
+        @media screen and (orientation: portrait) {
+          height: 25vw;
+        }
+
+        @media screen and (max-width: 1024px) and (orientation: landscape) {
+          height: 50vw;
+        }
+
+        @media screen and (max-width: 1024px) and (orientation: portrait) {
+          height: 50vh;
+        }
+
+        @media print {
+          height: 60vh;
+          page-break-inside: avoid;
+        }
+      }
+    }
+
+    @media print {
+      page-break-inside: avoid;
+    }
+  }
+
+  > .uk-grid {
+    @media print {
+      display: block;
+    }
+  }
+}

@@ -4,6 +4,7 @@ const en = {
   reports: {
     index: "Reports",
     summary: "Summary",
+    summaryEarnings: "Summary (earnings)",
     calendar: "Calendar"
   },
   about: "About Timesheet",

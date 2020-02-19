@@ -4,6 +4,7 @@ import React, { useEffect, useCallback } from "react";
 import CalendarReportsPage from "./CalendarReportPage/CalendarReportPage";
 import Filters from "./Filters/Filters";
 import SummaryReportPage from "./SummaryReportPage/SummaryReportPage";
+import SummaryEarningsReportPage from "./SummaryEarningsReportPage/SummaryEarningsReportPage";
 import WithWorkspace from "../WithWorkspace/WithWorkspace";
 import { useQueryParam, StringParam } from "use-query-params";
 import { useDispatch, useSelector } from "react-redux";
@@ -65,6 +66,9 @@ const ReportsPage = () => {
             </AuthenticatedRoute>
             <AuthenticatedRoute exact path="/reports/summary">
               <SummaryReportPage />
+            </AuthenticatedRoute>
+            <AuthenticatedRoute exact path="/reports/summary-earnings">
+              <SummaryEarningsReportPage />
             </AuthenticatedRoute>
             <AuthenticatedRoute exact path="/reports/calendar">
               <CalendarReportsPage />

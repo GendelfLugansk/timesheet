@@ -41,6 +41,15 @@ const SideNav = () => {
           </LinkWrapper>
           <LinkWrapper
             authenticated={true}
+            to="/reports/summary-earnings"
+            activeClassName="uk-active"
+          >
+            <Link to="/reports/summary-earnings">
+              {t("reports.summaryEarnings")}
+            </Link>
+          </LinkWrapper>
+          <LinkWrapper
+            authenticated={true}
             to="/reports/calendar"
             activeClassName="uk-active"
           >

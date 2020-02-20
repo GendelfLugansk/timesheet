@@ -4,7 +4,6 @@ import i18n from "../../utils/i18n";
 import en from "./AboutPage.en";
 import ru from "./AboutPage.ru";
 import { useTranslation } from "react-i18next";
-import ReactHtmlParser from "react-html-parser";
 import DocumentTitle from "../DocumentTitle/DocumentTitle";
 import { Link } from "react-router-dom";
 

@@ -51,9 +51,15 @@ const makeArray = (length, filler = 0) => {
  * @param userDisplayName
  * @param userId
  * @param userImage
+ * @param years
  * @returns {{projects: {name: string, uuid: *, colorRGB: *}[], log: [], tags: {name: (string), uuid: *, colorRGB: *}[]}}
  */
-export function generateDemoData(userDisplayName, userId, userImage) {
+export function generateDemoData(
+  userDisplayName,
+  userId,
+  userImage,
+  years = 5
+) {
   const projectNamesPool = [
     "Webster Green Moth",
     "Bush Teal Ladybug",
@@ -86,8 +92,7 @@ export function generateDemoData(userDisplayName, userId, userImage) {
   ];
 
   const yesterday = DateTime.local().minus({ days: 1 });
-  //Generate log for period of 15 years
-  let date = yesterday.minus({ years: 15 });
+  let date = yesterday.minus({ years });
   const log = [];
   while (date <= yesterday) {
     //Sunday is a weekend

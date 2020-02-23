@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import i18n from "../../../../utils/i18n";
 import { useTranslation } from "react-i18next";
 import en from "./GenerateDemo.en";
@@ -46,13 +46,15 @@ const GenerateDemo = memo(() => {
     [dispatch, workspaceId]
   );
   const { t } = useTranslation(ns);
+  const [years, setYears] = useState(5);
 
-  const generateDemo = useTask(async () => {
+  const generateDemo = useTask(async (years = 5) => {
     const workerInstance = worker();
     const data = await workerInstance.generateDemoData(
       userDisplayName,
       userId,
-      userImage
+      userImage,
+      years
     );
     workerInstance.terminate();
     saveData(data);
@@ -60,7 +62,7 @@ const GenerateDemo = memo(() => {
   });
 
   const buttonClick = () => {
-    generateDemo.perform();
+    generateDemo.perform(years);
   };
 
   if (isLoading || generateDemo.isRunning) {
@@ -72,18 +74,42 @@ const GenerateDemo = memo(() => {
   }
 
   return (
-    <div className="uk-flex uk-flex-center uk-flex-middle">
-      <div className="uk-text-center uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
-        <div className="uk-padding-small">{t("intro")}</div>
-        <div className="uk-padding-small uk-padding-remove-top">
-          <button
-            type="button"
-            className="uk-button uk-button-danger"
-            onClick={buttonClick}
-          >
-            {t("generateButton")}
-          </button>
-        </div>
+    <div className="uk-flex uk-flex-center uk-flex-middle uk-flex-column">
+      <div className="uk-width-1-1 uk-width-2-3@m uk-width-1-2@l">
+        <form
+          className="uk-padding-large"
+          onSubmit={e => {
+            e.preventDefault();
+            buttonClick();
+          }}
+        >
+          <div className="uk-legend">{t("intro")}</div>
+          <div className="uk-margin">
+            <label className="uk-form-label">{t("yearsToGenerate")}</label>
+            <select
+              className="uk-select"
+              value={years}
+              onChange={({ target: { value } }) => {
+                setYears(value);
+              }}
+            >
+              <option value={2}>2</option>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={30}>30</option>
+            </select>
+          </div>
+          <div className="uk-margin">
+            <button
+              type="button"
+              className="uk-button uk-button-primary uk-width-1-1"
+              onClick={buttonClick}
+            >
+              {t("generateButton", { years })}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
